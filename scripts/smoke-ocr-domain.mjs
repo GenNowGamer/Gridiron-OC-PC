@@ -275,11 +275,27 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(soup44.yardsToGo, 6);
 
   // Bare digit blobs are ambiguous — never invent structure.
-  for (const soup of ["34", "2010", "110", "1010"]) {
+  for (const soup of ["34", "2010", "110", "1010", "20805", "20841"]) {
     const parsed = HudText.parseDownDistanceText(soup);
     assert.equal(parsed.ok, false, `${soup} must fail closed`);
     assert.equal(parsed.down, null);
   }
+
+  const repeatedDownDigit = HudText.parseDownDistanceText("'1'S'1''&''2''0'");
+  assert.equal(repeatedDownDigit.ok, true);
+  assert.equal(repeatedDownDigit.down, 1);
+  assert.equal(repeatedDownDigit.yardsToGo, 20);
+  assert.equal(repeatedDownDigit.label, "1st & 20");
+
+  const collapsedNd = HudText.parseDownDistanceText("'2''0''8''1''7'");
+  assert.equal(collapsedNd.ok, true);
+  assert.equal(collapsedNd.down, 2);
+  assert.equal(collapsedNd.yardsToGo, 17);
+  assert.equal(collapsedNd.label, "2nd & 17");
+
+  const unexplainedYard = HudText.parseDownDistanceText("'3'RD'&'百");
+  assert.equal(unexplainedYard.ok, false);
+  assert.equal(unexplainedYard.down, null);
 
   const clockOnly = HudText.parseQuarterClockText("3:00");
   assert.equal(clockOnly.quarter, null);

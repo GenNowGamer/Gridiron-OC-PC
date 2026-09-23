@@ -514,6 +514,10 @@
     const field = acceptedValue(fields.field_position);
     const fieldPosition = coerceFieldPosition(field);
     const offenseShowing = offenseShowingOf(fields);
+    const previousDefense = acceptedValue(fields.previous_defense_play);
+    const previousDefensePlayName = previousDefense && typeof previousDefense === "object"
+      ? text(previousDefense.play_name || previousDefense.playName || previousDefense.name || "")
+      : text(previousDefense || "");
     const down = parsed && parsed.ok
       ? parsed.down
       : Number(fields.down?.value || downMatch?.[1] || 1);
@@ -534,6 +538,7 @@
         formation: offenseShowing.formation || "",
         set: offenseShowing.set || "",
       },
+      previousDefensePlayName,
     };
   }
 

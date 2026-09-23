@@ -85,9 +85,10 @@ are shared).
    play name (prevents false accepts like `FS FIRE 1` → `4-3 Under`).
    Formation/personnel ROIs use multiline OCR (PSM 6).
 8. **Down / distance** is parsed with a grammar + finite legal catalog (downs
-    1–4 × yards 1–40 + Goal). Bare digit soup (`34`, `2010`) is rejected;
+    1–4 × yards 1–40 + Goal). Bare digit soup (`34`, `2010`) and a yard token of `百` are rejected;
     structured OCR with confusable glyphs (`SRD & A`, `1s™ &10`, `2N0 & 6`,
-    `SRO & 18`, bare `TH & INCHES` / `INGHES` / `MGHES` → inches→1,
+    `SRO & 18`, `'1'S'1''&''2''0'` → 1st & 20, five-digit `20817` → 2nd & 17
+    when the distance is 10–40, bare `TH & INCHES` / `INGHES` / `MGHES` → inches→1,
     Goal OCR `BOAL` / `G0AL` / `60AL` → `& Goal`) is repaired via ordinal-suffix /
     Inches / Goal rules. That ROI uses **no Tesseract char whitelist**. Burst
     consensus prefers frames that still show ordinal/`&` structure. Trailing

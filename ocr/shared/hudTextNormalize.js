@@ -125,6 +125,16 @@
     // Normalize conjunction early so "AND" is never mistaken for "2ND".
     text = text.replace(/\bAND\b/g, "&");
 
+    // "'2''0''8''1''7'" → 20817. The & dropped and ND collapsed into 08.
+    // Five digits only, yards 10–40. Four-digit blobs such as 2010 stay rejected.
+    var collapsedSecond = text.match(/^2[08]{2}(\d{2})$/);
+    if (collapsedSecond) {
+      var collapsedYards = Number(collapsedSecond[1]);
+      if (collapsedYards >= 10 && collapsedYards <= 40) {
+        return "2ND & " + String(collapsedYards);
+      }
+    }
+
     // OCR often reads ordinal trailing D as 0/O: "2N0"→"2ND", "SRO"/"SR0"→"3RD".
     text = text.replace(/\b([1-4])N[O0]\b/g, "$1ND");
     // "2M0" / "2MO" — ND collapsed to M0 (export: "'2'M'0''&''4'").
@@ -146,6 +156,13 @@
     text = text.replace(/\b(ST|ND|RD|TH)\s*&/g, function (_match, suffix) {
       var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
       return down ? String(down) + suffix + " &" : _match;
+    });
+
+    // "'1'S'1''&''2''0'" → 1S1&20. The ordinal's second letter was read as a
+    // repeat of the down digit (T→1), so "1S" is not a whole word before &.
+    text = text.replace(/\b([1-4])([SNRT])\1(?=\s*&)/g, function (_match, down, partial) {
+      var suffix = ({ S: "ST", N: "ND", R: "RD", T: "TH" })[partial];
+      return suffix ? down + suffix : _match;
     });
 
     // Incomplete ordinals from dropped letters / ornaments: "1S™ & 10" → "1ST & 10".
