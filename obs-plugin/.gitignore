@@ -1,0 +1,8 @@
+# OBS plugin build/cache artifacts
+.cache/
+dist/
+*.obj
+*.exp
+*.lib
+*.pdb
+*.ilk

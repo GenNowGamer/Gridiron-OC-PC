@@ -1,0 +1,14 @@
+# Runtime and packaging dependencies. PaddleOCR is intentionally optional because
+# its platform-specific PaddlePaddle runtime and model files must be provisioned separately.
+numpy==2.2.6
+opencv-python-headless==4.12.0.88
+obsws-python==1.8.0
+pytesseract==0.3.13
+Pillow==11.3.0
+pyinstaller==6.15.0
+onnxruntime==1.22.1
+
+# Preferred HUD engine: onnx_ppocrv5 (PP-OCRv5 mobile recognition).
+# Fetch model: powershell -File scripts/fetch-pp-ocrv5-onnx.ps1
+# Optional GPU: pip install onnxruntime-gpu (instead of onnxruntime)
+# Optional PaddleOCR full package when provisioned separately.

@@ -1,0 +1,48 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/out/
+.cache/
+coverage/
+*.zip
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+**/credentials.json
+**/*service-account*.json
+**/*.jks
+**/*.keystore
+**/*.p12
+**/userData/
+
+# Playbooks stay on the machine that built them
+plays.json
+defensive_plays.json
+**/*play*.json
+
+# Speech and capture runtimes (install or build locally)
+vendor/ffmpeg/runtime/
+vendor/whisper/model/
+vendor/whisper/runtime/
+ocr-sidecar/.venv/
+ocr-sidecar/models/
+ocr-sidecar/build/
+ocr-sidecar/dist/
+capture-bridge/**/bin/
+capture-bridge/**/obj/
+**/__pycache__/
+
+# Private captures, logs, and internal notes
+ocr-golden/private/
+ocr-golden/results/
+session_handoff.md
+*.log
+
+# One-off local patch scripts
+scripts/patch-*.mjs
+scripts/fix-*.mjs
+scripts/analyze-*.mjs
+scripts/probe-*.mjs
+scripts/sync-recommendation-core.mjs

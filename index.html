@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gridiron OC</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="appShell">
+    <header class="topbar">
+      <div class="brandBlock">
+        <div class="brandTitle">Gridiron OC</div>
+        <div class="brandSub" id="headerSub">Desktop beta</div>
+      </div>
+      <div class="topbarActions">
+        <div class="roleToggle" id="roleToggle" role="group" aria-label="Coordinator role">
+          <button class="roleToggleBtn isActive" id="roleOcBtn" type="button" data-role="oc">OC</button>
+          <button class="roleToggleBtn" id="roleDcBtn" type="button" data-role="dc">DC</button>
+        </div>
+        <button class="ghostBtn" id="settingsBtn" type="button">Settings</button>
+      </div>
+    </header>
+
+    <main class="layout" id="ocWorkspace">
+      <section class="panel heroPanel">
+        <div class="heroTop">
+          <div>
+            <div class="eyebrow">Adaptive Playcalling</div>
+            <h1 class="heroTitle">Speak or capture the situation. Get the call.</h1>
+            <p class="heroCopy" id="heroCopy">Use Tap &amp; Speak or OCR Capture for spots like "3rd and 6", "1st and goal on the 4", or "3rd and 5 on my own 30".</p>
+          </div>
+          <div class="heroActions">
+            <button class="micBtn" id="micBtn" type="button">Tap & Speak Situation</button>
+            <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
+            <div class="micFeedback hidden" id="micFeedback" role="status" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div id="driveResultPanel" class="driveResultPanel hidden"></div>
+
+        <div class="statusCard">
+          <div class="statusRow">
+            <span class="statusLabel">Playbook</span>
+            <span class="statusValue" id="teamValue">Loading...</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Opponent</span>
+            <span class="statusValue" id="opponentValue">Loading...</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Identity</span>
+            <span class="statusValue" id="identityValue">Loading...</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Heard</span>
+            <span class="statusValue" id="heardValue">Waiting for voice input</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Situation</span>
+            <span class="statusValue" id="situationValue">No live situation yet</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Status</span>
+            <span class="statusValue" id="statusValue">Ready</span>
+          </div>
+        </div>
+
+        <div class="voiceHints">
+          <span class="hintChip">"2nd and 8 on my own 45"</span>
+          <span class="hintChip">"1st and goal on the 5"</span>
+          <span class="hintChip">"3rd and 5 on my own 30 yard line"</span>
+        </div>
+
+        <div class="gameContextRow">
+        <div class="modeSection scoreboardSection" id="scoreboardSection">
+          <div class="modeSectionHead">
+            <div>
+              <div class="eyebrow">Game Scoreboard</div>
+              <div class="modeSummary" id="scoreboardSummary">Set the live score and quarter. These update OC/DC situation for the next spoken call, OCR capture, or playcalling-mode change — they do not reshuffle a confirmed sheet.</div>
+            </div>
+          </div>
+          <div class="scoreboardBody">
+            <div class="scoreStepperGroup">
+              <div class="scoreStepper" data-score-side="user">
+                <span class="scoreStepperLabel">You</span>
+                <div class="scoreStepperControls">
+                  <button class="scoreStepBtn" type="button" data-score-action="dec" data-score-side="user" aria-label="Decrease your score">−</button>
+                  <span class="scoreStepValue" id="userScoreValue">0</span>
+                  <button class="scoreStepBtn" type="button" data-score-action="inc" data-score-side="user" aria-label="Increase your score">+</button>
+                </div>
+              </div>
+              <div class="scoreStepper" data-score-side="opp">
+                <span class="scoreStepperLabel">Opp</span>
+                <div class="scoreStepperControls">
+                  <button class="scoreStepBtn" type="button" data-score-action="dec" data-score-side="opp" aria-label="Decrease opponent score">−</button>
+                  <span class="scoreStepValue" id="oppScoreValue">0</span>
+                  <button class="scoreStepBtn" type="button" data-score-action="inc" data-score-side="opp" aria-label="Increase opponent score">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="modeButtonRow quarterButtonRow" id="quarterButtonGroup">
+              <button class="modeBtn is-active" type="button" data-quarter="1">Q1</button>
+              <button class="modeBtn" type="button" data-quarter="2">Q2</button>
+              <button class="modeBtn" type="button" data-quarter="3">Q3</button>
+              <button class="modeBtn" type="button" data-quarter="4">Q4</button>
+              <button class="modeBtn" type="button" data-quarter="5">OT</button>
+            </div>
+            <button class="secondaryBtn halftimeBtn" id="halftimeBtn" type="button" disabled aria-disabled="true" title="Start a game before making a halftime adjustment">Halftime</button>
+            <div class="modeSummary halftimeHint">Opens style picker for a second-half lean, then sets the scoreboard to Q3. Does not start a new game. Available after New Game.</div>
+          </div>
+        </div>
+
+        <div class="modeSection defenseLogSection" id="defenseLogSection">
+          <div class="modeSectionHead">
+            <div>
+              <div class="eyebrow">Last Defense Shown</div>
+              <div class="modeSummary" id="defenseLogSummary">Tap what Madden showed after the snap. That coverage is logged for opponent scouting and does not reshuffle this sheet — the next Tap & Speak or playcalling-mode change clears it so predictive scouting can run again.</div>
+            </div>
+          </div>
+          <div class="defenseLogBody">
+            <div class="defenseLogCurrent">
+              <span class="defenseLogCurrentLabel">Last shown</span>
+              <span class="defenseLogCurrentValue" id="lastDefenseShownValue">—</span>
+            </div>
+            <div class="modeButtonRow defenseLogButtonRow" id="defenseLogButtonGroup">
+              <button class="modeBtn" type="button" data-defense="Blitz">Blitz</button>
+              <button class="modeBtn" type="button" data-defense="Man">Man</button>
+              <button class="modeBtn" type="button" data-defense="Cover 1">C1</button>
+              <button class="modeBtn" type="button" data-defense="Cover 2">C2</button>
+              <button class="modeBtn" type="button" data-defense="Cover 3">C3</button>
+              <button class="modeBtn" type="button" data-defense="Cover 4">C4</button>
+              <button class="modeBtn" type="button" data-defense="Cover 6">C6</button>
+              <button class="modeBtn" type="button" data-defense="Cover 9">C9</button>
+              <button class="modeBtn" type="button" data-defense="Tampa 2">Tampa 2</button>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="modeSection">
+          <div class="modeSectionHead">
+            <div>
+              <div class="eyebrow">Playcalling Mode</div>
+              <div class="modeSummary" id="playcallingModeSummary">Normal mode keeps the standard adaptive coordinator logic active.</div>
+            </div>
+          </div>
+          <div class="modeButtonRow" id="playcallingModeGroup">
+            <button class="modeBtn is-active" type="button" data-mode="normal">Normal</button>
+            <button class="modeBtn" type="button" data-mode="two_minute">2 Minute Drill</button>
+            <button class="modeBtn" type="button" data-mode="kill_clock">Kill Clock</button>
+            <button class="modeBtn" type="button" data-mode="comeback">Comeback</button>
+            <button class="modeBtn" type="button" data-mode="blitz_beater">Blitz Beater</button>
+            <button class="modeBtn" type="button" data-mode="redzone">Redzone</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel recPanel" id="ocRecPanel">
+        <div class="panelHead">
+          <div>
+            <div class="eyebrow">Recommendations</div>
+            <h2 class="panelTitle">Play Call</h2>
+          </div>
+        </div>
+
+        <div id="recommendationCard" class="recommendationCard empty">
+          <div class="recPlaceholderTitle">Speak a situation or capture with OCR</div>
+          <div class="recPlaceholderCopy">Tap &amp; Speak or OCR Capture sets the live spot, then ranks your offensive playbook.</div>
+        </div>
+
+        <div class="recommendationTools">
+          <button class="secondaryBtn recommendationToggle hidden" id="recommendationToggleBtn" type="button">Next Play</button>
+        </div>
+
+
+        <div class="traceSection" id="sharedTraceSection">
+          <div class="panelHead traceHead">
+            <div>
+              <div class="eyebrow">Trace Log</div>
+              <div class="traceMeta" id="traceMeta">Saved automatically</div>
+            </div>
+            <div class="traceCount" id="traceCount">Entries: 0</div>
+          </div>
+          <div class="traceActions">
+            <button class="ghostBtn" id="toggleTraceBtn" type="button">Open Trace</button>
+            <button class="ghostBtn" id="exportTraceBtn" type="button">Export Trace</button>
+            <button class="ghostBtn" id="openTraceFolderBtn" type="button">Open Trace Folder</button>
+            <button class="ghostBtn" id="newTraceBtn" type="button">Start New Trace</button>
+          </div>
+          <div id="tracePanel" class="tracePanel hidden">
+            <pre id="traceText" class="traceText">No saved trace yet.</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <main class="layout hidden" id="dcWorkspace" aria-hidden="true">
+      <section class="panel heroPanel" id="dcHeroPanel">
+        <div class="heroTop">
+          <div>
+            <div class="eyebrow">Defensive Coordinator</div>
+            <h1 class="heroTitle">Defense call sheet</h1>
+            <p class="heroCopy" id="dcHeroCopy">
+              Speak down, distance, and field position — or use OCR Exact Calls when capture is ready.
+            </p>
+          </div>
+          <div class="heroActions">
+            <button class="micBtn" id="dcMicBtn" type="button" title="Optional: speak exact down/distance/field">Optional: Tap &amp; Speak Exact Spot</button>
+            <button class="secondaryBtn" id="dcGameStateBtn" type="button">New Game</button>
+          </div>
+        </div>
+
+        <div id="dcGameStatePanel" class="driveResultPanel hidden"></div>
+
+        <div class="statusCard">
+          <div class="statusRow">
+            <span class="statusLabel">Defense Playbook</span>
+            <span class="statusValue" id="dcTeamValue">Loading...</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Opponent</span>
+            <span class="statusValue" id="dcOpponentValue">Loading...</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Heard</span>
+            <span class="statusValue" id="dcHeardValue">Waiting for voice input</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Situation</span>
+            <span class="statusValue" id="dcSituationValue">No live situation yet</span>
+          </div>
+          <div class="statusRow">
+            <span class="statusLabel">Status</span>
+            <span class="statusValue" id="dcStatusValue">Defense board ready</span>
+          </div>
+        </div>
+
+        <div class="modeSection hidden" id="dcOffenseShowingPanel">
+          <div class="modeSectionHead">
+            <div>
+              <div class="eyebrow">Offense Showing</div>
+              <div class="modeSummary" id="dcOffenseShowingHint">
+                Tag the opponent offense formation/set before you speak. Selection stays sticky and does not reshuffle the current top 3.
+              </div>
+            </div>
+          </div>
+          <div class="statusRow" style="margin-bottom:12px;">
+            <span class="statusLabel">Selected</span>
+            <span class="statusValue" id="dcOffenseShowingValue">Unknown</span>
+          </div>
+          <div class="dcOffenseFormationRow" id="dcOffenseFormationRow"></div>
+          <div class="dcOffenseSetPanel hidden" id="dcOffenseSetPanel">
+            <div class="dcOffenseSetTitle" id="dcOffenseSetTitle">Sets</div>
+            <div class="dcOffenseSetRow" id="dcOffenseSetRow"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel recPanel" id="dcRecPanel">
+        <section class="ocrDcStrip" id="ocrDcStrip" aria-label="OCR capture" data-state="disabled">
+          <div class="ocrDcStripTop">
+            <div>
+              <div class="eyebrow">OCR Fast Call</div>
+              <div class="ocrDcStatus" id="ocrDcStatus">Disabled — enable capture in Settings</div>
+            </div>
+            <div class="ocrDcActions">
+              <button class="ghostBtn" id="ocrCaptureBtn" type="button" disabled>Capture</button>
+              <button class="ghostBtn" id="ocrReviewBtn" type="button" disabled>Review</button>
+            </div>
+          </div>
+          <div class="ocrDcContext" id="ocrDcContext">Enable OCR Capture in Settings after calibrating an OBS source.</div>
+          <div class="ocrDcConfidence" id="ocrDcConfidence" aria-live="polite"></div>
+          <!-- Exact Calls / packages render only in #dcRecommendationCard / OC rec card -->
+          <div id="ocrExactCallsCard" class="recommendationCard empty ocrExactCallsCard hidden" hidden aria-hidden="true"></div>
+        </section>
+        <div class="panelHead">
+          <div>
+            <div class="eyebrow">Recommendations</div>
+            <h2 class="panelTitle" id="dcRecPanelTitle">Package Call</h2>
+          </div>
+        </div>
+        <div id="dcRecommendationCard" class="recommendationCard empty">
+          <div class="recPlaceholderTitle">Speak a situation or capture with OCR</div>
+          <div class="recPlaceholderCopy">
+            Top plays appear here for Tap &amp; Speak and OCR — Package Call or Exact Calls.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay hidden" id="coordinatorOverlay" aria-hidden="true">
+    <div class="overlayCard coordinatorCard">
+      <div class="overlayTitleRow">
+        <div class="overlayTitle" id="coordinatorPickerTitle">Choose a Coordinator Style</div>
+        <button class="overlayCloseBtn" id="closeCoordinatorPickerBtn" type="button" aria-label="Close coordinator style picker">✕</button>
+      </div>
+      <div class="overlaySub" id="coordinatorPickerSub">Sets the offensive play-calling identity for this game.</div>
+      <div class="coordinatorGrid">
+        <button class="coordinatorBtn" type="button" data-profile-id="normal">
+          <div class="coordinatorBtnLabel">Normal</div>
+          <div class="coordinatorBtnDesc">Balanced, situation-driven play calling.</div>
+        </button>
+        <button class="coordinatorBtn" type="button" data-profile-id="run_first">
+          <div class="coordinatorBtnLabel">Run First</div>
+          <div class="coordinatorBtnDesc">Commit to the run. Establish the line of scrimmage.</div>
+        </button>
+        <button class="coordinatorBtn" type="button" data-profile-id="pass_first">
+          <div class="coordinatorBtnLabel">Pass First</div>
+          <div class="coordinatorBtnDesc">Attack through the air. Control the game with your arm.</div>
+        </button>
+        <button class="coordinatorBtn" type="button" data-profile-id="west_coast">
+          <div class="coordinatorBtnLabel">West Coast</div>
+          <div class="coordinatorBtnDesc">Rhythmic intermediate passing. Set up play action off the run.</div>
+        </button>
+        <button class="coordinatorBtn" type="button" data-profile-id="aggressive">
+          <div class="coordinatorBtnLabel">Aggressive</div>
+          <div class="coordinatorBtnDesc">High upside calls. Go for explosive plays and push the margin.</div>
+        </button>
+        <button class="coordinatorBtn" type="button" data-profile-id="tempo_spread">
+          <div class="coordinatorBtnLabel">Tempo / Spread</div>
+          <div class="coordinatorBtnDesc">Pace and space. Quick RPOs, jet motion, perimeter attacks.</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="audibleOverlay" aria-hidden="true">
+    <div class="overlayCard audibleCard">
+      <div class="overlayTitleRow">
+        <div class="overlayTitle">Audible</div>
+        <button class="overlayCloseBtn" id="closeAudiblePickerBtn" type="button" aria-label="Close audible picker">✕</button>
+      </div>
+      <div class="overlaySub" id="audiblePickerSub">Pick the play you actually snapped in this formation/set. Learning updates to that call — the sheet stays frozen.</div>
+      <input class="audibleSearch" id="audibleSearchInput" type="search" placeholder="Search play name" autocomplete="off" />
+      <div class="audibleList" id="audibleList"></div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="penaltyOverlay" aria-hidden="true">
+    <div class="overlayCard audibleCard">
+      <div class="overlayTitleRow">
+        <div class="overlayTitle">Penalty</div>
+        <button class="overlayCloseBtn" id="closePenaltyPickerBtn" type="button" aria-label="Close penalty picker">✕</button>
+      </div>
+      <div class="overlaySub" id="penaltyPickerSub">Log a flag on the pending snap. Learning skips this confirm — sheet stays frozen. Speak the real next situation after.</div>
+      <button class="audibleBarBtn penaltyClearBtn hidden" id="clearPenaltyBtn" type="button">Clear penalty</button>
+      <div class="audibleList" id="penaltyList"></div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="voiceOverlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTitle" id="overlayTitle">Listening...</div>
+      <div class="overlaySub">Say the full situation like you do on mobile.</div>
+      <div class="overlayHeard" id="overlayHeard">...</div>
+      <div class="overlayActions">
+        <button class="ghostBtn" id="stopVoiceBtn" type="button">Stop</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="settingsOverlay" aria-hidden="true">
+    <div class="settingsCard">
+      <div class="panelHead">
+        <div>
+          <div class="eyebrow">Settings</div>
+          <h2 class="panelTitle">Desktop Preferences</h2>
+        </div>
+        <button class="ghostBtn" id="closeSettingsBtn" type="button">Close</button>
+      </div>
+
+      <label class="settingsLabel" for="teamSelect">Your Playbook</label>
+      <select id="teamSelect" class="settingsSelect"></select>
+
+      <label class="settingsLabel" for="opponentSelect">Opponent</label>
+      <select id="opponentSelect" class="settingsSelect"></select>
+
+      <label class="settingsLabel" for="themeSelect">Theme</label>
+      <select id="themeSelect" class="settingsSelect"></select>
+
+      <div class="settingsDivider"></div>
+      <div class="ocrSettingsHead">
+        <div>
+          <div class="eyebrow">Madden OCR</div>
+          <div class="toggleSub">Local OBS capture for OC play calls and DC package / Exact Calls. All switches default off.</div>
+        </div>
+        <span class="ocrStatusPill" id="ocrWorkerPill">Checking</span>
+      </div>
+
+      <div class="toggleRow">
+        <div>
+          <div class="toggleTitle">Enable OCR Capture</div>
+          <div class="toggleSub">Registers the hotkey. Works on OC (play calls) and DC (packages / Exact Calls).</div>
+        </div>
+        <button class="toggleBtn" id="ocrCaptureToggleBtn" type="button" aria-pressed="false">Off</button>
+      </div>
+      <div class="toggleRow">
+        <div>
+          <div class="toggleTitle">Enable Exact Calls</div>
+          <div class="toggleSub">DC only: shows exact defensive plays from accepted OCR context. OC uses the main Play Call sheet.</div>
+        </div>
+        <button class="toggleBtn" id="ocrExactToggleBtn" type="button" aria-pressed="false">Off</button>
+      </div>
+      <div class="toggleRow">
+        <div>
+          <div class="toggleTitle">Enable OCR Learning</div>
+          <div class="toggleSub">Learns only from verified prior-snap events; uncertain snaps stay unscored.</div>
+        </div>
+        <button class="toggleBtn" id="ocrLearningToggleBtn" type="button" aria-pressed="false">Off</button>
+      </div>
+      <div class="toggleRow">
+        <div>
+          <div class="toggleTitle">Debug capture</div>
+          <div class="toggleSub">Keeps ROI crops and enriched traces so you can export a diagnostic pack after calibration or in-game captures.</div>
+        </div>
+        <button class="toggleBtn" id="ocrDebugToggleBtn" type="button" aria-pressed="false">Off</button>
+      </div>
+
+      <label class="settingsLabel" for="ocrHotkeyInput">Capture Hotkey</label>
+      <input class="settingsSelect settingsInput" id="ocrHotkeyInput" type="text" value="CommandOrControl+Shift+D" spellcheck="false" />
+      <div class="settingsActions">
+        <button class="ghostBtn" id="ocrSaveHotkeyBtn" type="button">Register Hotkey</button>
+        <button class="ghostBtn" id="ocrOpenCalibrationBtn" type="button">Calibrate capture</button>
+        <button class="ghostBtn" id="ocrUndoSnapBtn" type="button">Undo Last Snap</button>
+        <button class="ghostBtn" id="ocrResetOpponentBtn" type="button">Reset Opponent</button>
+        <button class="ghostBtn" id="ocrExportDataBtn" type="button">Export OCR Data</button>
+        <button class="ghostBtn" id="ocrExportDiagnosticBtn" type="button">Export Diagnostic Pack</button>
+        <button class="ghostBtn dangerBtn" id="ocrDeleteDataBtn" type="button">Delete OCR Data</button>
+      </div>
+      <div class="settingsNote" id="ocrSettingsSummary">OCR is disabled.</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="ocrCalibrationOverlay" aria-hidden="true">
+    <div class="overlayCard ocrCalibrationCard">
+      <div class="overlayTitleRow">
+        <div>
+          <div class="eyebrow">Madden OCR</div>
+          <div class="overlayTitle">OBS Calibration</div>
+        </div>
+        <button class="overlayCloseBtn" id="ocrCloseCalibrationBtn" type="button" aria-label="Close OCR calibration">✕</button>
+      </div>
+      <div class="overlaySub">Pick a Madden presentation style, calibrate its HUD crops, then switch styles from the dropdown when you play that broadcast look.</div>
+
+      <div class="ocrFormGrid">
+        <label class="ocrWideField"><span>Presentation style</span>
+          <select id="ocrPresentationSelect" class="settingsSelect">
+            <option value="Default Presentation">Default Presentation</option>
+            <option value="Sunday Night Football">Sunday Night Football</option>
+            <option value="Monday Night Football">Monday Night Football</option>
+            <option value="Thursday Night Football">Thursday Night Football</option>
+          </select>
+        </label>
+        <label class="ocrWideField"><span>Saved profile</span><select id="ocrSavedProfileSelect" class="settingsSelect"><option value="">New profile…</option></select></label>
+        <label><span>Profile name</span><input id="ocrProfileName" class="settingsSelect settingsInput" value="Default Presentation" /></label>
+        <label><span>Capture adapter</span><select id="ocrCaptureAdapter" class="settingsSelect"><option value="capture-bridge">Capture Bridge (default)</option><option value="obs-plugin">OBS plugin (legacy)</option><option value="websocket">OBS WebSocket screenshot (diagnostic)</option></select></label>
+        <label id="ocrObsUrlField"><span>OBS URL</span><input id="ocrObsUrl" class="settingsSelect settingsInput" value="ws://127.0.0.1:4455" /></label>
+        <label id="ocrObsPasswordField"><span>OBS password</span><input id="ocrObsPassword" class="settingsSelect settingsInput" type="password" autocomplete="off" /></label>
+        <label id="ocrSourceKindField"><span>Source kind</span><select id="ocrSourceKind" class="settingsSelect"><option value="all">All</option><option value="capture-card">Capture card</option><option value="window">PC window</option></select></label>
+        <label class="ocrWideField"><span id="ocrSourceSelectLabel">Capture source</span><select id="ocrSourceSelect" class="settingsSelect"></select></label>
+      </div>
+      <div class="settingsActions">
+        <button class="ghostBtn" id="ocrConnectObsBtn" type="button">Refresh sources</button>
+        <button class="ghostBtn" id="ocrReferenceBtn" type="button">Capture Reference</button>
+        <button class="ghostBtn" id="ocrBenchmarkBtn" type="button">Run Capture Sample</button>
+      </div>
+
+      <div class="ocrCalibrationWorkspace">
+        <div class="ocrCanvasWrap" id="ocrCanvasWrap">
+          <canvas id="ocrCalibrationCanvas" width="960" height="540"></canvas>
+          <div class="ocrCanvasEmpty" id="ocrCanvasEmpty">Capture a reference frame to begin.</div>
+        </div>
+        <aside class="ocrRegionTools">
+          <label><span>Field</span><select id="ocrRegionField" class="settingsSelect"></select></label>
+          <label><span>Required</span><select id="ocrRegionRequired" class="settingsSelect"><option value="true">Required</option><option value="false">Optional</option></select></label>
+          <label><span>Threshold</span><select id="ocrThresholdMode" class="settingsSelect"><option value="otsu">Otsu</option><option value="adaptive">Adaptive</option><option value="global">Global</option><option value="none">None</option></select></label>
+          <label><span>Scale</span><input id="ocrRegionScale" class="settingsSelect settingsInput" type="number" min="1" max="6" step="0.5" value="2" /></label>
+          <label><span>Morphology</span><select id="ocrRegionMorphology" class="settingsSelect"><option value="none">None</option><option value="open">Open</option><option value="close">Close</option></select></label>
+          <label class="ocrCheckLabel"><input id="ocrRegionGrayscale" type="checkbox" checked /> Grayscale</label>
+          <label class="ocrCheckLabel"><input id="ocrRegionInvert" type="checkbox" /> Invert</label>
+          <button class="ghostBtn" id="ocrRemoveRegionBtn" type="button">Remove Region</button>
+        </aside>
+      </div>
+
+      <div class="ocrRegionList" id="ocrRegionList"></div>
+      <div class="settingsActions">
+        <button class="ghostBtn" id="ocrTestProfileBtn" type="button">Test Profile</button>
+        <button class="secondaryBtn" id="ocrSaveProfileBtn" type="button">Save Profile</button>
+      </div>
+      <div class="settingsNote" id="ocrCalibrationStatus" role="status" aria-live="polite">Not connected.</div>
+      <div class="ocrDiagnostics" id="ocrDiagnostics">
+        <div class="eyebrow">Capture Diagnostics</div>
+        <div class="ocrTestRow"><strong>Samples</strong><span id="ocrDiagSamples">0</span><span>Waiting</span></div>
+        <div class="ocrTestRow"><strong>Burst latency</strong><span id="ocrDiagLatency">p50 — · p95 —</span><span>Gate ≤700 ms</span></div>
+        <div class="ocrTestRow"><strong>Frames</strong><span id="ocrDiagFrames">No captures</span><span id="ocrDiagGate">Not evaluated</span></div>
+      </div>
+      <div class="ocrTestResults" id="ocrTestResults"></div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="ocrReviewOverlay" aria-hidden="true">
+    <div class="overlayCard ocrCalibrationCard">
+      <div class="overlayTitleRow">
+        <div class="overlayTitle">Review OCR Capture</div>
+        <button class="overlayCloseBtn" id="ocrCloseReviewBtn" type="button" aria-label="Close OCR review">✕</button>
+      </div>
+      <div class="overlaySub">Unknown or conflicting fields are excluded from exact calls and learning until corrected.</div>
+      <div id="ocrReviewFields" class="ocrReviewFields"></div>
+      <div class="settingsActions">
+        <button class="ghostBtn" id="ocrRecaptureBtn" type="button">Recapture</button>
+        <button class="secondaryBtn" id="ocrAcceptCorrectionsBtn" type="button">Accept Corrections</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="reportOverlay" aria-hidden="true">
+    <div class="overlayCard reportCard">
+      <div id="reportContent"></div>
+      <div class="overlayActions reportActions">
+        <button class="micBtn" id="newSessionBtn" type="button">New Session</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/recommendationCore.js"></script>
+  <script src="shared/selectionEngine.js"></script>
+  <script src="shared/defenseRecommendationCore.js"></script>
+  <script src="shared/coordinatorReport.js"></script>
+  <script src="shared/penaltyCatalog.js"></script>
+  <script src="ocr/shared/contracts.js"></script>
+  <script src="ocr/shared/confidenceCalibration.js"></script>
+  <script src="ocr/shared/textCatalogMatcher.js"></script>
+  <script src="ocr/shared/temporalConsensus.js"></script>
+  <script src="ocr/shared/footballStateValidator.js"></script>
+  <script src="ocr/shared/snapLifecycle.js"></script>
+  <script src="ocr/shared/defensiveOutcomeInference.js"></script>
+  <script src="ocr/shared/learningProjection.js"></script>
+  <script src="ocr/shared/learnedAdjustment.js"></script>
+  <script src="ocr/shared/exactPlayRecommendation.js"></script>
+  <script src="app.js"></script>
+  <script src="ocr/renderer/ocr-ui.js"></script>
+</body>
+</html>

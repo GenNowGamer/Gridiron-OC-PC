@@ -1,0 +1,91 @@
+{
+  "name": "gridiron-play-advisor-pc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop play-calling assistant for Madden. Ranks offensive and defensive calls from a local playbook using voice input or live HUD capture.",
+  "main": "main.js",
+  "scripts": {
+    "check:ffmpeg-license": "node ./scripts/check-ffmpeg-license.mjs",
+    "check:ocr-license": "node ./scripts/check-ocr-license.mjs",
+    "test:ocr:js": "node --test ./ocr/main/test/*.test.js && node ./scripts/smoke-ocr-domain.mjs",
+    "test:ocr:worker": "powershell -NoProfile -ExecutionPolicy Bypass -File ./ocr-sidecar/test-sidecar.ps1",
+    "test:ocr": "npm run test:ocr:js && npm run test:ocr:worker",
+    "benchmark:ocr": "node ./scripts/benchmark-ocr.mjs",
+    "verify:ocr-package": "node ./scripts/verify-ocr-package.mjs",
+    "build:ocr-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File ./ocr-sidecar/build-sidecar.ps1",
+    "build:capture-bridge": "powershell -NoProfile -ExecutionPolicy Bypass -File ./capture-bridge/build-bridge.ps1",
+    "build:obs-plugin": "powershell -NoProfile -ExecutionPolicy Bypass -File ./obs-plugin/build-plugin.ps1",
+    "start": "powershell -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
+    "dist": "npm run check:ffmpeg-license && npm run build:ocr-worker && npm run build:capture-bridge && npm run check:ocr-license && electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.gridiron.playadvisor.pc",
+    "productName": "Gridiron Play Advisor",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "app.js",
+      "shared/**",
+      "ocr/shared/**",
+      "ocr/renderer/**",
+      "ocr/main/**",
+      "!ocr/main/test/**",
+      "ocr-sidecar/README.md",
+      "OCR_DC_GUIDE.md",
+      "OCR_RELEASE_VALIDATION_CHECKLIST.md",
+      "plays.json",
+      "defensive_plays.json",
+      "THIRD_PARTY_NOTICES.md",
+      "licenses/**",
+      "assets/**",
+      "vendor/whisper/**",
+      "vendor/ffmpeg/**"
+    ],
+    "asarUnpack": [
+      "vendor/whisper/**",
+      "vendor/ffmpeg/**"
+    ],
+    "extraFiles": [
+      {
+        "from": "assets/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "ocr-sidecar/dist/gridiron-ocr-sidecar",
+        "to": "ocr-worker",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "capture-bridge/dist",
+        "to": "capture-bridge",
+        "filter": [
+          "GridironCaptureBridge.exe"
+        ]
+      }
+    ],
+    "afterPack": "./scripts/after-pack-win-icon.mjs",
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": "nsis",
+      "signAndEditExecutable": true
+    },
+    "nsis": {
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "include": "build/installer.nsh"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^26.0.12"
+  }
+}

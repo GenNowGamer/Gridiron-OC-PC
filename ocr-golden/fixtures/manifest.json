@@ -1,0 +1,90 @@
+{
+  "engine": "mock",
+  "profile": {
+    "name": "Synthetic Madden presentation",
+    "presentation": "synthetic-fixture",
+    "rois": [
+      {
+        "id": "down_distance",
+        "x": 0.05,
+        "y": 0.08,
+        "width": 0.55,
+        "height": 0.16,
+        "preprocess": { "grayscale": true, "scale": 1, "threshold": "none" },
+        "ocr": { "psm": 7, "mockText": "3rd & 6", "mockConfidence": 0.98 }
+      },
+      {
+        "id": "field_position",
+        "x": 0.05,
+        "y": 0.32,
+        "width": 0.45,
+        "height": 0.16,
+        "preprocess": { "grayscale": true, "scale": 1, "threshold": "none" },
+        "ocr": { "psm": 7, "mockText": "OWN 40", "mockConfidence": 0.97 }
+      },
+      {
+        "id": "offense_formation_personnel",
+        "x": 0.05,
+        "y": 0.55,
+        "width": 0.7,
+        "height": 0.16,
+        "preprocess": { "grayscale": true, "scale": 1, "threshold": "none" },
+        "ocr": {
+          "psm": 7,
+          "mockText": "Gun - Deuce close - 1 RB 2 TE 2 WR",
+          "mockConfidence": 0.96
+        }
+      }
+    ]
+  },
+  "samples": [
+    {
+      "image": "frame-160x90.png",
+      "expected": {
+        "down_distance": "3rd & 6",
+        "field_position": "OWN 40",
+        "offense_formation_personnel": "Gun - Deuce close - 1 RB 2 TE 2 WR"
+      }
+    },
+    {
+      "image": "down-distance.png",
+      "profile": {
+        "name": "Down crop only",
+        "rois": [
+          {
+            "id": "down_distance",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "preprocess": { "grayscale": true, "scale": 1, "threshold": "none" },
+            "ocr": { "psm": 7, "mockText": "3rd & 6", "mockConfidence": 0.99 }
+          }
+        ]
+      },
+      "expected": { "down_distance": "3rd & 6" }
+    },
+    {
+      "image": "formation.png",
+      "profile": {
+        "name": "Formation personnel crop only",
+        "rois": [
+          {
+            "id": "offense_formation_personnel",
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 1,
+            "preprocess": { "grayscale": true, "scale": 1, "threshold": "none" },
+            "ocr": {
+              "psm": 7,
+              "mockText": "Gun - Deuce close - 1 RB 2 TE 2 WR",
+              "mockConfidence": 0.99
+            }
+          }
+        ]
+      },
+      "expected": { "offense_formation_personnel": "Gun - Deuce close - 1 RB 2 TE 2 WR" }
+    }
+  ]
+}
