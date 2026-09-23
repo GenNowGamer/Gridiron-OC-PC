@@ -36,3 +36,18 @@ Capture Bridge and the OCR worker are optional and build separately (`npm run bu
 ## License notes
 
 Third-party notices are in `THIRD_PARTY_NOTICES.md` and `licenses/`.
+
+Minimum System Requirements:
+
+Windows 10 version 2004, 64-bit, or Windows 11
+A 4-thread 64-bit CPU
+8 GB RAM
+No discrete graphics card
+About 2 GB of free disk space
+
+Recommended System Requirements
+
+A 4-core 64-bit CPU
+16 GB RAM
+No discrete graphics card needed
+About 2 GB of free disk space
