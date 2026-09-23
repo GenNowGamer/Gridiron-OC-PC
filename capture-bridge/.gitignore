@@ -1,7 +1,8 @@
 
 bin/
 obj/
-dist/
+dist/*
+!dist/GridironCaptureBridge.exe
 *.user
 *.suo
 .vs/

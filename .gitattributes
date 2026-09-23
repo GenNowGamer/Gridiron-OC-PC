@@ -1,0 +1,2 @@
+vendor/whisper/model/ggml-base.en.bin filter=lfs diff=lfs merge=lfs -text
+dist/Gridiron[[:space:]]Play[[:space:]]Advisor[[:space:]]Setup[[:space:]]0.1.0.exe filter=lfs diff=lfs merge=lfs -text

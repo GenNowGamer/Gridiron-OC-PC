@@ -1,10 +1,13 @@
-# Dependencies and build output
+# Dependencies and local build caches
 node_modules/
-dist/
 build/out/
 .cache/
 coverage/
 *.zip
+
+# electron-builder unpack/staging repeats the installer. The setup exe is tracked.
+dist/*
+!dist/Gridiron Play Advisor Setup 0.1.0.exe
 
 # Secrets and local config
 .env
@@ -17,22 +20,12 @@ coverage/
 **/*.p12
 **/userData/
 
-# Playbooks stay on the machine that built them
-plays.json
-defensive_plays.json
-**/*play*.json
-
-# Speech and capture runtimes (install or build locally)
-vendor/ffmpeg/runtime/
-vendor/whisper/model/
-vendor/whisper/runtime/
-ocr-sidecar/.venv/
-ocr-sidecar/models/
+# PyInstaller work files and native build intermediates
 ocr-sidecar/build/
-ocr-sidecar/dist/
 capture-bridge/**/bin/
 capture-bridge/**/obj/
 **/__pycache__/
+**/*.py[cod]
 
 # Private captures, logs, and internal notes
 ocr-golden/private/

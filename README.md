@@ -4,17 +4,23 @@ Desktop companion for calling offensive and defensive plays in Madden. It ranks 
 
 Gridiron OC is an independent app. It is not affiliated with, endorsed by, or approved by Electronic Arts, EA SPORTS, the NFL, or any team.
 
+## Included
+
+- Offensive and defensive playbooks (`plays.json`, `defensive_plays.json`)
+- Whisper speech models and runtime, plus the FFmpeg runtime
+- OCR model weights, the OCR Python virtualenv, and the packaged OCR worker
+- Capture Bridge (`capture-bridge/dist/GridironCaptureBridge.exe`)
+- Windows setup installer (`dist/Gridiron Play Advisor Setup 0.1.0.exe`)
+
+The base Whisper model and the setup installer are stored with Git LFS. Install [Git LFS](https://git-lfs.com/) before cloning, or those two files will be pointer text instead of the real binaries.
+
+FFmpeg in this repo is GPL-enabled. Notices are in `licenses/ffmpeg.NOTICE` and `licenses/ffmpeg.GPLv3`.
+
 ## What is not in this repo
 
-These stay local so a clone is not a complete copy of a running install:
-
-- Offensive and defensive playbook files (`plays.json`, `defensive_plays.json`)
-- Whisper speech models and the FFmpeg runtime
-- OCR model weights, Python virtualenvs, and built installers
 - API keys, app secrets, and saved preferences
 - Internal session notes and one-off patch scripts
-
-Place your own `plays.json` and `defensive_plays.json` next to `package.json` before launching.
+- electron-builder unpack and staging folders, which repeat the setup installer
 
 ## Run
 
