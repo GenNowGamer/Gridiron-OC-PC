@@ -1,6 +1,6 @@
 # Gridiron OC PC
 
-Desktop companion for calling offensive and defensive plays in Madden. It ranks calls from a local playbook using Tap & Speak or optional HUD capture.
+Desktop companion for calling offensive and defensive plays currently (only) works with Madden 26. It ranks calls from a local playbook using Tap & Speak or optional HUD capture.
 
 Gridiron OC is an independent app. It is not affiliated with, endorsed by, or approved by Electronic Arts, EA SPORTS, the NFL, or any team.
 
