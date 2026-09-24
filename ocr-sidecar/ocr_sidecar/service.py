@@ -4,7 +4,7 @@ from . import SCHEMA_VERSION, __version__
 from .analysis import analyze_burst, analyze_frame, benchmark_capture
 from .engines import EngineRegistry
 from .errors import SidecarError
-from .images import decode_image_data, decode_image_path, encode_png_data_url, estimate_anchor_drift
+from .images import decode_image_data, decode_image_path, estimate_anchor_drift
 from .obs import ObsClient
 from .profile import validate_profile
 
@@ -25,8 +25,6 @@ class SidecarService:
         handlers = {
             "hello": self.hello,
             "obs.configure": self.obs_configure,
-            "obs.list_sources": self.obs_list_sources,
-            "obs.preview": self.obs_preview,
             "engine.warm": self.engine_warm,
             "profile.test": self.profile_test,
             "capture.benchmark": self.capture_benchmark,
@@ -46,13 +44,13 @@ class SidecarService:
             "schemaVersion": SCHEMA_VERSION,
             "protocol": "json-lines",
             "commands": [
-                "hello", "obs.configure", "obs.list_sources", "obs.preview",
+                "hello", "obs.configure",
                 "engine.warm", "profile.test", "capture.benchmark", "capture.analyze_burst",
                 "capture.cancel", "shutdown",
             ],
             "ocrEngines": self.engines.available(),
             "engineStatus": self.engines.status(),
-            "captureAdapters": ["websocket", "obs-plugin", "capture-bridge"],
+            "captureAdapters": ["capture-bridge"],
             "rawRetentionDefault": False,
         }
 
@@ -61,23 +59,6 @@ class SidecarService:
 
     def obs_configure(self, params):
         return self.obs.configure(params)
-
-    def obs_list_sources(self, _params):
-        return self.obs.list_sources()
-
-    def obs_preview(self, params):
-        source = _source(params)
-        width = _bounded_int(params.get("width", 0), "width", 0, 3840)
-        height = _bounded_int(params.get("height", 0), "height", 0, 1080)
-        frame = decode_image_data(self.obs.screenshot_data(source, width, height))
-        return {
-            "source": source,
-            "imageData": encode_png_data_url(frame),
-            "width": int(frame.shape[1]),
-            "height": int(frame.shape[0]),
-            "format": "png",
-            "retained": False,
-        }
 
     def profile_test(self, params):
         profile = validate_profile(params.get("profile"))
@@ -193,8 +174,8 @@ def _bounded_int(value, name, low, high):
 
 def _adapter(params):
     adapter = params.get("adapter")
-    if adapter is not None and adapter not in ("websocket", "obs-plugin", "capture-bridge"):
-        raise SidecarError("invalid_params", "adapter must be websocket, obs-plugin, or capture-bridge")
+    if adapter is not None and adapter != "capture-bridge":
+        raise SidecarError("invalid_params", "adapter must be capture-bridge")
     return adapter
 
 

@@ -194,7 +194,7 @@ class FakeSidecar extends EventEmitter {
         engine: 'mock',
         framesCaptured: 3,
         elapsedMs: 18,
-        captureAdapters: ['obs-plugin'],
+        captureAdapters: ['capture-bridge'],
         fallbackFrames: 0,
         rois: {
           down_distance: { text: '3rd & 6', confidence: 1, agreement: 1, samples: [] },
@@ -238,6 +238,29 @@ class FakeHotkey extends EventEmitter {
   }
 }
 
+class FakeBridge extends EventEmitter {
+  constructor() {
+    super();
+    this.requests = [];
+  }
+  async start() {
+    return this.getStatus();
+  }
+  async stop() {
+    return this.getStatus();
+  }
+  getStatus() {
+    return { running: true, ready: true };
+  }
+  async request(method, params) {
+    this.requests.push({ method, params });
+    if (method === 'preview.frame') {
+      return { imageData: 'data:image/png;base64,AA==', width: 16, height: 9 };
+    }
+    return {};
+  }
+}
+
 test('integration OCR manager gates capture and returns diagnostics', async (t) => {
   const userData = await temporaryDirectory(t);
   const sidecar = new FakeSidecar();
@@ -248,6 +271,7 @@ test('integration OCR manager gates capture and returns diagnostics', async (t) 
   const manager = new IntegrationOcrManager({
     userData,
     sidecar,
+    bridge: new FakeBridge(),
     hotkey,
     now: () => now,
     loadCatalogs: async () => ({
@@ -277,7 +301,7 @@ test('integration OCR manager gates capture and returns diagnostics', async (t) 
     enabled: true,
     context: { team: 'CHI', opponent: 'DAL' },
     settleDelayMs: 0,
-    adapter: 'obs-plugin',
+    adapter: 'capture-bridge',
     freshFrameTimeoutMs: 750,
   });
   await manager._warmEngine();
@@ -288,13 +312,13 @@ test('integration OCR manager gates capture and returns diagnostics', async (t) 
   assert.equal(response.capture.fields.offense_formation_personnel.value.formation, 'Gun');
   assert.equal(response.capture.fields.offense_formation_personnel.value.set, 'Deuce Close');
   assert.equal(response.diagnostics.samples, 1);
-  assert.equal(response.diagnostics.configuredAdapter, 'obs-plugin');
-  assert.deepEqual(response.diagnostics.captureAdapters, ['obs-plugin']);
+  assert.equal(response.diagnostics.configuredAdapter, 'capture-bridge');
+  assert.deepEqual(response.diagnostics.captureAdapters, ['capture-bridge']);
   const configure = sidecar.requests.findLast((request) => request.method === 'obs.configure');
-  assert.equal(configure.params.adapter, 'obs-plugin');
+  assert.equal(configure.params.adapter, 'capture-bridge');
   assert.equal(configure.params.freshFrameTimeoutMs, 750);
   const burst = sidecar.requests.findLast((request) => request.method === 'capture.analyze_burst');
-  assert.equal(burst.params.adapter, 'obs-plugin');
+  assert.equal(burst.params.adapter, 'capture-bridge');
   assert.ok(sidecar.requests.some((request) => request.method === 'capture.analyze_burst'));
   assert.ok(events.some((event) => event.type === 'capture:complete'));
   await manager.stop();

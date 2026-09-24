@@ -458,10 +458,10 @@ def analyze_burst(
             per_roi[roi_id].append(result)
         if captured < frame_count and cancel_event.wait(interval_ms / 1000):
             raise SidecarError("cancelled", "capture burst was cancelled", {"framesCaptured": captured})
-    websocket_hashes = [
+    frames_without_sequence = [
         item["hash"] for item in frame_metadata if item.get("sourceSequence") is None
     ]
-    duplicate_frames += max(0, len(websocket_hashes) - len(set(websocket_hashes)))
+    duplicate_frames += max(0, len(frames_without_sequence) - len(set(frames_without_sequence)))
     stale_frames = max(stale_frames, count_stale_frames(frame_metadata))
     rois = {
         roi_id: {

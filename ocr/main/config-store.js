@@ -59,7 +59,11 @@ function mergeState(value) {
       ...clone(DEFAULT_STATE.config),
       ...(input.config || {}),
       obs: { ...clone(DEFAULT_STATE.config.obs), ...(input.config && input.config.obs || {}) },
-      capture: { ...clone(DEFAULT_STATE.config.capture), ...(input.config && input.config.capture || {}) },
+      capture: {
+        ...clone(DEFAULT_STATE.config.capture),
+        ...(input.config && input.config.capture || {}),
+        adapter: 'capture-bridge',
+      },
       context: { ...clone(DEFAULT_STATE.config.context), ...(input.config && input.config.context || {}) },
     },
   };

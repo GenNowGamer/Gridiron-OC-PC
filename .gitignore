@@ -7,7 +7,7 @@ coverage/
 
 # electron-builder unpack/staging repeats the installer. The setup exe is tracked.
 dist/*
-!dist/Gridiron Play Advisor Setup 0.1.1.exe
+!dist/Gridiron Play Advisor Setup 0.1.3.exe
 
 # Secrets and local config
 .env

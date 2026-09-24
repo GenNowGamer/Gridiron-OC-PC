@@ -1,6 +1,6 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "private": true,
   "description": "Desktop play-calling assistant for Madden. Ranks offensive and defensive calls from a local playbook using voice input or live HUD capture.",
   "main": "main.js",
@@ -14,7 +14,6 @@
     "verify:ocr-package": "node ./scripts/verify-ocr-package.mjs",
     "build:ocr-worker": "powershell -NoProfile -ExecutionPolicy Bypass -File ./ocr-sidecar/build-sidecar.ps1",
     "build:capture-bridge": "powershell -NoProfile -ExecutionPolicy Bypass -File ./capture-bridge/build-bridge.ps1",
-    "build:obs-plugin": "powershell -NoProfile -ExecutionPolicy Bypass -File ./obs-plugin/build-plugin.ps1",
     "start": "powershell -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
     "dist": "npm run check:ffmpeg-license && npm run build:ocr-worker && npm run build:capture-bridge && npm run check:ocr-license && electron-builder --win nsis"
   },

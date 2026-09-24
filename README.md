@@ -10,7 +10,7 @@ Gridiron OC is an independent app. It is not affiliated with, endorsed by, or ap
 - Whisper speech models and runtime, plus the FFmpeg runtime
 - OCR model weights, the OCR Python virtualenv, and the packaged OCR worker
 - Capture Bridge (`capture-bridge/dist/GridironCaptureBridge.exe`)
-- Windows setup installer (`dist/Gridiron Play Advisor Setup 0.1.1.exe`)
+- Windows setup installer (`dist/Gridiron Play Advisor Setup 0.1.3.exe`)
 
 The base Whisper model and the setup installer are stored with Git LFS. Install [Git LFS](https://git-lfs.com/) before cloning, or those two files will be pointer text instead of the real binaries.
 

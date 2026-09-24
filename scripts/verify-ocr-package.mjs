@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Composite OCR packaging gate (Phase 7 scaffolding).
- * Live OBS/Xbox/installed-app checks remain manual via OCR_RELEASE_VALIDATION_CHECKLIST.md.
+ * Live Xbox/installed-app checks remain manual via OCR_RELEASE_VALIDATION_CHECKLIST.md.
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -68,20 +68,13 @@ if (fs.existsSync(path.join(root, fixtureManifest))) {
   console.log('SKIP golden benchmark (no fixtures/ or private/ manifest yet)');
 }
 
-const pluginDll = path.join('obs-plugin', 'dist', '64bit', 'gridiron-ocr-capture.dll');
-if (fs.existsSync(path.join(root, pluginDll))) {
-  checkExists('OBS shared-frame plugin', pluginDll);
-} else {
-  console.log('SKIP OBS plugin artifact (not built yet)');
-}
-
 const bridgeExe = path.join('capture-bridge', 'dist', 'GridironCaptureBridge.exe');
 if (!fs.existsSync(path.join(root, bridgeExe))) {
   run('build Capture Bridge', 'npm', ['run', 'build:capture-bridge']);
 }
 checkExists('Capture Bridge exe', bridgeExe);
 
-console.log('\nManual remaining gates: Capture Bridge + OBS/Xbox live checklist, installer install, 100-snap attribution.');
+console.log('\nManual remaining gates: Capture Bridge + Xbox live checklist, installer install, 100-snap attribution.');
 if (failures.length) {
   console.error(`\nverify-ocr-package FAILED:\n- ${failures.join('\n- ')}`);
   process.exit(1);

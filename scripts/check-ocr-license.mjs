@@ -34,7 +34,7 @@ if (fs.existsSync(modelRoot)) {
 }
 
 const notices = fs.readFileSync(path.join(pcDir, "THIRD_PARTY_NOTICES.md"), "utf8");
-for (const name of ["NumPy", "OpenCV", "obsws-python", "pytesseract", "PyInstaller", "Tesseract", "PP-OCRv5", "Apache-2.0"]) {
+for (const name of ["NumPy", "OpenCV", "pytesseract", "PyInstaller", "Tesseract", "PP-OCRv5", "Apache-2.0"]) {
   if (!notices.includes(name)) throw new Error(`OCR package/license guard: THIRD_PARTY_NOTICES.md omits ${name}`);
 }
 

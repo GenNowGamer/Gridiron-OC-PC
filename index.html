@@ -269,7 +269,7 @@
               <button class="ghostBtn" id="ocrReviewBtn" type="button" disabled>Review</button>
             </div>
           </div>
-          <div class="ocrDcContext" id="ocrDcContext">Enable OCR Capture in Settings after calibrating an OBS source.</div>
+          <div class="ocrDcContext" id="ocrDcContext">Enable OCR Capture in Settings after calibrating a capture source.</div>
           <div class="ocrDcConfidence" id="ocrDcConfidence" aria-live="polite"></div>
           <!-- Exact Calls / packages render only in #dcRecommendationCard / OC rec card -->
           <div id="ocrExactCallsCard" class="recommendationCard empty ocrExactCallsCard hidden" hidden aria-hidden="true"></div>
@@ -384,7 +384,7 @@
       <div class="ocrSettingsHead">
         <div>
           <div class="eyebrow">Madden OCR</div>
-          <div class="toggleSub">Local OBS capture for OC play calls and DC package / Exact Calls. All switches default off.</div>
+          <div class="toggleSub">Local capture for OC play calls and DC package / Exact Calls. All switches default off.</div>
         </div>
         <span class="ocrStatusPill" id="ocrWorkerPill">Checking</span>
       </div>
@@ -438,7 +438,7 @@
       <div class="overlayTitleRow">
         <div>
           <div class="eyebrow">Madden OCR</div>
-          <div class="overlayTitle">OBS Calibration</div>
+          <div class="overlayTitle">Capture Calibration</div>
         </div>
         <button class="overlayCloseBtn" id="ocrCloseCalibrationBtn" type="button" aria-label="Close OCR calibration">✕</button>
       </div>
@@ -455,9 +455,6 @@
         </label>
         <label class="ocrWideField"><span>Saved profile</span><select id="ocrSavedProfileSelect" class="settingsSelect"><option value="">New profile…</option></select></label>
         <label><span>Profile name</span><input id="ocrProfileName" class="settingsSelect settingsInput" value="Default Presentation" /></label>
-        <label><span>Capture adapter</span><select id="ocrCaptureAdapter" class="settingsSelect"><option value="capture-bridge">Capture Bridge (default)</option><option value="obs-plugin">OBS plugin (legacy)</option><option value="websocket">OBS WebSocket screenshot (diagnostic)</option></select></label>
-        <label id="ocrObsUrlField"><span>OBS URL</span><input id="ocrObsUrl" class="settingsSelect settingsInput" value="ws://127.0.0.1:4455" /></label>
-        <label id="ocrObsPasswordField"><span>OBS password</span><input id="ocrObsPassword" class="settingsSelect settingsInput" type="password" autocomplete="off" /></label>
         <label id="ocrSourceKindField"><span>Source kind</span><select id="ocrSourceKind" class="settingsSelect"><option value="all">All</option><option value="capture-card">Capture card</option><option value="window">PC window</option></select></label>
         <label class="ocrWideField"><span id="ocrSourceSelectLabel">Capture source</span><select id="ocrSourceSelect" class="settingsSelect"></select></label>
       </div>
@@ -471,6 +468,7 @@
         <div class="ocrCanvasWrap" id="ocrCanvasWrap">
           <canvas id="ocrCalibrationCanvas" width="960" height="540"></canvas>
           <div class="ocrCanvasEmpty" id="ocrCanvasEmpty">Capture a reference frame to begin.</div>
+          <div id="ocrDrawRect" class="ocrDrawRect hidden" aria-hidden="true"></div>
         </div>
         <aside class="ocrRegionTools">
           <label><span>Field</span><select id="ocrRegionField" class="settingsSelect"></select></label>

@@ -10,7 +10,6 @@ All three OCR switches remain off until every applicable gate is checked.
 - [x] `npm run build:ocr-worker`
 - [x] Packaged worker responds to `hello` and reports production OCR engines
 - [x] `npm run check:ocr-license`
-- [x] `npm run build:obs-plugin` → `obs-plugin/dist/64bit/gridiron-ocr-capture.dll`
 - [x] `npm run build:capture-bridge` → `capture-bridge/dist/GridironCaptureBridge.exe`
 - [x] `npm run verify:ocr-package` (automated subset)
 - [ ] Private Madden golden benchmark: accepted-field precision ≥99%
@@ -20,14 +19,11 @@ All three OCR switches remain off until every applicable gate is checked.
 
 ## Capture adapters
 
-- [x] Capture adapter defaults to Capture Bridge (`capture-bridge`)
-- [x] OBS plugin (`obs-plugin`) and WebSocket remain available as **manual legacy/diagnostic** adapters (no auto-fallback)
-- [x] OBS WebSocket v5 enabled and localhost-only when using OBS legacy
+- [x] Capture uses Capture Bridge only (`capture-bridge`)
 - [x] Intended Xbox capture-card or Madden window selected in Calibrate capture
 - [ ] Capture Bridge 3-frame burst p95 ≤ 700 ms on validation hardware
-- [ ] Elgato / 4K60 Pro (or target card): Capture Reference succeeds with HDMI live; OBS not holding the device
-- [ ] Unpackaged or rebuilt sidecar accepts adapter `capture-bridge` (no `websocket, obs-plugin`-only error)
-- [ ] OBS legacy path still smoke-tested after Bridge is default
+- [ ] Elgato / 4K60 Pro (or target card): Capture Reference succeeds with HDMI live and no other app holding the device
+- [ ] Unpackaged or rebuilt sidecar accepts adapter `capture-bridge`
 - [ ] Saved profile resolution/aspect matches live source
 - [ ] Presentation label mismatch is rejected when provided
 - [x] At least 20 capture-only samples
@@ -74,12 +70,10 @@ All three OCR switches remain off until every applicable gate is checked.
 - [ ] Prior defensive-play attribution correct across ≥100 labeled snaps (when previous-play ROIs are used)
 - [ ] Zero low-confidence snap learning
 - [ ] Correction and undo rebuild learning correctly
-- [ ] Export contains no raw frames or OBS password
+- [ ] Export contains no raw frames or stored capture passwords
 - [ ] Reset-opponent and full-delete controls verified
 - [ ] Existing DC v2 remains immediately usable after all OCR switches turn off
 
 If a gate fails, stop with OCR disabled. Do not substitute cloud OCR, custom
 training, a larger model, or lower confidence thresholds without a new explicit
-decision. Capture Bridge is the default ingest path; native OBS shared-frame
-plugin remains the approved **manual** legacy backup. Do not remove OBS support
-until Bridge passes live Series X card and PC Madden window gates.
+decision. Capture Bridge is the only OCR ingest path.

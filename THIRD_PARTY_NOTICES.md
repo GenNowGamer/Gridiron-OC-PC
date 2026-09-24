@@ -39,8 +39,6 @@ This desktop app includes open-source software and bundled binaries.
 - NumPy 2.2.6: BSD-3-Clause
 - OpenCV Python Headless 4.12.0.88: Apache-2.0, with wheel third-party notices
 - Pillow 11.3.0: HPND/MIT-CMU, with bundled codec/font notices
-- obsws-python 1.8.0: MIT
-- websocket-client 1.9.2: Apache-2.0
 - pytesseract 0.3.13: Apache-2.0
 - PyInstaller 6.15.0 bootloader: GPL-2.0-or-later with the PyInstaller
   bootloader exception permitting distribution of the generated application

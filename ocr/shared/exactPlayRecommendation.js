@@ -51,6 +51,12 @@
       });
     }
 
+    var exposurePlays = Object.create(null);
+    (Array.isArray(exposurePlayIds) ? exposurePlayIds : []).forEach(function (id) {
+      var key = String(id);
+      exposurePlays[key] = (exposurePlays[key] || 0) + 1;
+    });
+
     absorb(recentPlayIds, recentSets, recentForms);
     absorb(exposurePlayIds, exposureSets, exposureForms);
     return {
@@ -58,10 +64,11 @@
       recentForms: recentForms,
       exposureSets: exposureSets,
       exposureForms: exposureForms,
+      exposurePlays: exposurePlays,
     };
   }
 
-  function varietyAdjustment(traits, memory) {
+  function varietyAdjustment(traits, memory, playId) {
     if (!traits || !memory) return 0;
     var setKey = traits.formationSetKey || "";
     var formKey = traits.formation || "";
@@ -69,13 +76,16 @@
     var confirmedForm = countKeyed(memory.recentForms, formKey);
     var shownSet = countKeyed(memory.exposureSets, setKey);
     var shownForm = countKeyed(memory.exposureForms, formKey);
+    var shownPlay = countKeyed(memory.exposurePlays, playId);
     var tax = 0;
     // Confirmed shells/forms get a strong tax so Exact Calls rotate across snaps.
     tax += Math.min(confirmedSet * 3.25, 9.5);
     tax += Math.min(confirmedForm * 1.75, 5.5);
-    // Merely shown (not confirmed) shells still soften so the same top-3 does not stick.
-    tax += Math.min(shownSet * 1.6, 6.5);
-    tax += Math.min(shownForm * 0.85, 3.5);
+    // The specific call drops so a sibling in the same front can take the next sheet.
+    // The set itself is only softened — exiling the whole front repeats one or two calls.
+    tax += Math.min(shownPlay * 4.5, 9);
+    tax += Math.min(shownSet * 0.85, 2.5);
+    tax += Math.min(shownForm * 0.45, 1.5);
     if (confirmedSet >= 1 && shownSet >= 1) tax += 1.25;
     return -tax;
   }
@@ -94,6 +104,93 @@
     if (confirmedForm === 0 && shownForm === 0) bonus += 0.85;
     else if (confirmedForm === 0 && shownForm <= 1) bonus += 0.4;
     return Math.min(bonus, 2.2);
+  }
+
+  function callMemoryFromPlay(play, core) {
+    if (!play || !play.id) return null;
+    var traits = core.defensivePlayTraitsOf(play);
+    var concept = typeof core.coverageFamilyOf === "function"
+      ? core.coverageFamilyOf(play, traits)
+      : "";
+    return {
+      playId: String(play.id),
+      formationSetKey: traits.formationSetKey || "",
+      conceptKey: concept,
+      coverageFamily: concept,
+      family: typeof core.defensiveFamilyOf === "function" ? core.defensiveFamilyOf(play) : "",
+    };
+  }
+
+  function sheetsFromExposure(exposureSheets, exposurePlayIds, sheetSize) {
+    if (Array.isArray(exposureSheets) && exposureSheets.length) {
+      return exposureSheets.map(function (sheet) {
+        return (Array.isArray(sheet) ? sheet : []).map(function (id) { return String(id); }).filter(Boolean);
+      }).filter(function (sheet) { return sheet.length; });
+    }
+    var ids = (Array.isArray(exposurePlayIds) ? exposurePlayIds : []).map(function (id) {
+      return String(id);
+    }).filter(Boolean);
+    var size = Math.max(1, Number(sheetSize) || 3);
+    var sheets = [];
+    for (var i = 0; i < ids.length; i += size) sheets.push(ids.slice(i, i + size));
+    return sheets;
+  }
+
+  function preferredFrontsForShowing(showing, core) {
+    if (!showing || !core || typeof core.offenseShowingTraitsOf !== "function") return [];
+    var traits = core.offenseShowingTraitsOf(showing);
+    if (!traits) return [];
+    if (traits.isGoalLine) return ["GOAL LINE"];
+    if (traits.isHailMary || traits.isEmpty || traits.isQuads) return ["DIME", "DOLLAR"];
+    if ((traits.wrCount != null && traits.wrCount >= 3) || traits.isSpread || traits.isTrips || traits.isBunch) {
+      return ["NICKEL"];
+    }
+    if ((traits.teCount != null && traits.teCount >= 2) || traits.isTight || traits.isWing) {
+      return ["4-3", "46"];
+    }
+    return [];
+  }
+
+  function buildExactSelectionMemory(plays, recentPlayIds, exposurePlayIds, exposureSheets, core, sheetSize, offenseShowing) {
+    var byId = Object.create(null);
+    (Array.isArray(plays) ? plays : []).forEach(function (play) {
+      if (play && play.id) byId[String(play.id)] = play;
+    });
+    var recentGameCalls = (Array.isArray(recentPlayIds) ? recentPlayIds : []).map(function (id) {
+      return callMemoryFromPlay(byId[String(id)], core) || { playId: String(id) };
+    });
+    var sheets = sheetsFromExposure(exposureSheets, exposurePlayIds, sheetSize);
+    var recommendationExposureHistory = [];
+    sheets.forEach(function (sheet, batchIndex) {
+      sheet.forEach(function (id, rank) {
+        var memory = callMemoryFromPlay(byId[String(id)], core) || { playId: String(id) };
+        recommendationExposureHistory.push(Object.assign({}, memory, {
+          batchId: batchIndex,
+          rank: rank + 1,
+        }));
+      });
+    });
+    return {
+      recentGameCalls: recentGameCalls,
+      recommendationExposureHistory: recommendationExposureHistory,
+      // Ban the exact play after it is shown. Do not ban the front, the coverage
+      // family, or every zone call — those are the similar plays we still want.
+      policy: {
+        altSameFormation: true,
+        preferredFormations: preferredFrontsForShowing(offenseShowing, core),
+        shownPlayBanBatches: 6,
+        shownConceptBanBatches: 0,
+        shownShellBanBatches: 0,
+        shownFamilyBanBatches: 0,
+        sessionPlayCap: 2,
+        sessionPlayRepeatTax: 14,
+        requireUniqueFamilyType: false,
+        requireUniqueShell: false,
+        requireUniqueConcept: true,
+        requireUniqueFormation: false,
+        wildcardTemperature: 1.6,
+      },
+    };
   }
 
   function computeExactPlayRecommendations(params) {
@@ -149,7 +246,7 @@
       var baseScore = core.scoreDefensivePlayCore(play, context, traits);
       baseScore += core.scoreOffenseShowingBias(play, traits, context.offenseShowing);
       var recencyAdjustment = recent[String(play.id)] ? -6.5 : 0;
-      var shellAdjustment = varietyAdjustment(traits, shellMemory);
+      var shellAdjustment = varietyAdjustment(traits, shellMemory, play.id);
       var exploreAdjustment = explorationAdjustment(traits, shellMemory);
       var learningAdjustment = LearnedAdjustment &&
         typeof LearnedAdjustment.adjustmentForPlay === "function"
@@ -181,23 +278,18 @@
         score: total,
       });
     });
-    var selectionMemory = typeof core.buildDefensiveSelectionMemory === "function"
-      ? core.buildDefensiveSelectionMemory({
-        plays: plays,
-        recentPlayIds: recentPlayIds,
-        exposurePlayIds: exposurePlayIds,
-        sheetSize: Number.isFinite(Number(input.limit)) ? Number(input.limit) : 3,
-        policy: input.selectionPolicy,
-      })
-      : { recentGameCalls: [], recommendationExposureHistory: [], policy: null };
+    var limit = Number.isFinite(Number(input.limit)) ? Number(input.limit) : 3;
+    var selectionMemory = buildExactSelectionMemory(
+      plays, recentPlayIds, exposurePlayIds, input.exposureSheets, core, limit, context.offenseShowing
+    );
     var picked = core.pickTopDefensiveRecommendationsCore({
       scored: scored,
-      limit: Number.isFinite(Number(input.limit)) ? Number(input.limit) : 3,
+      limit: limit,
       scoreKey: "_score",
       nearScoreWindow: 3.5,
       recentGameCalls: input.recentGameCalls || selectionMemory.recentGameCalls,
       recommendationExposureHistory: input.recommendationExposureHistory || selectionMemory.recommendationExposureHistory,
-      policy: selectionMemory.policy || undefined,
+      policy: input.selectionPolicy || selectionMemory.policy,
       rng: input.rng,
     });
     return {

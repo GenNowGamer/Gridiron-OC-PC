@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = []
 binaries = []
-hiddenimports = ["cv2", "numpy", "obsws_python", "pytesseract", "PIL", "onnxruntime"]
+hiddenimports = ["cv2", "numpy", "pytesseract", "PIL", "onnxruntime"]
 
 # Preferred HUD engine runtime + PP-OCRv5 recognition model.
 if find_spec("onnxruntime") is not None:

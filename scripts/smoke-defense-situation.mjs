@@ -129,4 +129,55 @@ test("hail mary offense showing still unlocks prevent", () => {
   assert.equal(Defense.shouldExcludeDefensivePlay(preventPlay, ctx), false);
 });
 
+const goalLinePlay = {
+  id: "chi|goal-line|6-2|gl-man",
+  team: "CHI",
+  formation: "Goal Line",
+  set: "6-2",
+  play_name: "GL Man",
+  type: "BLITZ",
+  concepts: ["Man"],
+};
+
+function goalCtx(extra) {
+  return Object.assign({
+    down: 1,
+    yards: 10,
+    goalToGo: false,
+    fieldPosition: { side: "OPP", yardLine: 25 },
+  }, extra);
+}
+
+test("goal line stays off normal downs, short yardage, and long goal-to-go", () => {
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 1, yards: 10, fieldPosition: { side: "OPP", yardLine: 35 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 2, yards: 10, fieldPosition: { side: "OWN", yardLine: 40 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 2, yards: 3, fieldPosition: { side: "OPP", yardLine: 23 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 3, yards: 1, fieldPosition: { side: "OPP", yardLine: 40 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 4, yards: 1, fieldPosition: { side: "OWN", yardLine: 45 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 1, yards: 9, goalToGo: true, fieldPosition: { side: "OPP", yardLine: 9 } })), true);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 2, yards: 17, goalToGo: true, fieldPosition: { side: "OPP", yardLine: 17 } })), true);
+  const early = Defense.buildDefensiveSituationPlan(goalCtx({ down: 1, yards: 10, fieldPosition: { side: "OPP", yardLine: 30 } }));
+  assert.equal(early.preferPackages.includes("goal_line"), false);
+  assert.ok(early.discouragePackages.includes("goal_line"));
+  const short = Defense.buildDefensiveSituationPlan(goalCtx({ down: 3, yards: 1, fieldPosition: { side: "OPP", yardLine: 28 } }));
+  assert.equal(short.preferPackages.includes("goal_line"), false);
+});
+
+test("goal line remains available inside the goal line", () => {
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 1, yards: 2, goalToGo: true, fieldPosition: { side: "OPP", yardLine: 2 } })), false);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 3, yards: 1, goalToGo: true, fieldPosition: { side: "OPP", yardLine: 1 } })), false);
+  assert.equal(Defense.shouldExcludeDefensivePlay(goalLinePlay, goalCtx({ down: 4, yards: 1, fieldPosition: { side: "OPP", yardLine: 1 } })), false);
+  const plan = Defense.buildDefensiveSituationPlan(goalCtx({ down: 1, yards: 2, goalToGo: true, fieldPosition: { side: "OPP", yardLine: 2 } }));
+  assert.equal(plan.preferPackages[0], "goal_line");
+  assert.equal(plan.discouragePackages.includes("goal_line"), false);
+  const sheet = Defense.computeDefensiveRecommendations({
+    plays: [goalLinePlay, nickelPlay],
+    down: 1,
+    yards: 10,
+    goalToGo: false,
+    fieldPosition: { side: "OPP", yardLine: 25 },
+  });
+  assert.equal(sheet.recommendations.some((play) => play.id === goalLinePlay.id), false);
+});
+
 console.log("OK defense situation smoke");

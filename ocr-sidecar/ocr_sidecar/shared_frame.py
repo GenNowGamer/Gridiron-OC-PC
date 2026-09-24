@@ -1,6 +1,7 @@
-"""Binary protocol and Windows reader for the native OBS shared-frame plugin.
+"""Binary protocol and Windows reader for Capture Bridge shared-frame maps.
 
-All integers are little-endian.  The control header is 32 bytes:
+The same header layout was first used by the removed OBS plugin. Production
+capture opens the Cap V1 map names. All integers are little-endian.  The control header is 32 bytes:
   0 magic[8], 8 version:u32, 12 header_size:u32, 16 source_generation:u64,
   24 source_length:u32, 28 source_capacity:u32, then UTF-8 source bytes.
 
@@ -48,7 +49,7 @@ class CapturedFrame:
     source_sequence: int = None
     captured_qpc: int = None
     qpc_frequency: int = None
-    adapter: str = "websocket"
+    adapter: str = "capture-bridge"
     stale: bool = False
     fallback_reason: str = None
 
@@ -138,11 +139,11 @@ class SharedFrameConsumer:
         poll_interval=0.002,
         control_map_name=CONTROL_MAP_NAME,
         frame_map_name=FRAME_MAP_NAME,
-        unavailable_code="obs_plugin_unavailable",
-        unavailable_message="OBS shared-frame plugin is unavailable",
-        timeout_code="obs_plugin_frame_timeout",
-        timeout_message="timed out waiting for a fresh OBS plugin frame",
-        adapter_name="obs-plugin",
+        unavailable_code="shared_frame_unavailable",
+        unavailable_message="shared-frame maps are unavailable",
+        timeout_code="shared_frame_timeout",
+        timeout_message="timed out waiting for a fresh shared frame",
+        adapter_name="capture-bridge",
     ):
         self.backend = backend or WindowsNamedMappingBackend()
         self.poll_interval = poll_interval

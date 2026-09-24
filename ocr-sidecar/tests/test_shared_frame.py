@@ -2,11 +2,9 @@ import threading
 import time
 import unittest
 
-import cv2
 import numpy as np
 
 from ocr_sidecar.errors import SidecarError
-from ocr_sidecar.obs import ObsClient
 from ocr_sidecar.shared_frame import (
     CAP_CONTROL_MAP_NAME,
     CAP_FRAME_MAP_NAME,
@@ -78,7 +76,7 @@ class SharedFrameTests(unittest.TestCase):
         consumer = SharedFrameConsumer(backend=UnavailableBackend())
         with self.assertRaises(SidecarError) as raised:
             consumer.capture("Gameplay", 0.01)
-        self.assertEqual("obs_plugin_unavailable", raised.exception.code)
+        self.assertEqual("shared_frame_unavailable", raised.exception.code)
 
     def test_source_switch_waits_for_fresh_sequence_and_decodes_bgra(self):
         backend = MemoryBackend()
@@ -107,7 +105,7 @@ class SharedFrameTests(unittest.TestCase):
         consumer._read_consistent = lambda minimum_sequence: CapturedFrame(
             image=np.zeros((2, 2, 3), dtype=np.uint8),
             source_sequence=minimum_sequence,
-            adapter="obs-plugin",
+            adapter="capture-bridge",
         )
         consumer.capture("Gameplay", 0.5)
 
@@ -116,33 +114,6 @@ class SharedFrameTests(unittest.TestCase):
         )[3]
         self.assertEqual(0, generation)
         self.assertEqual("Gameplay", consumer.selected_source)
-
-    def test_obs_plugin_falls_back_to_websocket(self):
-        import base64
-        ok, encoded = cv2.imencode(".png", np.zeros((2, 2, 3), dtype=np.uint8))
-        self.assertTrue(ok)
-        png = "data:image/png;base64," + base64.b64encode(encoded.tobytes()).decode("ascii")
-
-        class Api:
-            def __init__(self, **_config):
-                pass
-
-            def get_source_screenshot(self, *_args):
-                return type("Response", (), {"image_data": png})()
-
-        class MissingPlugin:
-            def capture(self, *_args, **_kwargs):
-                raise SidecarError("obs_plugin_unavailable", "absent")
-
-            def close(self):
-                pass
-
-        obs = ObsClient(client_factory=Api, plugin_consumer=MissingPlugin())
-        obs.configure({"adapter": "obs-plugin", "pluginFallback": True})
-        result = obs.capture_frame("Gameplay")
-        self.assertIsInstance(result, CapturedFrame)
-        self.assertEqual("websocket", result.adapter)
-        self.assertEqual("obs_plugin_unavailable", result.fallback_reason)
 
     def test_capture_bridge_maps_use_cap_names(self):
         backend = MemoryBackend()

@@ -2,7 +2,6 @@
 # its platform-specific PaddlePaddle runtime and model files must be provisioned separately.
 numpy==2.2.6
 opencv-python-headless==4.12.0.88
-obsws-python==1.8.0
 pytesseract==0.3.13
 Pillow==11.3.0
 pyinstaller==6.15.0

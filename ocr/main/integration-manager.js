@@ -55,24 +55,6 @@ function percentile(values, p) {
   return ordered[Math.min(ordered.length - 1, Math.ceil(ordered.length * p) - 1)];
 }
 
-function parseObsConfig(input = {}) {
-  const value = input || {};
-  if (value.url) {
-    const url = new URL(value.url);
-    if (!['ws:', 'wss:'].includes(url.protocol)) throw new Error('OBS URL must use ws:// or wss://');
-    return {
-      host: url.hostname || '127.0.0.1',
-      port: Number(url.port) || (url.protocol === 'wss:' ? 443 : 4455),
-      password: clean(value.password),
-    };
-  }
-  return {
-    host: clean(value.host) || '127.0.0.1',
-    port: Number(value.port) || 4455,
-    password: clean(value.password),
-  };
-}
-
 function defaultRoiPsm(fieldId) {
   return MULTILINE_FIELDS.has(clean(fieldId)) ? 6 : 7;
 }
@@ -170,19 +152,6 @@ function sidecarProfile(profile, options = {}) {
     if (referenceImage) payload.referenceImageBase64 = referenceImage;
   }
   return payload;
-}
-
-function normalizeSources(result) {
-  const sources = [];
-  for (const input of result && result.inputs || []) {
-    const name = clean(input.inputName || input.name || input.input_name);
-    if (name) sources.push({ id: name, name, kind: clean(input.inputKind || input.kind) || 'input' });
-  }
-  for (const scene of result && result.scenes || []) {
-    const name = clean(scene.sceneName || scene.name || scene.scene_name);
-    if (name) sources.push({ id: name, name, kind: 'scene' });
-  }
-  return sources.filter((source, index) => sources.findIndex((item) => item.id === source.id) === index);
 }
 
 function parseDownDistance(value) {
@@ -538,7 +507,6 @@ class IntegrationOcrManager extends EventEmitter {
     };
     const config = { ...current.config };
     if (patch.hotkey != null) config.hotkey = clean(patch.hotkey) || current.config.hotkey;
-    if (patch.obs) config.obs = { ...current.config.obs, ...parseObsConfig(patch.obs) };
     if (patch.context) {
       const role = clean(patch.context.role || patch.context.hostRole || current.config.context.role).toLowerCase();
       config.context = {
@@ -550,17 +518,13 @@ class IntegrationOcrManager extends EventEmitter {
         oppScore: Math.max(0, Math.min(99, Number(patch.context.oppScore) || 0)),
       };
     }
-    if (patch.adapter != null && !['websocket', 'obs-plugin', 'capture-bridge'].includes(patch.adapter)) {
-      throw new Error('Capture adapter must be websocket, obs-plugin, or capture-bridge.');
-    }
     if (patch.burstFrames != null || patch.frameCount != null || patch.settleDelayMs != null
-        || patch.intervalMs != null || patch.adapter != null || patch.pluginFallback != null
+        || patch.intervalMs != null || patch.adapter != null
         || patch.freshFrameTimeoutMs != null || patch.sourceId != null) {
       config.capture = {
         ...current.config.capture,
-        adapter: patch.adapter || current.config.capture.adapter,
-        pluginFallback: patch.pluginFallback == null
-          ? current.config.capture.pluginFallback : patch.pluginFallback === true,
+        adapter: 'capture-bridge',
+        pluginFallback: false,
         freshFrameTimeoutMs: Math.max(10, Math.min(
           10000,
           Number(patch.freshFrameTimeoutMs) || current.config.capture.freshFrameTimeoutMs,
@@ -602,86 +566,44 @@ class IntegrationOcrManager extends EventEmitter {
     return id;
   }
 
-  async _configureCapture(input = {}) {
+  async _configureCapture() {
     const current = this.store.get();
     const capture = current.config.capture;
-    if (capture.adapter === 'capture-bridge') {
-      await this._ensureBridge();
-      await this.sidecar.start();
-      await this.sidecar.request('obs.configure', {
-        host: current.config.obs.host,
-        port: current.config.obs.port,
-        password: current.config.obs.password,
-        adapter: 'capture-bridge',
-        pluginFallback: false,
-        freshFrameTimeoutMs: capture.freshFrameTimeoutMs,
-      });
-      return current.config.obs;
-    }
-    return this._configureObs(input);
-  }
-
-  async _configureObs(input) {
-    const current = this.store.get();
-    const obs = parseObsConfig(input && Object.keys(input).length ? input : current.config.obs);
-    const capture = current.config.capture;
-    const runtime = {
-      ...obs,
-      adapter: capture.adapter === 'capture-bridge' ? 'obs-plugin' : capture.adapter,
-      pluginFallback: capture.pluginFallback,
-      freshFrameTimeoutMs: capture.freshFrameTimeoutMs,
-    };
+    await this._ensureBridge();
     await this.sidecar.start();
-    await this.sidecar.request('obs.configure', runtime);
-    await this.store.update({ config: { ...current.config, obs } });
-    return obs;
+    await this.sidecar.request('obs.configure', {
+      adapter: 'capture-bridge',
+      freshFrameTimeoutMs: capture.freshFrameTimeoutMs,
+    });
+    return current.config.capture;
   }
 
-  async listSources(obs) {
-    const state = this.store.get();
-    if (state.config.capture.adapter === 'capture-bridge') {
-      const bridge = await this._ensureBridge();
-      const result = await bridge.request('sources.list', {});
-      const sources = Array.isArray(result.sources) ? result.sources.map((item) => ({
-        id: clean(item.id || item.name),
-        name: clean(item.label || item.name || item.id),
-        kind: clean(item.kind) || 'unknown',
-        hint: clean(item.hint),
-        available: item.available !== false,
-      })).filter((item) => item.id) : [];
-      return { sources };
-    }
-    await this._configureObs(obs || {});
-    return { sources: normalizeSources(await this.sidecar.request('obs.list_sources', {})) };
+  async listSources() {
+    const bridge = await this._ensureBridge();
+    const result = await bridge.request('sources.list', {});
+    const sources = Array.isArray(result.sources) ? result.sources.map((item) => ({
+      id: clean(item.id || item.name),
+      name: clean(item.label || item.name || item.id),
+      kind: clean(item.kind) || 'unknown',
+      hint: clean(item.hint),
+      available: item.available !== false,
+    })).filter((item) => item.id) : [];
+    return { sources };
   }
 
   async captureReference(args = {}) {
     const state = this.store.get();
-    if (state.config.capture.adapter === 'capture-bridge') {
-      const source = clean(
-        args.source && (args.source.id || args.source.name) || args.source || state.config.capture.sourceId,
-      );
-      await this._selectBridgeSource(source);
-      const result = await this.bridge.request('preview.frame', { width: Number(args.width) || 960 });
-      await this.store.update({
-        config: {
-          ...state.config,
-          capture: { ...state.config.capture, sourceId: source },
-        },
-      });
-      return {
-        reference: {
-          source,
-          dataUrl: result.imageData,
-          width: Number(result.width) || 0,
-          height: Number(result.height) || 0,
-          hash: crypto.createHash('sha256').update(result.imageData || '').digest('hex'),
-        },
-      };
-    }
-    await this._configureObs(args.obs || {});
-    const source = clean(args.source && (args.source.id || args.source.name) || args.source);
-    const result = await this.sidecar.request('obs.preview', { source, width: 0, height: 0 });
+    const source = clean(
+      args.source && (args.source.id || args.source.name) || args.source || state.config.capture.sourceId,
+    );
+    await this._selectBridgeSource(source);
+    const result = await this.bridge.request('preview.frame', { width: Number(args.width) || 960 });
+    await this.store.update({
+      config: {
+        ...state.config,
+        capture: { ...state.config.capture, sourceId: source },
+      },
+    });
     return {
       reference: {
         source,
@@ -702,7 +624,7 @@ class IntegrationOcrManager extends EventEmitter {
       || state.config.capture.sourceId
       || (profile && profile.source && (profile.source.id || profile.source.name)),
     );
-    await this._configureCapture({ ...state.config.obs, ...(args.obs || {}) });
+    await this._configureCapture();
     if (state.config.capture.adapter === 'capture-bridge') {
       await this._selectBridgeSource(source);
       if (source && source !== state.config.capture.sourceId) {
@@ -772,7 +694,7 @@ class IntegrationOcrManager extends EventEmitter {
       freshFrameTimeoutMs: state.config.capture.freshFrameTimeoutMs,
     };
     const imagePath = clean(args.imagePath || (args.reference && args.reference.imagePath));
-    // Prefer a live plugin/websocket frame over shipping a full 4K reference payload.
+    // Prefer a live Capture Bridge frame over shipping a full 4K reference payload.
     if (imagePath) {
       params.imagePath = imagePath;
     } else if (args.useReferenceImage === true) {
@@ -873,7 +795,7 @@ class IntegrationOcrManager extends EventEmitter {
       const expectedAspect = Number(profile.reference && profile.reference.aspectRatio);
       const actualAspect = frameMeta && frameMeta.height ? Number(frameMeta.width) / Number(frameMeta.height) : 0;
       if (expectedAspect && actualAspect && Math.abs(actualAspect / expectedAspect - 1) > 0.015) {
-        throw Object.assign(new Error('OBS source aspect ratio no longer matches the active OCR profile.'), {
+        throw Object.assign(new Error('Capture source aspect ratio no longer matches the active OCR profile.'), {
           code: 'OCR_PROFILE_MISMATCH',
           expectedAspect,
           actualAspect,
@@ -1402,7 +1324,15 @@ class IntegrationOcrManager extends EventEmitter {
           /\b\d\s*TE\b/i.test(clean(value.set) || clean(value.personnel))
           || /\b\d\s*WR\b/i.test(clean(value.set) || clean(value.personnel))
         )
-        && framesAgree >= (2 / 3)
+        && (
+          framesAgree >= (2 / 3)
+          // Glued personnel bar ("1RB - 1TE 3WR") is one deterministic string.
+          // A single disagreeing burst frame should not send it back to review.
+          || (
+            /^\d\s*RB$/i.test(clean(value.formation))
+            && /^\d\s*TE\s+\d\s*WR$/i.test(clean(value.set) || clean(value.personnel))
+          )
+        )
       ) {
         accepted = true;
         if (!Array.isArray(decision.reasons)) decision.reasons = [];
@@ -1953,8 +1883,6 @@ class IntegrationOcrManager extends EventEmitter {
 module.exports = {
   IntegrationOcrManager,
   sidecarProfile,
-  parseObsConfig,
-  normalizeSources,
   parseDownDistance,
   defaultRoiWhitelist,
 };

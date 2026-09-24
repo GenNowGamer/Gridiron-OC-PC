@@ -770,9 +770,16 @@
     const pool = eligible.length ? eligible : (softPool.length ? softPool : []);
 
     const slate = [];
+    const preferredForms = (Array.isArray(policy.preferredFormations) ? policy.preferredFormations : [])
+      .map(function (name) { return upper(name); })
+      .filter(Boolean);
+    function inPreferredBand(item) {
+      return preferredForms.indexOf(item && item._selectionFormation) >= 0;
+    }
+    const bandPool = preferredForms.length ? pool.filter(inPreferredBand) : [];
 
-    // --- Slot 1: Primary / exploitation ---
-    const primary = pool.find(function (item) {
+    const primarySource = bandPool.length ? bandPool : pool;
+    const primary = primarySource.find(function (item) {
       return canAdd(item, slate, policy, { allowBanned: !eligible.length }).ok;
     }) || null;
     if (primary) {
@@ -780,7 +787,16 @@
       debug.pickReasons.push({ rank: 1, id: primary._selectionPlayId, via: "primary" });
     }
 
-    // --- Slot 2: Alt formation / complementary counter ---
+    if (bandPool.length && slate.length < limit) {
+      const sibling = pool.find(function (item) {
+        return inPreferredBand(item) && canAdd(item, slate, policy, { allowBanned: !eligible.length }).ok;
+      }) || null;
+      if (sibling) {
+        slate.push(sibling);
+        debug.pickReasons.push({ rank: slate.length, id: sibling._selectionPlayId, via: "personnel_band" });
+      }
+    }
+
     if (slate.length < limit) {
       const counters = pool
         .filter(function (item) {

@@ -1065,6 +1065,7 @@ body {
   border-radius: 14px;
   overflow: hidden;
   background: #03070c;
+  touch-action: none;
 }
 
 #ocrCalibrationCanvas {
@@ -1072,6 +1073,17 @@ body {
   width: 100%;
   height: auto;
   cursor: crosshair;
+  touch-action: none;
+}
+
+.ocrDrawRect {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  border: 3px solid #ffb86b;
+  outline: 2px solid #ffffff;
+  background: rgba(255, 184, 107, 0.2);
+  pointer-events: none;
 }
 
 .ocrCanvasEmpty {

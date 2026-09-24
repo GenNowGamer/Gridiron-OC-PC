@@ -37,14 +37,6 @@
     retainDebugFrames: false,
   });
 
-  function normalizeAdapter(value) {
-    if (value === "websocket" || value === "obs-plugin" || value === "capture-bridge") return value;
-    return "capture-bridge";
-  }
-
-  function isBridgeAdapter(adapter) {
-    return normalizeAdapter(adapter) === "capture-bridge";
-  }
   const PRESENTATION_STYLES = Object.freeze([
     "Default Presentation",
     "Sunday Night Football",
@@ -63,6 +55,7 @@
     regions: [],
     selectedRegion: -1,
     drawing: null,
+    calibrationDraft: false,
     referenceBitmap: null,
     latestCapture: null,
     defensivePlays: [],
@@ -129,6 +122,8 @@
     return Boolean(findProfileForPresentation(style));
   }
 
+  let ignoreSelectChange = 0;
+
   function renderPresentationSelect(selectedStyle) {
     if (!ui.presentationSelect) return;
     const selected = canonicalPresentationStyle(selectedStyle || selectedPresentationStyle());
@@ -138,11 +133,13 @@
       extras.push(raw);
     }
     const options = [...PRESENTATION_STYLES, ...extras];
+    ignoreSelectChange += 1;
     ui.presentationSelect.innerHTML = options.map((style) => {
       const calibrated = presentationHasProfile(style);
       const label = calibrated ? `${style} · calibrated` : style;
       return `<option value="${escapeHtml(style)}"${normalizePresentationKey(style) === normalizePresentationKey(selected) ? " selected" : ""}>${escapeHtml(label)}</option>`;
     }).join("");
+    ignoreSelectChange -= 1;
   }
 
   async function activateProfile(profile) {
@@ -165,16 +162,19 @@
     const style = selectedPresentationStyle();
     const existing = findProfileForPresentation(style);
     if (existing) {
+      local.calibrationDraft = false;
       hydrateCalibrationFromProfile(existing);
       await activateProfile(existing);
       setCalibrationStatus(`Loaded “${text(existing.name) || style}” for ${style}.`);
       return;
     }
+    local.calibrationDraft = true;
     local.activeProfile = null;
     local.regions = [];
     local.selectedRegion = -1;
     local.reference = null;
     local.referenceBitmap = null;
+    local.drawing = null;
     if (ui.profileName) ui.profileName.value = style;
     renderPresentationSelect(style);
     renderSavedProfileSelect();
@@ -191,27 +191,18 @@
       exactCallsEnabled: incoming.exactCallsEnabled === true,
       learningEnabled: incoming.learningEnabled === true,
       hotkey: text(incoming.hotkey) || DEFAULT_CONFIG.hotkey,
-      adapter: normalizeAdapter(incoming.adapter),
+      adapter: "capture-bridge",
       settleDelayMs: Math.max(0, Math.min(2000, Number(incoming.settleDelayMs) || DEFAULT_CONFIG.settleDelayMs)),
       burstFrames: Math.max(1, Math.min(5, Number(incoming.burstFrames) || DEFAULT_CONFIG.burstFrames)),
       retainDebugFrames: incoming.retainDebugFrames === true,
-      obs: incoming.obs && typeof incoming.obs === "object" ? incoming.obs : {},
       activeProfileId: text(incoming.activeProfileId),
       sourceId: text(incoming.sourceId),
     };
   }
 
   function syncAdapterUi() {
-    const bridge = isBridgeAdapter(local.config.adapter);
-    if (ui.obsUrlField) ui.obsUrlField.classList.toggle("hidden", bridge);
-    if (ui.obsPasswordField) ui.obsPasswordField.classList.toggle("hidden", bridge);
-    if (ui.sourceKindField) ui.sourceKindField.classList.toggle("hidden", !bridge);
-    if (ui.sourceSelectLabel) {
-      ui.sourceSelectLabel.textContent = bridge ? "Capture source" : "OBS scene or input";
-    }
-    if (ui.connectObsBtn) {
-      ui.connectObsBtn.textContent = bridge ? "Refresh sources" : "Connect & List Sources";
-    }
+    if (ui.sourceSelectLabel) ui.sourceSelectLabel.textContent = "Capture source";
+    if (ui.connectObsBtn) ui.connectObsBtn.textContent = "Refresh sources";
   }
 
   function updateToggle(button, enabled) {
@@ -320,7 +311,7 @@
         ? `Watching ${profileSourceName(local.activeProfile)}; capture is user-triggered only.`
         : warming
           ? "OCR capture is on; waiting for the local OCR engine to finish warm-up."
-          : "Enable OCR Capture in Settings after calibrating an OBS source.";
+          : "Enable OCR Capture in Settings after calibrating a capture source.";
     }
     if (ui.strip) {
       ui.strip.setAttribute(
@@ -586,6 +577,7 @@
           learningSnapshot: local.config.learningEnabled ? capture?.learningSnapshot : null,
           recentPlayIds,
           exposurePlayIds,
+          exposureSheets: Array.isArray(variety.exposureSheets) ? variety.exposureSheets : [],
           limit: 3,
         });
         const recommendations = result?.recommendations || [];
@@ -791,14 +783,33 @@
 
   async function refreshState() {
     if (!desktop().ocrGetStatus) return;
+    const drafting = local.calibrationDraft === true;
+    const draft = drafting ? {
+      style: text(ui.presentationSelect?.value),
+      name: text(ui.profileName?.value),
+      regions: local.regions,
+      selectedRegion: local.selectedRegion,
+      reference: local.reference,
+      referenceBitmap: local.referenceBitmap,
+    } : null;
     try {
       const result = await desktop().ocrGetStatus();
       local.config = normalizeConfig(result?.config);
       local.profiles = Array.isArray(result?.profiles) ? result.profiles : [];
-      local.activeProfile = result?.activeProfile
-        || local.profiles.find((profile) => profile.id === local.config.activeProfileId)
-        || null;
-      renderPresentationSelect(local.activeProfile?.presentation || DEFAULT_PRESENTATION_STYLE);
+      if (draft) {
+        local.activeProfile = null;
+        local.regions = draft.regions;
+        local.selectedRegion = draft.selectedRegion;
+        local.reference = draft.reference;
+        local.referenceBitmap = draft.referenceBitmap;
+        renderPresentationSelect(draft.style);
+        if (ui.profileName) ui.profileName.value = draft.name || draft.style;
+      } else {
+        local.activeProfile = result?.activeProfile
+          || local.profiles.find((profile) => profile.id === local.config.activeProfileId)
+          || null;
+        renderPresentationSelect(local.activeProfile?.presentation || DEFAULT_PRESENTATION_STYLE);
+      }
       renderSavedProfileSelect();
       renderSettings(result || {});
       renderStrip(result || {});
@@ -832,7 +843,7 @@
   async function triggerCapture() {
     if (!desktop().ocrCapture) return;
     if (ui.captureBtn) ui.captureBtn.disabled = true;
-    if (ui.status) ui.status.textContent = "Capturing OBS burst…";
+    if (ui.status) ui.status.textContent = "Capturing…";
     try {
       const scoreboard = readOcScoreboard();
       const result = await desktop().ocrCapture({
@@ -868,7 +879,7 @@
     if (!ui.sourceSelect) return;
     const kindFilter = text(ui.sourceKind?.value) || "all";
     const visible = local.sources.filter((source) => {
-      if (!isBridgeAdapter(local.config.adapter) || kindFilter === "all") return true;
+      if (kindFilter === "all") return true;
       return text(source.kind) === kindFilter;
     });
     ui.sourceSelect.innerHTML = visible.length
@@ -886,26 +897,18 @@
   }
 
   async function connectObs() {
-    const adapter = normalizeAdapter(ui.captureAdapter?.value);
-    const bridge = isBridgeAdapter(adapter);
-    setCalibrationStatus(bridge ? "Listing Capture Bridge sources…" : "Connecting to OBS…");
-    const obs = { url: text(ui.obsUrl?.value), password: text(ui.obsPassword?.value) };
+    setCalibrationStatus("Listing Capture Bridge sources…");
     try {
       if (!desktop().ocrListSources) throw new Error("OCR source discovery is unavailable.");
-      await desktop().ocrUpdateConfig?.({ obs, adapter, pluginFallback: false });
-      const result = await desktop().ocrListSources(bridge ? {} : obs);
+      await desktop().ocrUpdateConfig?.({ adapter: "capture-bridge" });
+      const result = await desktop().ocrListSources({});
       local.sources = Array.isArray(result?.sources) ? result.sources : (Array.isArray(result) ? result : []);
-      local.config.adapter = adapter;
-      if (!bridge) {
-        local.config.obs = { ...obs, password: obs.password ? "__stored__" : "" };
-      }
+      local.config.adapter = "capture-bridge";
       syncAdapterUi();
       renderSources();
-      setCalibrationStatus(bridge
-        ? `Capture Bridge ready. ${local.sources.length} source(s) available.`
-        : `Connected. ${local.sources.length} scene/input source(s) available.`);
+      setCalibrationStatus(`Capture Bridge ready. ${local.sources.length} source(s) available.`);
     } catch (error) {
-      setCalibrationStatus(`${bridge ? "Capture Bridge" : "OBS"} connection failed: ${text(error?.message || error)}`, true);
+      setCalibrationStatus(`Capture Bridge connection failed: ${text(error?.message || error)}`, true);
     }
   }
 
@@ -927,7 +930,7 @@
       };
       image.onerror = () => {
         local.referenceBitmap = null;
-        reject(new Error("Could not decode the OBS reference image."));
+        reject(new Error("Could not decode the reference image."));
       };
       image.src = dataUrl;
     });
@@ -940,15 +943,11 @@
     try {
       const sourceId = sourceValue(source);
       await desktop().ocrUpdateConfig?.({
-        adapter: normalizeAdapter(local.config.adapter),
+        adapter: "capture-bridge",
         sourceId,
-        pluginFallback: false,
       });
       local.config.sourceId = sourceId;
-      const result = await desktop().ocrCaptureReference({
-        obs: { url: text(ui.obsUrl?.value), password: text(ui.obsPassword?.value) },
-        source,
-      });
+      const result = await desktop().ocrCaptureReference({ source });
       local.reference = result?.reference || result;
       const dataUrl = imageFromReference(local.reference);
       const image = await loadReferenceBitmap(dataUrl);
@@ -967,9 +966,7 @@
   async function benchmarkCapture() {
     setCalibrationStatus("Capturing a 3-frame diagnostics sample…");
     try {
-      const result = await desktop().ocrBenchmarkCapture({
-        obs: { url: text(ui.obsUrl?.value), password: text(ui.obsPassword?.value) },
-      });
+      const result = await desktop().ocrBenchmarkCapture({});
       const diagnostics = result?.diagnostics || {};
       renderSettings({ diagnostics, worker: { ready: true }, hotkey: {} });
       setCalibrationStatus(`Capture sample complete: ${Math.round(Number(result?.sample?.elapsedMs || 0))} ms. Run at least 20 samples before evaluating p95.`);
@@ -980,49 +977,34 @@
 
   function canvasPoint(event) {
     const rect = ui.canvas.getBoundingClientRect();
+    const width = rect.width || ui.canvas.offsetWidth || ui.canvas.width || 1;
+    const height = rect.height || ui.canvas.offsetHeight || ui.canvas.height || 1;
     return {
-      x: clamp01((event.clientX - rect.left) / rect.width),
-      y: clamp01((event.clientY - rect.top) / rect.height),
+      x: clamp01((event.clientX - rect.left) / width),
+      y: clamp01((event.clientY - rect.top) / height),
     };
   }
 
-  function regionStrokeStyle(region, index) {
-    return index === local.selectedRegion ? "#ffd166" : "#7dd3fc";
-  }
-
-  function paintRegionRect(ctx, region, index) {
-    const x = region.x * ui.canvas.width;
-    const y = region.y * ui.canvas.height;
-    const width = region.width * ui.canvas.width;
-    const height = region.height * ui.canvas.height;
-    const color = regionStrokeStyle(region, index);
-    const selected = index === local.selectedRegion;
-    ctx.save();
-    if (selected) {
-      ctx.shadowColor = "rgba(255, 209, 102, 0.55)";
-      ctx.shadowBlur = 8;
+  function updateDrawRect() {
+    const el = ui.drawRect;
+    if (!el || !ui.canvas) return;
+    const drawing = local.drawing;
+    if (!drawing?.start || !drawing?.current) {
+      el.classList.add("hidden");
+      return;
     }
-    ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(selected ? 3.5 : 2.5, ui.canvas.width / 520);
-    ctx.setLineDash([]);
-    ctx.strokeRect(x, y, width, height);
-    // High-contrast inner hairline so boxes stay visible on dark HUD chrome.
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255,255,255,0.9)";
-    ctx.lineWidth = Math.max(1, ui.canvas.width / 900);
-    ctx.strokeRect(x + 1, y + 1, Math.max(0, width - 2), Math.max(0, height - 2));
-    ctx.restore();
-
-    const label = FIELD_DEFINITIONS.find(([id]) => id === region.field)?.[1] || region.field;
-    const labelWidth = Math.min(width, Math.max(120, label.length * 7.2));
-    ctx.fillStyle = "rgba(3,7,12,.88)";
-    ctx.fillRect(x, y, labelWidth, 24);
-    ctx.fillStyle = color;
-    ctx.font = `600 ${Math.max(12, ui.canvas.width / 80)}px Segoe UI`;
-    ctx.fillText(label, x + 6, y + 17);
+    const x = Math.min(drawing.start.x, drawing.current.x);
+    const y = Math.min(drawing.start.y, drawing.current.y);
+    const width = Math.abs(drawing.current.x - drawing.start.x) * ui.canvas.offsetWidth;
+    const height = Math.abs(drawing.current.y - drawing.start.y) * ui.canvas.offsetHeight;
+    el.style.left = `${ui.canvas.offsetLeft + x * ui.canvas.offsetWidth}px`;
+    el.style.top = `${ui.canvas.offsetTop + y * ui.canvas.offsetHeight}px`;
+    el.style.width = `${Math.max(0, width)}px`;
+    el.style.height = `${Math.max(0, height)}px`;
+    el.classList.remove("hidden");
   }
 
-  function paintDrawingRect(ctx) {
+  function paintLiveRect(ctx) {
     if (!local.drawing?.start || !local.drawing?.current) return;
     const start = local.drawing.start;
     const current = local.drawing.current;
@@ -1030,34 +1012,57 @@
     const y = Math.min(start.y, current.y) * ui.canvas.height;
     const width = Math.abs(current.x - start.x) * ui.canvas.width;
     const height = Math.abs(current.y - start.y) * ui.canvas.height;
+    if (!(width > 0) || !(height > 0)) return;
     ctx.save();
-    ctx.shadowColor = "#00ffa8";
-    ctx.shadowBlur = 16;
-    ctx.strokeStyle = "#00ffa8";
-    ctx.fillStyle = "rgba(0, 255, 168, 0.14)";
-    ctx.lineWidth = Math.max(3, ui.canvas.width / 480);
-    ctx.setLineDash([10, 6]);
+    ctx.shadowBlur = 0;
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255, 184, 107, 0.18)";
+    ctx.strokeStyle = "#ffb86b";
+    ctx.lineWidth = Math.max(3, ui.canvas.width / 420);
     ctx.fillRect(x, y, width, height);
     ctx.strokeRect(x, y, width, height);
-    ctx.setLineDash([]);
-    ctx.shadowBlur = 0;
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = Math.max(1.5, ui.canvas.width / 800);
-    ctx.strokeRect(x + 1, y + 1, Math.max(0, width - 2), Math.max(0, height - 2));
+    ctx.strokeRect(x + 2, y + 2, Math.max(0, width - 4), Math.max(0, height - 4));
     ctx.restore();
+  }
+
+  function paintSavedRegions(ctx) {
+    local.regions.forEach((region, index) => {
+      const x = region.x * ui.canvas.width;
+      const y = region.y * ui.canvas.height;
+      const width = region.width * ui.canvas.width;
+      const height = region.height * ui.canvas.height;
+      ctx.strokeStyle = index === local.selectedRegion ? "#ffb86b" : "#8fb8ff";
+      ctx.lineWidth = Math.max(2, ui.canvas.width / 600);
+      ctx.strokeRect(x, y, width, height);
+      ctx.fillStyle = "rgba(3,7,12,.82)";
+      ctx.fillRect(x, y, Math.min(width, 210), 24);
+      ctx.fillStyle = "#fff";
+      ctx.font = `${Math.max(12, ui.canvas.width / 80)}px Segoe UI`;
+      ctx.fillText(FIELD_DEFINITIONS.find(([id]) => id === region.field)?.[1] || region.field, x + 5, y + 17);
+    });
+    paintLiveRect(ctx);
   }
 
   function drawCanvas() {
     if (!ui.canvas || !local.reference) return;
     const paint = (image) => {
       const ctx = ui.canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
       ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
-      ctx.drawImage(image, 0, 0, ui.canvas.width, ui.canvas.height);
-      local.regions.forEach((region, index) => paintRegionRect(ctx, region, index));
-      paintDrawingRect(ctx);
+      if (image && image.naturalWidth > 0) {
+        ctx.drawImage(image, 0, 0, ui.canvas.width, ui.canvas.height);
+      }
+      paintSavedRegions(ctx);
     };
-    if (local.referenceBitmap && local.referenceBitmap.complete) {
-      paint(local.referenceBitmap);
+    const bitmap = local.referenceBitmap;
+    if (bitmap && bitmap.complete && bitmap.naturalWidth > 0) {
+      paint(bitmap);
       return;
     }
     const dataUrl = imageFromReference(local.reference);
@@ -1078,7 +1083,7 @@
         const detail = `x ${(region.x * 100).toFixed(1)}%, y ${(region.y * 100).toFixed(1)}%, w ${(region.width * 100).toFixed(1)}%, h ${(region.height * 100).toFixed(1)}%`;
         return `<button type="button" class="ocrRegionRow${index === local.selectedRegion ? " is-selected" : ""}" data-region-index="${index}"><strong>${escapeHtml(label)}</strong><span>${detail}</span><span class="ocrScreenBadge">${region.required ? "Required" : "Optional"}</span></button>`;
       }).join("")
-      : "<div class=\"settingsNote\">No regions drawn. Drag on the reference to draw a bright green box for each HUD field.</div>";
+      : "<div class=\"settingsNote\">No regions drawn. Drag on the reference — an orange box follows the pointer.</div>";
     drawCanvas();
   }
 
@@ -1163,7 +1168,6 @@
       name: text(ui.profileName?.value) || selectedPresentationStyle() || DEFAULT_PRESENTATION_STYLE,
       presentation: selectedPresentationStyle() || DEFAULT_PRESENTATION_STYLE,
       source: source ? { id: sourceValue(source), name: source.name || sourceValue(source), kind: source.kind || "" } : null,
-      obs: { url: text(ui.obsUrl?.value) || "ws://127.0.0.1:4455" },
       reference: {
         width: Number(local.reference?.width || ui.canvas?.width || 0),
         height: Number(local.reference?.height || ui.canvas?.height || 0),
@@ -1179,7 +1183,7 @@
   }
 
   function validateProfile(profile) {
-    if (!profile.source?.id) return "Choose an OBS source.";
+    if (!profile.source?.id) return "Choose a capture source.";
     if (!profile.reference.width || !profile.reference.height) return "Capture a reference frame.";
     const requiredFields = FIELD_DEFINITIONS.filter(([, , required]) => required).map(([id]) => id);
     const missing = requiredFields.filter((field) => !profile.regions.some((region) => region.field === field && region.required));
@@ -1198,6 +1202,7 @@
     if (error) return setCalibrationStatus(error, true);
     try {
       const result = await desktop().ocrSaveProfile(profile);
+      local.calibrationDraft = false;
       local.activeProfile = result?.profile || profile;
       setCalibrationStatus(`Saved “${local.activeProfile.name}” for ${canonicalPresentationStyle(local.activeProfile.presentation)}.`);
       await refreshState();
@@ -1262,6 +1267,7 @@
   function renderSavedProfileSelect() {
     if (!ui.savedProfileSelect) return;
     const selectedId = text(local.activeProfile?.id);
+    ignoreSelectChange += 1;
     ui.savedProfileSelect.innerHTML = [
       `<option value="">New profile…</option>`,
       ...local.profiles.map((profile) => {
@@ -1273,6 +1279,7 @@
         return `<option value="${escapeHtml(profile.id)}"${profile.id === selectedId ? " selected" : ""}>${escapeHtml(label + suffix)}</option>`;
       }),
     ].join("");
+    ignoreSelectChange -= 1;
   }
 
   function hydrateCalibrationFromProfile(profile) {
@@ -1281,6 +1288,7 @@
       local.selectedRegion = -1;
       local.reference = null;
       local.referenceBitmap = null;
+      local.drawing = null;
       const style = selectedPresentationStyle();
       if (ui.profileName) ui.profileName.value = style || DEFAULT_PRESENTATION_STYLE;
       renderPresentationSelect(style || DEFAULT_PRESENTATION_STYLE);
@@ -1291,7 +1299,6 @@
     const style = canonicalPresentationStyle(profile.presentation || profile.name);
     if (ui.profileName) ui.profileName.value = text(profile.name) || style;
     renderPresentationSelect(style);
-    if (profile.obs?.url && ui.obsUrl) ui.obsUrl.value = text(profile.obs.url);
     if (profile.source && ui.sourceSelect) {
       const sourceId = text(profile.source.id || profile.source.name);
       if (sourceId) {
@@ -1347,6 +1354,7 @@
   }
 
   async function openCalibration() {
+    local.calibrationDraft = false;
     await refreshState();
     renderPresentationSelect(local.activeProfile?.presentation || DEFAULT_PRESENTATION_STYLE);
     renderSavedProfileSelect();
@@ -1376,66 +1384,89 @@
     }
   }
 
+  let drawListenersOn = false;
+
+  function commitDrawnRegion(start, end) {
+    const region = {
+      field: text(ui.regionField.value),
+      required: ui.regionRequired.value === "true",
+      x: Math.min(start.x, end.x),
+      y: Math.min(start.y, end.y),
+      width: Math.abs(end.x - start.x),
+      height: Math.abs(end.y - start.y),
+      preprocessing: {
+        threshold: text(ui.thresholdMode.value),
+        scale: Number(ui.regionScale.value) || 2,
+        morphology: text(ui.regionMorphology?.value) || "none",
+        grayscale: ui.regionGrayscale ? ui.regionGrayscale.checked === true : true,
+        invert: ui.regionInvert.checked === true,
+      },
+    };
+    if (region.width < 0.005 || region.height < 0.005) {
+      drawCanvas();
+      return;
+    }
+    const existing = local.regions.findIndex((entry) => entry.field === region.field);
+    if (existing >= 0) {
+      local.regions[existing] = region;
+      local.selectedRegion = existing;
+      setCalibrationStatus(`Updated “${FIELD_DEFINITIONS.find(([id]) => id === region.field)?.[1] || region.field}”.`);
+    } else {
+      local.regions.push(region);
+      local.selectedRegion = local.regions.length - 1;
+      setCalibrationStatus(`Added “${FIELD_DEFINITIONS.find(([id]) => id === region.field)?.[1] || region.field}” (${local.regions.length} region${local.regions.length === 1 ? "" : "s"}).`);
+    }
+    applyRegionControls();
+    renderRegionList();
+  }
+
+  function disarmDrawListeners() {
+    if (!drawListenersOn) return;
+    drawListenersOn = false;
+    window.removeEventListener("pointermove", onDrawPointerMove, true);
+    window.removeEventListener("pointerup", onDrawPointerUp, true);
+  }
+
+  function onDrawPointerMove(event) {
+    if (!local.drawing || event.pointerId !== local.drawing.pointerId) return;
+    event.preventDefault();
+    local.drawing.current = canvasPoint(event);
+    updateDrawRect();
+    drawCanvas();
+  }
+
+  function onDrawPointerUp(event) {
+    if (!local.drawing || event.pointerId !== local.drawing.pointerId) return;
+    const start = local.drawing.start;
+    const end = canvasPoint(event);
+    local.drawing = null;
+    disarmDrawListeners();
+    try { ui.canvas.releasePointerCapture(event.pointerId); } catch (_error) { /* already released */ }
+    updateDrawRect();
+    commitDrawnRegion(start, end);
+  }
+
   function bindCanvas() {
+    if (ui.canvas) ui.canvas.style.touchAction = "none";
     ui.canvas.addEventListener("pointerdown", (event) => {
-      if (!local.reference) return;
-      const start = canvasPoint(event);
-      local.drawing = { start, current: start };
-      ui.canvas.setPointerCapture(event.pointerId);
-      drawCanvas();
-    });
-    ui.canvas.addEventListener("pointermove", (event) => {
-      if (!local.drawing) return;
-      local.drawing.current = canvasPoint(event);
-      drawCanvas();
-    });
-    ui.canvas.addEventListener("pointerup", (event) => {
-      if (!local.drawing) return;
-      const end = canvasPoint(event);
-      const start = local.drawing.start;
-      local.drawing = null;
-      const field = text(ui.regionField.value) || "down_distance";
-      const defaultScale = (field === "down_distance" || field === "field_position")
-        ? Math.max(3, Number(ui.regionScale.value) || 3)
-        : (Number(ui.regionScale.value) || 2);
-      const region = {
-        field,
-        required: ui.regionRequired.value === "true",
-        x: Math.min(start.x, end.x),
-        y: Math.min(start.y, end.y),
-        width: Math.abs(end.x - start.x),
-        height: Math.abs(end.y - start.y),
-        preprocessing: {
-          threshold: text(ui.thresholdMode.value),
-          scale: defaultScale,
-          morphology: text(ui.regionMorphology?.value) || "none",
-          grayscale: ui.regionGrayscale ? ui.regionGrayscale.checked === true : true,
-          invert: ui.regionInvert.checked === true,
-        },
-      };
-      const minW = (field === "down_distance" || field === "field_position") ? 0.02 : 0.005;
-      const minH = (field === "down_distance" || field === "field_position") ? 0.012 : 0.005;
-      if (region.width < minW || region.height < minH) {
-        drawCanvas();
+      if (event.button !== 0) return;
+      if (!local.reference) {
+        setCalibrationStatus("Capture a reference frame, then drag a box around the HUD field.", true);
         return;
       }
-      const existing = local.regions.findIndex((entry) => entry.field === region.field);
-      if (existing >= 0) {
-        local.regions[existing] = region;
-        local.selectedRegion = existing;
-      } else {
-        local.regions.push(region);
-        local.selectedRegion = local.regions.length - 1;
+      event.preventDefault();
+      const start = canvasPoint(event);
+      local.drawing = { start, current: start, pointerId: event.pointerId };
+      try { ui.canvas.setPointerCapture(event.pointerId); } catch (_error) { /* window listeners still track the drag */ }
+      if (!drawListenersOn) {
+        drawListenersOn = true;
+        window.addEventListener("pointermove", onDrawPointerMove, { capture: true, passive: false });
+        window.addEventListener("pointerup", onDrawPointerUp, true);
       }
-      applyRegionControls();
-      renderRegionList();
-      setCalibrationStatus(`Drew “${FIELD_DEFINITIONS.find(([id]) => id === field)?.[1] || field}”. Save profile when all required crops are set.`);
-    });
-    ui.canvas.addEventListener("pointercancel", () => {
-      if (!local.drawing) return;
-      local.drawing = null;
+      updateDrawRect();
       drawCanvas();
-    });
+    }, { passive: false });
+    ui.canvas.addEventListener("dragstart", (event) => event.preventDefault());
   }
 
   function cacheUi() {
@@ -1454,14 +1485,13 @@
       calibrationOverlay: byId("ocrCalibrationOverlay"), closeCalibrationBtn: byId("ocrCloseCalibrationBtn"),
       profileName: byId("ocrProfileName"), presentationSelect: byId("ocrPresentationSelect"),
       savedProfileSelect: byId("ocrSavedProfileSelect"),
-      obsUrl: byId("ocrObsUrl"), obsPassword: byId("ocrObsPassword"),
-      obsUrlField: byId("ocrObsUrlField"), obsPasswordField: byId("ocrObsPasswordField"),
       sourceKindField: byId("ocrSourceKindField"), sourceKind: byId("ocrSourceKind"),
       sourceSelectLabel: byId("ocrSourceSelectLabel"),
-      captureAdapter: byId("ocrCaptureAdapter"), sourceSelect: byId("ocrSourceSelect"),
+      sourceSelect: byId("ocrSourceSelect"),
       connectObsBtn: byId("ocrConnectObsBtn"), referenceBtn: byId("ocrReferenceBtn"),
       benchmarkBtn: byId("ocrBenchmarkBtn"),
       canvas: byId("ocrCalibrationCanvas"), canvasEmpty: byId("ocrCanvasEmpty"),
+      drawRect: byId("ocrDrawRect"),
       regionField: byId("ocrRegionField"), regionRequired: byId("ocrRegionRequired"),
       thresholdMode: byId("ocrThresholdMode"), regionScale: byId("ocrRegionScale"),
       regionMorphology: byId("ocrRegionMorphology"), regionGrayscale: byId("ocrRegionGrayscale"),
@@ -1488,36 +1518,36 @@
     ui.reviewBtn?.addEventListener("click", () => setOverlay(ui.reviewOverlay, true));
     ui.openCalibrationBtn?.addEventListener("click", () => { openCalibration(); });
     ui.presentationSelect?.addEventListener("change", () => {
+      if (ignoreSelectChange) return;
       onPresentationStyleChange().catch((error) => {
         setCalibrationStatus(`Could not switch presentation: ${text(error?.message || error)}`, true);
       });
     });
     ui.savedProfileSelect?.addEventListener("change", () => {
+      if (ignoreSelectChange) return;
       const profileId = text(ui.savedProfileSelect.value);
       if (!profileId) {
+        local.calibrationDraft = true;
         local.activeProfile = null;
         hydrateCalibrationFromProfile(null);
         setCalibrationStatus(`Drawing a new OCR profile for ${selectedPresentationStyle()}.`);
         return;
       }
+      local.calibrationDraft = false;
       const profile = local.profiles.find((entry) => entry.id === profileId);
       if (profile) {
         hydrateCalibrationFromProfile(profile);
         activateProfile(profile).catch(() => {});
       }
     });
-    ui.closeCalibrationBtn?.addEventListener("click", () => setOverlay(ui.calibrationOverlay, false));
+    ui.closeCalibrationBtn?.addEventListener("click", () => {
+      local.calibrationDraft = false;
+      local.drawing = null;
+      updateDrawRect();
+      setOverlay(ui.calibrationOverlay, false);
+    });
     ui.closeReviewBtn?.addEventListener("click", () => setOverlay(ui.reviewOverlay, false));
     ui.connectObsBtn?.addEventListener("click", connectObs);
-    ui.captureAdapter?.addEventListener("change", async () => {
-      const adapter = normalizeAdapter(ui.captureAdapter.value);
-      local.config.adapter = adapter;
-      syncAdapterUi();
-      await updateConfig({
-        adapter,
-        pluginFallback: false,
-      });
-    });
     ui.sourceKind?.addEventListener("change", renderSources);
     ui.sourceSelect?.addEventListener("change", async () => {
       const source = selectedSource();

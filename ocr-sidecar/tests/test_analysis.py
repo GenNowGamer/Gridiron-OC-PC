@@ -103,7 +103,7 @@ class AnalysisTests(unittest.TestCase):
             return CapturedFrame(
                 np.full((4, 4, 3), sequence, dtype=np.uint8),
                 source_sequence=sequence,
-                adapter="obs-plugin",
+                adapter="capture-bridge",
             )
 
         result = analyze_burst(
@@ -122,21 +122,21 @@ class AnalysisTests(unittest.TestCase):
                     source_sequence=1,
                     captured_qpc=1000,
                     qpc_frequency=1000,
-                    adapter="obs-plugin",
+                    adapter="capture-bridge",
                 ),
                 CapturedFrame(
                     np.full((4, 4, 3), 2, dtype=np.uint8),
                     source_sequence=2,
                     captured_qpc=900,
                     qpc_frequency=1000,
-                    adapter="obs-plugin",
+                    adapter="capture-bridge",
                 ),
                 CapturedFrame(
                     np.full((4, 4, 3), 3, dtype=np.uint8),
                     source_sequence=3,
                     captured_qpc=1100,
                     qpc_frequency=1000,
-                    adapter="obs-plugin",
+                    adapter="capture-bridge",
                 ),
             ]
         )
@@ -157,8 +157,8 @@ class AnalysisTests(unittest.TestCase):
     def test_benchmark_counts_explicit_stale_metadata(self):
         frames = iter(
             [
-                CapturedFrame(np.zeros((2, 2, 3), dtype=np.uint8), stale=True, adapter="obs-plugin"),
-                CapturedFrame(np.ones((2, 2, 3), dtype=np.uint8), adapter="obs-plugin"),
+                CapturedFrame(np.zeros((2, 2, 3), dtype=np.uint8), stale=True, adapter="capture-bridge"),
+                CapturedFrame(np.ones((2, 2, 3), dtype=np.uint8), adapter="capture-bridge"),
             ]
         )
         result = benchmark_capture(lambda _source: next(frames), "Game", 2, 0)

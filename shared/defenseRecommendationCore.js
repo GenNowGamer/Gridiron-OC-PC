@@ -196,6 +196,7 @@
     const fieldBucket = (ctx && ctx.fieldPositionBucket) || "unknown";
     const money = down >= 3;
     const shortSpot = goalToGo || bucket === "short";
+    const trueGoalLine = isTrueGoalLineDefenseContext(ctx);
     const redish =
       fieldBucket === "goal_to_go" ||
       fieldBucket === "high_red_zone" ||
@@ -221,7 +222,7 @@
       plan.intent = "stop_short";
       plan.pressureLean = "high";
       plan.preferPackages = ["forty_six", "four_three", "nickel"];
-      if (redish || goalToGo) plan.preferPackages.unshift("goal_line");
+      if (trueGoalLine) plan.preferPackages.unshift("goal_line");
       plan.discouragePackages = ["prevent", "dime", "dollar"];
       plan.preferFamilies = ["blitz", "man", "match"];
       plan.discourageFamilies = ["zone"];
@@ -269,7 +270,29 @@
     if (!allowPrevent && plan.discouragePackages.indexOf("prevent") < 0) {
       plan.discouragePackages.push("prevent");
     }
+    if (!trueGoalLine && plan.discouragePackages.indexOf("goal_line") < 0) {
+      plan.discouragePackages.push("goal_line");
+    }
     return plan;
+  }
+
+  function isTrueGoalLineDefenseContext(ctx) {
+    const down = Number(ctx && ctx.down) || 1;
+    const yards = Number(ctx && ctx.yards);
+    const bucket = (ctx && ctx.distBucket) || distToBucket(yards);
+    const goalToGo = !!(ctx && ctx.goalToGo);
+    const fieldPosition = ctx && ctx.fieldPosition;
+    if (goalToGo) {
+      if (Number.isFinite(yards) && yards <= 4) return true;
+      if (Number.isFinite(yards) && yards <= 6 && down >= 3) return true;
+      return false;
+    }
+    if (!hasKnownFieldPosition(fieldPosition) || upper(fieldPosition.side) !== "OPP") return false;
+    const yardLine = Number(fieldPosition.yardLine);
+    if (!Number.isFinite(yardLine)) return false;
+    if (yardLine <= 2) return bucket === "short" || down >= 3;
+    if (yardLine <= 3) return bucket === "short" && down >= 3;
+    return false;
   }
 
   function packageTraitKey(traits) {
@@ -305,21 +328,10 @@
 
   function shouldExcludeDefensivePlay(play, ctx, traits) {
     const t = traits || defensivePlayTraitsOf(play);
-    const yards = Number(ctx && ctx.yards);
-    const bucket = (ctx && ctx.distBucket) || distToBucket(yards);
-    const goalToGo = !!(ctx && ctx.goalToGo);
-    const fieldBucket = (ctx && ctx.fieldPositionBucket) || "unknown";
-    const compressed =
-      goalToGo ||
-      bucket === "short" ||
-      fieldBucket === "goal_to_go" ||
-      fieldBucket === "high_red_zone" ||
-      (fieldBucket === "red_zone" && bucket === "short");
-
     if (t.isReturn || t.isSpecialTeams) return true;
     if (t.type === "OTHER" && !t.isPressure) return true;
     if (t.isPrevent && !isPreventEligibleContext(ctx)) return true;
-    if (t.isGoalLine && !compressed) return true;
+    if (t.isGoalLine && !isTrueGoalLineDefenseContext(ctx)) return true;
     return false;
   }
 
@@ -339,16 +351,29 @@
     const showing = normalizeOffenseShowing(offenseShowing);
     if (!showing) return null;
     const blob = showing.blob;
+    function personnelCount(label) {
+      const match = blob.match(new RegExp("(\\d+)\\s*" + label + "\\b"));
+      return match ? Number(match[1]) : null;
+    }
+    const rbCount = personnelCount("rb");
+    const teCount = personnelCount("te");
+    const wrCount = personnelCount("wr");
+    const countedEmpty = (wrCount != null && wrCount >= 4) || (teCount === 0 && wrCount != null && wrCount >= 3);
+    const countedSpread = !countedEmpty && wrCount != null && wrCount >= 3;
+    const countedTight = !countedEmpty && !countedSpread && teCount != null && teCount >= 2;
     return {
       formation: showing.formation,
       set: showing.set,
       blob: blob,
-      isEmpty: /\bempty\b/.test(blob),
+      rbCount: rbCount,
+      teCount: teCount,
+      wrCount: wrCount,
+      isEmpty: countedEmpty || /\bempty\b/.test(blob),
       isTrips: /\btrips\b/.test(blob),
       isBunch: /\bbunch\b/.test(blob),
-      isSpread: /\bspread\b|\bwide\b|\bflex\b/.test(blob),
-      isQuads: /\bquads\b/.test(blob),
-      isTight: /\btight|deuce|ace|jumbo|close|pair heavy\b/.test(blob),
+      isSpread: countedSpread || /\bspread\b|\bwide\b|\bflex\b/.test(blob),
+      isQuads: (wrCount != null && wrCount >= 4) || /\bquads\b/.test(blob),
+      isTight: countedTight || /\btight|deuce|ace|jumbo|close|pair heavy\b/.test(blob),
       isWing: /\bwing\b/.test(blob),
       isGun: showing.formation === "GUN",
       isPistol: showing.formation === "PISTOL",
@@ -387,10 +412,11 @@
       if (t.isFourThree || t.isFortySix) score -= 1.2;
       if (t.isGoalLine) score -= 2.5;
     } else if (o.isTrips || o.isBunch || o.isSpread) {
-      if (t.isNickel) score += 1.9;
+      if (t.isNickel) score += 4.7;
       if (t.isDime || t.isDollar) score += 1.35;
       if (t.isZone || t.isMatch || t.isMan) score += 0.85;
-      if (t.isFourThree && !t.isBlitz) score -= 0.35;
+      if (t.isFourThree && !t.isBlitz) score -= 1.8;
+      if (t.isGoalLine) score -= 2.2;
     } else if (o.isTight || o.isWing) {
       if (t.isFourThree || t.isFortySix) score += 1.7;
       if (t.isBlitz || t.isMan) score += 1.0;
@@ -524,7 +550,7 @@
       else score -= 1.4;
     }
     if (t.isGoalLine) {
-      score += shortSpot || redish ? 4.5 : -8;
+      score += isTrueGoalLineDefenseContext(ctx) ? 4.5 : -8;
     }
     if (t.isPrevent) {
       score += preventOk ? 4.0 : -12;
@@ -535,7 +561,7 @@
     if (backedUp && (t.isZone || t.isMatch)) score += 0.6;
     if (redish) {
       if (t.isBlitz || t.isMan) score += 1.2;
-      if (t.isGoalLine) score += 1.5;
+      if (t.isGoalLine && isTrueGoalLineDefenseContext(ctx)) score += 1.5;
       if ((t.isDime || t.isDollar || t.isPrevent) && !longMoney) score -= 2.0;
     }
     if ((fieldBucket === "plus_territory" || fieldBucket === "midfield_plus") && (t.isZone || t.isMatch)) {
@@ -577,6 +603,7 @@
 
     if (offense) {
       if (offense.isEmpty || offense.isQuads) parts.push("Answers empty/pass-heavy personnel.");
+      else if (offense.wrCount != null && offense.wrCount >= 3) parts.push("Matches 3-wide personnel.");
       else if (offense.isGoalLine) parts.push("Matches goal-line offense look.");
       else if (offense.isHailMary) parts.push("Protects vs Hail Mary.");
       else if (offense.isTight || offense.isWing) parts.push("Fits condensed/run-lean look.");
@@ -596,104 +623,12 @@
     return parts.slice(0, 2).join(" ");
   }
 
-  // DC play slates. Coverage family is the concept key; do not hard-ban the
-  // coarse ZONE/MAN type or a Cover-3-heavy book collapses to one call.
-  const DC_PLAY_SELECTION_POLICY = {
-    shownPlayBanBatches: 6,
-    shownConceptBanBatches: 2,
-    shownShellBanBatches: 3,
-    shownFamilyBanBatches: 0,
-    sessionPlayCap: 2,
-    sessionPlayRepeatTax: 14,
-    requireUniqueFamilyType: false,
-    requireUniqueConcept: true,
-    requireUniqueShell: true,
-    requireUniqueFormation: false,
-    wildcardTemperature: 1.8,
-    predictabilityWindow: 4,
-    predictabilityRepeatThreshold: 2,
-    predictabilityBanPlays: 4,
-    predictabilityPenalty: 18,
-  };
-
-  function defensiveSelectionIdentity(play) {
-    if (!play || !play.id) return null;
-    const traits = defensivePlayTraitsOf(play);
-    const coverage = coverageFamilyOf(play, traits);
-    return {
-      playId: cleanText(play.id),
-      family: coverage,
-      conceptKey: coverage,
-      coverageFamily: coverage,
-      formationSetKey: lower(traits.formationSetKey),
-      formation: traits.formation,
-    };
-  }
-
-  function indexDefensivePlays(plays) {
-    const byId = Object.create(null);
-    (Array.isArray(plays) ? plays : []).forEach(function (play) {
-      if (play && play.id) byId[String(play.id)] = play;
-    });
-    return byId;
-  }
-
-  function chunkExposureIds(ids, sheetSize) {
-    const size = Number.isFinite(Number(sheetSize)) && Number(sheetSize) > 0 ? Number(sheetSize) : 3;
-    const list = (Array.isArray(ids) ? ids : []).map(function (id) {
-      return cleanText(id);
-    }).filter(Boolean);
-    const chunks = [];
-    let end = list.length;
-    while (end > 0) {
-      const start = Math.max(0, end - size);
-      chunks.unshift(list.slice(start, end));
-      end = start;
-    }
-    return chunks;
-  }
-
-  /**
-   * Turn confirmed DC calls and shown Exact Call sheets into SelectionEngine memory.
-   * Newest exposure ids are the end of the list; each sheet is one batch.
-   */
-  function buildDefensiveSelectionMemory(params) {
-    const byId = indexDefensivePlays(params && params.plays);
-    const recentPlayIds = Array.isArray(params && params.recentPlayIds) ? params.recentPlayIds : [];
-    const recentGameCalls = [];
-    recentPlayIds.forEach(function (id) {
-      const play = byId[String(id)];
-      const identity = play ? defensiveSelectionIdentity(play) : { playId: cleanText(id) };
-      if (identity && identity.playId) recentGameCalls.push(identity);
-    });
-
-    const recommendationExposureHistory = [];
-    chunkExposureIds(params && params.exposurePlayIds, params && params.sheetSize).forEach(function (chunk, batchIndex) {
-      chunk.forEach(function (id, rank) {
-        const play = byId[String(id)];
-        const identity = play ? defensiveSelectionIdentity(play) : { playId: cleanText(id) };
-        if (!identity || !identity.playId) return;
-        recommendationExposureHistory.push(Object.assign({}, identity, {
-          batchId: batchIndex,
-          rank: rank + 1,
-        }));
-      });
-    });
-
-    return {
-      recentGameCalls: recentGameCalls,
-      recommendationExposureHistory: recommendationExposureHistory,
-      policy: Object.assign({}, DC_PLAY_SELECTION_POLICY, (params && params.policy) || {}),
-    };
-  }
-
   function pickTopDefensiveRecommendationsCore(params) {
     const SelectionEngine = getSelectionEngine();
     if (SelectionEngine && typeof SelectionEngine.selectDiversitySlate === "function") {
       const scored = Array.isArray(params && params.scored) ? params.scored : [];
       const limit = Number.isFinite(Number(params && params.limit)) ? Number(params.limit) : 3;
       const scoreKey = (params && params.scoreKey) || "_score";
-      const policy = Object.assign({}, DC_PLAY_SELECTION_POLICY, (params && params.policy) || {});
       const result = SelectionEngine.selectDiversitySlate({
         scored: scored.map(function (item) {
           const play = item.play || item;
@@ -721,7 +656,7 @@
         driveRecommendationExposure: params && params.driveRecommendationExposure,
         outcomeMemory: params && params.outcomeMemory,
         rng: params && params.rng,
-        policy: policy,
+        policy: params && params.policy,
       });
       return result.slate || [];
     }
@@ -831,21 +766,7 @@
       });
     });
 
-    const selectionMemory = buildDefensiveSelectionMemory({
-      plays: plays,
-      recentPlayIds: Array.isArray(params && params.recentPlayIds) ? params.recentPlayIds : [],
-      exposurePlayIds: params && params.exposurePlayIds,
-      policy: params && params.selectionPolicy,
-    });
-    const top = pickTopDefensiveRecommendationsCore({
-      scored: scored,
-      limit: 3,
-      scoreKey: "_score",
-      recentGameCalls: (params && params.recentGameCalls) || selectionMemory.recentGameCalls,
-      recommendationExposureHistory: (params && params.recommendationExposureHistory) || selectionMemory.recommendationExposureHistory,
-      policy: selectionMemory.policy,
-      rng: params && params.rng,
-    });
+    const top = pickTopDefensiveRecommendationsCore({ scored: scored, limit: 3, scoreKey: "_score" });
     return {
       context: ctx,
       recommendations: top.map(function (item) {
@@ -1683,6 +1604,7 @@
     defensiveFormationSetKeyOf: defensiveFormationSetKeyOf,
     defensivePlayTraitsOf: defensivePlayTraitsOf,
     shouldExcludeDefensivePlay: shouldExcludeDefensivePlay,
+    isTrueGoalLineDefenseContext: isTrueGoalLineDefenseContext,
     isPreventEligibleContext: isPreventEligibleContext,
     isLongMoneyDown: isLongMoneyDown,
     buildDefensiveSituationPlan: buildDefensiveSituationPlan,
@@ -1693,8 +1615,6 @@
     buildOpponentOffenseFormationCatalog: buildOpponentOffenseFormationCatalog,
     scoreDefensivePlayCore: scoreDefensivePlayCore,
     buildDefensiveWhy: buildDefensiveWhy,
-    DC_PLAY_SELECTION_POLICY: DC_PLAY_SELECTION_POLICY,
-    buildDefensiveSelectionMemory: buildDefensiveSelectionMemory,
     pickTopDefensiveRecommendationsCore: pickTopDefensiveRecommendationsCore,
     computeDefensiveRecommendations: computeDefensiveRecommendations,
     DC_SITUATION_CHIPS: DC_SITUATION_CHIPS,

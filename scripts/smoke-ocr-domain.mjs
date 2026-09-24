@@ -151,6 +151,58 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(HudText.repairPreviousPlayOcrText("COVERIHOLE"), "COVER 1 HOLE");
   assert.equal(HudText.repairPreviousPlayOcrText("NSIDEZONE"), "INSIDE ZONE");
   assert.equal(HudText.repairPreviousPlayOcrText("HBDIVE"), "HB DIVE");
+  assert.equal(HudText.repairPreviousPlayOcrText("HBDIE"), "HB DIVE");
+  const ampersandAsG = HudText.parseDownDistanceText("'2'NDG'3'");
+  assert.equal(ampersandAsG.ok, true);
+  assert.equal(ampersandAsG.label, "2nd & 3");
+  assert.equal(HudText.parseDownDistanceText("'2'NDGOAL").label, "2nd & Goal");
+  assert.equal(HudText.parseDownDistanceText("TSTG'1'O").label, "1st & 10");
+  assert.equal(HudText.parseDownDistanceText("TST'8''2''0'").label, "1st & 20");
+  assert.equal(HudText.parseDownDistanceText("'3'R'0''8''7'").label, "3rd & 7");
+  assert.equal(HudText.parseDownDistanceText("'1'STGGOAL").label, "1st & Goal");
+  assert.equal(HudText.parseDownDistanceText("'2'ND'8''1''0'").label, "2nd & 10");
+  assert.equal(HudText.parseDownDistanceText("'4'TH'8''1'O").label, "4th & 10");
+  assert.equal(HudText.parseDownDistanceText("'2'NDGS").label, "2nd & 5");
+  assert.equal(HudText.parseDownDistanceText("ATHA'7'").label, "4th & 7");
+  assert.equal(HudText.parseFieldPositionText("A'3'B").label, "OPP 38");
+  assert.equal(HudText.parseFieldPositionText("A'1'S").label, "OPP 15");
+  assert.equal(HudText.repairPreviousPlayOcrText("YLEADREADTIN"), "Y LEAD READ OPTION");
+  assert.equal(HudText.repairPreviousPlayOcrText("HBSLISGREEN"), "HB SLIP SCREEN");
+  assert.equal(HudText.repairPreviousPlayOcrText("EZONE"), "INSIDE ZONE");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERROBERPRESS"), "COVER 1 ROBBER PRESS");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERGWLLE"), "COVER 6 WILLE");
+  assert.equal(HudText.repairPreviousPlayOcrText("BENCHDGCURL"), "BENCH DIG CURL");
+  assert.equal(HudText.repairPreviousPlayOcrText("CLOSEPASAL"), "CLOSE PA SAIL");
+  assert.equal(HudText.repairPreviousPlayOcrText("CURLCOMBO"), "CURL COMBO");
+  assert.equal(HudText.repairPreviousPlayOcrText("FTMTNSTACKSALEMY-OUT"), "SFT MTN STACK SALEM Y-OUT");
+  assert.equal(HudText.repairPreviousPlayOcrText("SAILDI"), "SAIL DIG");
+  assert.equal(HudText.repairPreviousPlayOcrText("SLOTBITZS"), "SLOT BLITZ 3");
+  assert.equal(HudText.parseDownDistanceText("3RD8").label, "3rd & 8");
+  assert.equal(HudText.parseFieldPositionText("AT'3'", { sideHint: "OPP" }).label, "OPP 13");
+  assert.equal(HudText.parseFieldPositionText("A'7''4'", { sideHint: "OPP" }).label, "OPP 14");
+  assert.equal(HudText.parseFieldPositionText("A'3'A", { sideHint: "OPP" }).label, "OPP 34");
+  assert.equal(HudText.parseFieldPositionText("IT'7'", { sideHint: "OWN" }).label, "OWN 11");
+  assert.equal(HudText.parseFieldPositionText("v'4''7'", { sideHint: "OWN" }).label, "OWN 47");
+  assert.equal(HudText.repairPreviousPlayOcrText("LEVELS"), "LEVELS");
+  assert.equal(HudText.repairPreviousPlayOcrText("DRVESTUTTERFLAT"), "DRIVE STUTTER FLAT");
+  assert.equal(HudText.repairPreviousPlayOcrText("OUTSEZONE"), "OUTSIDE ZONE");
+  assert.equal(HudText.repairPreviousPlayOcrText("OLBFIREMAN"), "OLB FIRE MAN");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERHOLE"), "COVER 1 HOLE");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERBUZMABLE"), "COVER 3 BUZZ MABLE");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERGWLLIE"), "COVER 6 WILLIE");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERZNVERT"), "COVER 2 INVERT");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERIROBBER"), "COVER 1 ROBBER");
+  assert.equal(HudText.repairPreviousPlayOcrText("ICONTANPRESS"), "1 CONTAIN PRESS");
+  assert.equal(HudText.repairPreviousPlayOcrText("NCKELBUTZL"), "NICKEL BLITZ 1");
+  assert.equal(HudText.repairPreviousPlayOcrText("SAWBITZI"), "SAW BLITZ 1");
+  assert.equal(HudText.repairPreviousPlayOcrText("JETPULLSHALLOW"), "JET PULL SHALLOW");
+  assert.equal(HudText.repairPreviousPlayOcrText("YEROSSPOST"), "Y CROSS POST");
+  assert.equal(HudText.repairPreviousPlayOcrText("EMPTYFLODSWITCH"), "EMPTY FLOOD SWITCH");
+  assert.equal(HudText.repairPreviousPlayOcrText("BRACKETSITCHLLE"), "BRACKET SWITCH WILLIE");
+  assert.equal(HudText.repairPreviousPlayOcrText("SMASHDRVE"), "SMASH DRIVE");
+  assert.equal(HudText.repairPreviousPlayOcrText("OVERSTORMBRAVE"), "OVER STORM BRAVE");
+  assert.equal(HudText.repairPreviousPlayOcrText("OUTXDIG"), "OUT X DIG");
+  assert.equal(HudText.repairPreviousPlayOcrText("LDOUBLESLOT"), "1 DOUBLE SLOT");
   // Bridge export 2026-09-22 Q3/Q4: GOAL OCR + more glued plays.
   assert.equal(HudText.parseDownDistanceText("'1'ST'&'BOAL").label, "1st & Goal");
   assert.equal(HudText.parseDownDistanceText("'1'ST'&'BOAL").ok, true);
@@ -166,10 +218,34 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(HudText.repairPreviousPlayOcrText("COVERDROPFELD"), "COVER 4 DROP FIELD");
   assert.equal(HudText.repairPreviousPlayOcrText("MTNEMPTYVERTICAL"), "MTN EMPTY VERTICAL");
   assert.equal(HudText.repairPreviousPlayOcrText("DOUBLEBRACKETSWITCH"), "DOUBLE BRACKET SWITCH");
+  assert.equal(HudText.repairPreviousPlayOcrText("PASHOTPOST"), "PA SHOT POST");
+  assert.equal(HudText.repairPreviousPlayOcrText("WRCROSS"), "WR CROSS");
+  assert.equal(HudText.repairPreviousPlayOcrText("YSTIEK"), "Y STICK");
+  assert.equal(HudText.repairPreviousPlayOcrText("ZSPOT"), "Z SPOT");
+  assert.equal(HudText.repairPreviousPlayOcrText("MTNZONE"), "MTN ZONE");
+  assert.equal(HudText.repairPreviousPlayOcrText("GUBASE"), "60 BASE");
+  assert.equal(HudText.repairPreviousPlayOcrText("LROBERPRESS"), "1 ROBBER PRESS");
+  assert.equal(HudText.repairPreviousPlayOcrText("LCNTANPRESS"), "1 CONTAIN PRESS");
+  assert.equal(HudText.repairPreviousPlayOcrText("INVERTHARDFLAT"), "1 INVERT HARD FLAT");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERSHOW"), "COVER 3 SHOW");
+  assert.equal(HudText.repairPreviousPlayOcrText("OLBFREMAN"), "OLB FIRE MAN");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERIROBBERRESS"), "COVER 1 ROBBER PRESS");
   assert.equal(HudText.repairPreviousPlayOcrText("TAMPAZCONTAIN"), "TAMPA 2 CONTAIN");
   assert.equal(HudText.isGarbagePreviousPlayOcr("'9''0''0'"), true);
 
   // ¥ down-arrow + trailing pipe 451 (must not become invalid 51).
+  const mnfOwn = HudText.parseFieldPositionText("'2'B", { sideHint: "OWN" });
+  assert.equal(mnfOwn.ok, true);
+  assert.equal(mnfOwn.side, "OWN");
+  assert.equal(mnfOwn.yardLine, 28);
+  const mnfOppDigit = HudText.parseFieldPositionText("A'3'", { sideHint: "OPP" });
+  assert.equal(mnfOppDigit.ok, true);
+  assert.equal(mnfOppDigit.yardLine, 43);
+  assert.equal(mnfOppDigit.side, "OPP");
+  const mnfTriangle = HudText.parseFieldPositionText("▲'5'");
+  assert.equal(mnfTriangle.ok, true);
+  assert.equal(mnfTriangle.side, "OPP");
+  assert.equal(mnfTriangle.yardLine, 5);
   const yenOwn = HudText.parseFieldPositionText("¥35");
   assert.equal(yenOwn.ok, true);
   assert.equal(yenOwn.side, "OWN");
@@ -183,6 +259,8 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(irbite.formation, "1RB");
   assert.match(irbite.label, /1TE 3WR/);
 
+  const teA = HudText.parseFormationPersonnelText("IRBIATEIIWR");
+  assert.equal(teA.label, "1RB - 3TE 1WR");
   const teI = HudText.parseFormationPersonnelText("'2'RBIITEIZWR");
   assert.equal(teI.formation, "2RB");
   assert.match(teI.label, /1TE 2WR/);
@@ -263,6 +341,12 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(inches.yardsToGo, 1);
   assert.equal(inches.label, "4th & 1");
   assert.equal(inches.ok, true);
+
+  const gluedInches = HudText.parseDownDistanceText("'3'RDINCHES");
+  assert.equal(gluedInches.ok, true);
+  assert.equal(gluedInches.down, 3);
+  assert.equal(gluedInches.yardsToGo, 1);
+  assert.equal(gluedInches.label, "3rd & 1");
 
   const soup380 = HudText.parseDownDistanceText("380 &5");
   assert.equal(soup380.ok, true);
@@ -927,6 +1011,7 @@ test("exact-play sheets rotate instead of repeating the same calls", () => {
     rng: () => 0,
   };
   let exposurePlayIds = [];
+  let exposureSheets = [];
   let recentPlayIds = [];
   const showCounts = {};
   const sheets = [];
@@ -934,6 +1019,7 @@ test("exact-play sheets rotate instead of repeating the same calls", () => {
     const result = ExactEngine.computeExactPlayRecommendations(Object.assign({}, situation, {
       recentPlayIds,
       exposurePlayIds,
+      exposureSheets,
     }));
     const ids = result.recommendations.map((play) => play.id);
     assert.ok(ids.length >= 1, `snap ${snap} returned no calls`);
@@ -942,12 +1028,83 @@ test("exact-play sheets rotate instead of repeating the same calls", () => {
       assert.ok(showCounts[id] <= 2, `${id} appeared on more than 2 sheets`);
     });
     sheets.push(ids);
+    exposureSheets = exposureSheets.concat([ids]);
     exposurePlayIds = exposurePlayIds.concat(ids);
     if (ids[0]) recentPlayIds = recentPlayIds.concat(ids[0]);
   }
   const first = new Set(sheets[0]);
   assert.equal(sheets[1].some((id) => first.has(id)), false);
   assert.ok(Object.keys(showCounts).length >= 4);
+});
+
+test("exact calls keep two plays from the fitting front and read personnel counts", () => {
+  const spread = DefenseCore.offenseShowingTraitsOf({ formation: "1RB", set: "1TE 3WR" });
+  assert.equal(spread.isSpread, true);
+  assert.equal(spread.wrCount, 3);
+  const condensed = DefenseCore.offenseShowingTraitsOf({ formation: "1RB", set: "2TE 2WR" });
+  assert.equal(condensed.isTight, true);
+  assert.equal(condensed.isSpread, false);
+  const empty = DefenseCore.offenseShowingTraitsOf({ formation: "1RB", set: "0TE 4WR" });
+  assert.equal(empty.isEmpty, true);
+
+  const plays = [
+    { id: "n-c3", team: "CHI", formation: "Nickel", set: "Over", type: "ZONE", play_name: "Cover 3 Sky", concepts: ["Cover 3"] },
+    { id: "n-c2", team: "CHI", formation: "Nickel", set: "Over", type: "ZONE", play_name: "Cover 2 Man", concepts: ["Cover 2"] },
+    { id: "n-c4", team: "CHI", formation: "Nickel", set: "Over", type: "ZONE", play_name: "Cover 4 Drop", concepts: ["Cover 4"] },
+    { id: "n-blitz", team: "CHI", formation: "Nickel", set: "Wide", type: "BLITZ", play_name: "Mid Blitz", concepts: ["Blitz"] },
+    { id: "n-c6", team: "CHI", formation: "Nickel", set: "Over", type: "ZONE", play_name: "Cover 6", concepts: ["Cover 6"] },
+    { id: "n-c1", team: "CHI", formation: "Nickel", set: "Over", type: "MAN", play_name: "Cover 1 Hole", concepts: ["Cover 1"] },
+    { id: "base-c3", team: "CHI", formation: "4-3", set: "Over", type: "ZONE", play_name: "Cover 3 Cloud", concepts: ["Cover 3"] },
+    { id: "base-c4", team: "CHI", formation: "4-3", set: "Under", type: "ZONE", play_name: "Cover 4 Quarters", concepts: ["Cover 4"] },
+    { id: "dime-c4", team: "CHI", formation: "Dime", set: "Rush", type: "ZONE", play_name: "Cover 4 Palms", concepts: ["Cover 4"] },
+  ];
+  const first = ExactEngine.computeExactPlayRecommendations({
+    plays,
+    down: 1,
+    yards: 10,
+    offenseShowing: { formation: "1RB", set: "1TE 3WR" },
+    rng: () => 0,
+  });
+  assert.equal(DefenseCore.inferOffenseTagFromShowing({ formation: "1RB", set: "1TE 3WR" }), "spread");
+  assert.equal(DefenseCore.inferOffenseTagFromShowing({ formation: "1RB", set: "2TE 2WR" }), "condensed");
+  assert.equal(first.recommendations[0].formation, "Nickel");
+  const nickelIds = first.recommendations.filter((play) => play.formation === "Nickel").map((play) => play.id);
+  assert.ok(nickelIds.length >= 2, `expected two Nickel calls, got ${first.recommendations.map((play) => play.id).join(",")}`);
+  const second = ExactEngine.computeExactPlayRecommendations({
+    plays,
+    down: 1,
+    yards: 10,
+    offenseShowing: { formation: "1RB", set: "1TE 3WR" },
+    exposureSheets: [first.recommendations.map((play) => play.id)],
+    rng: () => 0,
+  });
+  const firstIds = new Set(first.recommendations.map((play) => play.id));
+  assert.equal(second.recommendations.some((play) => firstIds.has(play.id)), false);
+  const secondNickel = second.recommendations.filter((play) => play.formation === "Nickel");
+  assert.ok(secondNickel.length >= 1, "next sheet should still use the Nickel front");
+  assert.equal(second.recommendations[0].formation, "Nickel");
+
+  const carried = ExactEngine.computeExactPlayRecommendations({
+    plays,
+    down: 1,
+    yards: 10,
+    offenseShowing: { formation: "1RB", set: "1TE 3WR" },
+    exposureSheets: [first.recommendations.map((play) => play.id), second.recommendations.map((play) => play.id)],
+    rng: () => 0,
+  });
+  const seen = new Set(first.recommendations.concat(second.recommendations).map((play) => play.id));
+  assert.equal(carried.recommendations.some((play) => seen.has(play.id)), false);
+  assert.equal(carried.recommendations[0].formation, "Nickel");
+
+  const tight = ExactEngine.computeExactPlayRecommendations({
+    plays,
+    down: 1,
+    yards: 10,
+    offenseShowing: { formation: "1RB", set: "2TE 2WR" },
+    rng: () => 0,
+  });
+  assert.equal(tight.recommendations[0].formation, "4-3");
+  assert.ok(tight.recommendations.filter((play) => play.formation === "4-3").length >= 2);
 });
 
 test("confidence calibration withholds low-confidence catalog fields", () => {

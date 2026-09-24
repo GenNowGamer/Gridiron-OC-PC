@@ -6,7 +6,6 @@ import numpy as np
 
 from ocr_sidecar.engines import EngineRegistry, TesseractEngine
 from ocr_sidecar.errors import SidecarError
-from ocr_sidecar.obs import ObsClient
 
 
 class EngineAvailabilityTests(unittest.TestCase):
@@ -30,12 +29,6 @@ class EngineAvailabilityTests(unittest.TestCase):
         self.assertEqual("mock", warm["engine"])
         self.assertTrue(warm["cachedBefore"])
         self.assertEqual(["mock"], registry.status()["cached"])
-
-    def test_missing_obs_dependency_is_graceful(self):
-        obs = ObsClient(client_factory=lambda **_kwargs: (_ for _ in ()).throw(ImportError("missing")))
-        with self.assertRaises(SidecarError) as caught:
-            obs.configure({"host": "127.0.0.1", "port": 4455})
-        self.assertEqual("obs_unavailable", caught.exception.code)
 
     def test_tesseract_baseline_reads_synthetic_line(self):
         image = np.full((110, 720), 255, dtype=np.uint8)

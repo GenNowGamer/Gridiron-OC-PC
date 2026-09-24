@@ -13,8 +13,6 @@ the exact wheels/binaries whenever the packaged versions change.
 - Pillow 11.3.0 — HPND/MIT-CMU. Copyright 1997-2011 Secret Labs AB,
   1995-2011 Fredrik Lundh and contributors, and 2010 Pillow contributors.
   Pillow's wheel includes codec/font notices that must remain available.
-- obsws-python 1.8.0 — MIT.
-- websocket-client 1.9.2 — Apache-2.0.
 - pytesseract 0.3.13 — Apache-2.0.
 - PyInstaller 6.15.0 — GPL-2.0-or-later with the upstream bootloader exception
   that permits use of the bootloader in distributed applications.
