@@ -105,6 +105,7 @@ Current direction:
 
 - **Installer 0.1.5 / 0.1.6 (2026-09-25):** Full PC verification passing (`npm run verify:pc` includes 28 OCR main tests, 51 OCR domain checks, 28 regression tests, and 8 defensive situation checks). Includes CHI–PHI live session parser repairs, defensive penalty-to-learning disconnect fixes, exact DC formation/set attribution on agreement, resolution of corrected plays to catalog IDs, impossible personnel total withholding, and whole-game Exact Call memory.
 - **Local installer build automation:** `PC\dist\rebuild-installer.cmd` bumps the patch in `package.json` before each build and restores it if the build fails. If `dist\win-unpacked` is open in the editor, the script packages in `%TEMP%\gridiron-play-advisor-pack` and copies `dist\Gridiron Play Advisor Setup <version>.exe` back.
+- **DC blitz recommendations & concept splitting (2026-09-25):** Rebalanced defensive recommendation pipeline so blitz plays surface at realistic NFL frequencies (~25%–35% across games). Classifies pressures into `zone_blitz` and `man_blitz` (safely rewarding disguised zone pressures on early downs and 3rd & medium/long without promoting raw zero blitzes), relaxes DC package diversity bans (`shownFamilyBanBatches: 0`) to prevent global blitz freezes after a single exposure, and adds complementary coverage/pressure counter-pairing in the selection engine. Verify: `node scripts/smoke-defense-situation.mjs` and `npm run verify:pc`.
 - **DC goal line (2026-09-24):** Goal-line defenses are used only on a true goal-line spot (goal-to-go within a few yards, or the opponent’s 1–3 on a short or late down). Open-field 1st & 10, 2nd & 10, 3rd/4th & 1, and long goal-to-go do not surface them. Shared with Mobile via `defenseRecommendationCore.js`. Verify: `node scripts/smoke-defense-situation.mjs`.
 - **OCR Exact Call variety (2026-09-24):** Shown Exact Call plays stay remembered for the whole game and are capped at two sheet appearances. Against 3+ WR, two of the three calls stay in the nickel personnel band. New Game clears that memory; a drive reset does not.
 - **Default-font HUD (2026-09-24):** The shared parser repairs outlined down/field/play text (`TST`/`ATH`, `A'3'A` → OPP 34, `SLOTBITZS`, `COVERGWLLE`, and the other cases in `smoke-ocr-domain.mjs`). Presentation styles share these rules. Saved crop boxes stay on this PC only. Verify: `node scripts/smoke-ocr-domain.mjs`.
@@ -274,8 +275,8 @@ Supported spoken examples:
 
 - `package.json` - Electron config, scripts, and Windows packaging settings
 - `shared/recommendationCore.js` - synced desktop copy of the shared recommendation core (includes `buildRecommendationContextCore` for live tile chips)
-- `shared/selectionEngine.js` - Stage-2 OC slate builder (batch shown bans / session play cap / diversity buckets); flag `ENABLE_SELECTION_ENGINE`
-- `shared/defenseRecommendationCore.js` - synced DC top-3 scorer (MAN/ZONE/BLITZ/MATCH by down/distance/field; Offense Showing soft-bias helpers)
+- `shared/selectionEngine.js` - Stage-2 OC/DC slate builder (batch shown bans / session play cap / diversity buckets / complementary counter-pairing); flag `ENABLE_SELECTION_ENGINE`
+- `shared/defenseRecommendationCore.js` - synced DC top-3 scorer (MAN/ZONE/MATCH/ZONE_BLITZ/MAN_BLITZ by down/distance/field; Offense Showing soft-bias helpers; realistic blitz surfacing)
 - `shared/coordinatorReport.js` - synced desktop copy of the End Game Coordinator Report builder (script beats / scouting matchup / Success minSamples + penalty-safe outcomes as of 2026-09-11)
 - `shared/penaltyCatalog.js` - synced Madden penalty catalog + learning-gate helpers for the post-confirm Penalty picker
 - `scripts/check-pc-core.mjs` — validates all 5 shared modules locally (sync is retired)
