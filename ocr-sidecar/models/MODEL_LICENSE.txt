@@ -1,0 +1,6 @@
+﻿PP-OCRv5_mobile_rec_onnx
+Source: https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_rec_onnx
+License: Apache-2.0 (model card cardData.license)
+Files: inference.onnx, inference.yml
+Fetched for optional Gridiron OCR ONNX Runtime engine (onnx_ppocrv5).
+Do not redistribute without preserving Apache-2.0 notices.

@@ -1,0 +1,41 @@
+# Dependencies and local build caches
+node_modules/
+build/out/
+.cache/
+coverage/
+*.zip
+
+# electron-builder unpack/staging repeats the installer. The setup exe is tracked.
+dist/*
+!dist/Gridiron Play Advisor Setup 0.1.5.exe
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+**/credentials.json
+**/*service-account*.json
+**/*.jks
+**/*.keystore
+**/*.p12
+**/userData/
+
+# PyInstaller work files and native build intermediates
+ocr-sidecar/build/
+capture-bridge/**/bin/
+capture-bridge/**/obj/
+**/__pycache__/
+**/*.py[cod]
+
+# Private captures, logs, and internal notes
+ocr-golden/private/
+ocr-golden/results/
+session_handoff.md
+*.log
+
+# One-off local patch scripts
+scripts/patch-*.mjs
+scripts/fix-*.mjs
+scripts/analyze-*.mjs
+scripts/probe-*.mjs
+scripts/sync-recommendation-core.mjs
