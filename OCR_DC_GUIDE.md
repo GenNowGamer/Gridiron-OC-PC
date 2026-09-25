@@ -122,6 +122,10 @@ confirm:
   until New Game (a drive reset does not clear them) and each play is capped at
   two sheet appearances. Against 3-wide personnel, two of the three calls stay
   in the matching nickel band instead of repeating one Nickel Cover 3 look.
+- **Blitz recommendations**: Pressures are split into `zone_blitz` and `man_blitz` so
+  safe 5-man fire zones can surface on 1st & 10 and 3rd & medium/long without
+  crowding out base coverage or over-promoting risky Cover 0 blitzes. DC slate policy
+  prevents blitz packages from being frozen for multiple drives after a single call.
 - **Goal-line defenses** are withheld unless the spot is a true goal line
   (goal-to-go within a few yards, or the opponent’s 1–3 on a short or late
   down). 1st & 10, 2nd & 10, open-field 3rd/4th & 1, and long goal-to-go do

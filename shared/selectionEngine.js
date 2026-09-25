@@ -635,6 +635,13 @@
     if ((aType === "PASS" || aType === "PA") && (bType === "RUN" || bType === "RPO")) {
       return true;
     }
+    // Defense complementary pairing: coverage shell paired with a pressure look (or vice versa).
+    const aIsCoverage = aFam === "zone" || aFam === "match" || aFam === "cover3" || aFam === "cover2" || aFam === "cover4";
+    const bIsPressure = bFam === "zone_blitz" || bFam === "man_blitz" || bFam === "blitz" || bType === "BLITZ";
+    if (aIsCoverage && bIsPressure) return true;
+    const aIsPressure = aFam === "zone_blitz" || aFam === "man_blitz" || aFam === "blitz" || aType === "BLITZ";
+    const bIsCoverage = bFam === "zone" || bFam === "match" || bFam === "cover3" || bFam === "cover2" || bFam === "cover4";
+    if (aIsPressure && bIsCoverage) return true;
     if (aFam && bFam && aFam !== bFam && primary._selectionFormation !== candidate._selectionFormation) {
       return true;
     }

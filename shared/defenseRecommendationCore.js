@@ -116,6 +116,13 @@
       isCover3: /\bcover\s*3\b|\bc3\b/.test(blob),
       isCover4: /\bcover\s*4\b|\bquarters\b|\bc4\b/.test(blob),
       isPressure: type === "BLITZ" || /\bpressure|fire|send\b/.test(blob),
+      isZeroBlitz: (type === "BLITZ" || /\bblitz|pressure\b/.test(blob)) && /\b(0|zero|smoke)\b/.test(blob),
+      isZoneBlitz: (type === "BLITZ" || /\bblitz|pressure|fire\b/.test(blob)) && (
+        type === "ZONE" || /\b(zone|fire\s*3|3|2|trap|cloud|sky|buzz|invert|roll)\b/.test(blob)
+      ) && !/\b(0|zero|smoke|1|man)\b/.test(blob),
+      isManBlitz: (type === "BLITZ" || /\bblitz|pressure\b/.test(blob)) && (
+        type === "MAN" || /\b(man|cover\s*1|c1|1|hole|sting|brave|dog)\b/.test(blob) || !/\b(zone|fire\s*3|3|2|trap|cloud|sky|buzz)\b/.test(blob)
+      ),
       concepts: Array.isArray(play && play.concepts) ? play.concepts.slice() : [],
     };
   }
@@ -224,7 +231,7 @@
       plan.preferPackages = ["forty_six", "four_three", "nickel"];
       if (trueGoalLine) plan.preferPackages.unshift("goal_line");
       plan.discouragePackages = ["prevent", "dime", "dollar"];
-      plan.preferFamilies = ["blitz", "man", "match"];
+      plan.preferFamilies = ["blitz", "man", "match", "zone_blitz", "man_blitz"];
       plan.discourageFamilies = ["zone"];
     } else if (money && bucket === "medium") {
       // 3rd/4th & 4-6: contest the sticks — never Prevent.
@@ -232,39 +239,41 @@
       plan.pressureLean = "medium_high";
       plan.preferPackages = ["nickel", "four_three", "three_three_five"];
       plan.discouragePackages = ["prevent", "goal_line"];
-      plan.preferFamilies = ["match", "zone", "man", "blitz"];
+      plan.preferFamilies = ["match", "zone", "man", "blitz", "zone_blitz", "man_blitz"];
     } else if (money && (bucket === "long" || (Number.isFinite(yards) && yards >= 10))) {
       plan.intent = "money_long";
-      plan.pressureLean = protectLead ? "low" : "low_medium";
+      plan.pressureLean = protectLead ? "low" : "medium";
       plan.preferPackages = ["nickel", "dime", "dollar", "three_three_five"];
       plan.discouragePackages = allowPrevent ? ["goal_line", "forty_six"] : ["prevent", "goal_line", "forty_six"];
       if (allowPrevent) plan.preferPackages.push("prevent");
-      plan.preferFamilies = ["zone", "match"];
-      plan.discourageFamilies = ["blitz"];
+      plan.preferFamilies = ["zone", "match", "zone_blitz"];
+      // In money_long, do not blanket-discourage all blitzes; zone blitzes and disguised pressures are standard NFL calls.
+      plan.discourageFamilies = protectLead ? ["blitz", "man_blitz"] : [];
     } else if (down <= 2 && bucket === "long") {
       plan.intent = "early_long";
+      plan.pressureLean = "medium";
       plan.preferPackages = ["nickel", "four_three", "dime"];
       plan.discouragePackages = ["prevent", "goal_line"];
-      plan.preferFamilies = ["zone", "match"];
+      plan.preferFamilies = ["zone", "match", "zone_blitz"];
     } else if (redish) {
       plan.intent = "red_zone";
       plan.pressureLean = "high";
       plan.preferPackages = ["nickel", "four_three", "forty_six"];
       plan.discouragePackages = ["prevent", "dime", "dollar"];
-      plan.preferFamilies = ["man", "blitz", "match"];
+      plan.preferFamilies = ["man", "blitz", "match", "zone_blitz", "man_blitz"];
     } else if (backedUp) {
       plan.intent = "backed_up_pressure";
       plan.pressureLean = "high";
       plan.preferPackages = ["four_three", "nickel", "forty_six"];
       plan.discouragePackages = ["prevent", "dime"];
-      plan.preferFamilies = ["blitz", "man", "zone"];
+      plan.preferFamilies = ["blitz", "man", "zone", "zone_blitz", "man_blitz"];
     } else if (protectLead && !money) {
       plan.intent = "protect_lead";
       plan.pressureLean = "low";
       plan.preferPackages = ["nickel", "four_three"];
       plan.discouragePackages = allowPrevent ? [] : ["prevent"];
       plan.preferFamilies = ["zone", "match"];
-      plan.discourageFamilies = ["blitz"];
+      plan.discourageFamilies = ["blitz", "man_blitz"];
     }
 
     if (!allowPrevent && plan.discouragePackages.indexOf("prevent") < 0) {
@@ -503,31 +512,38 @@
       if (t.isZone) score += 3.0;
       if (t.isMatch) score += 2.6;
       if (t.isMan) score += 1.2;
-      if (t.isBlitz) score -= 1.8;
+      // In 3rd & long, Zone Blitz is a staple NFL look; only pure Zero/unprotected man blitzes carry heavy risk.
+      if (t.isZoneBlitz) score += 1.8;
+      else if (t.isZeroBlitz) score -= 2.0;
+      else if (t.isBlitz) score += 0.4;
     } else if (money && bucket === "medium") {
       if (t.isMatch) score += 2.2;
       if (t.isZone) score += 2.0;
-      if (t.isBlitz) score += 1.4;
+      if (t.isZoneBlitz) score += 2.6;
+      else if (t.isBlitz) score += 2.2;
       if (t.isMan) score += 1.5;
       if (t.isPrevent) score -= 6.0;
     } else if (early && bucket === "short") {
-      if (t.isBlitz) score += 2.4;
+      if (t.isBlitz) score += 2.6;
       if (t.isMan) score += 1.4;
       if (t.isZone) score += 1.0;
       if (t.isMatch) score += 1.1;
     } else {
-      // Early medium / long — prefer coverage shells over free blitzing.
+      // Early medium / long — realistic NFL pressure rate (safe Zone Blitz ~2.2, Man Blitz ~1.5, raw Cover 0 cooled).
       if (t.isZone) score += 2.4;
       if (t.isMatch) score += 2.1;
       if (t.isMan) score += 1.3;
-      if (t.isBlitz) score += 0.15;
+      if (t.isZoneBlitz) score += 2.2;
+      else if (t.isZeroBlitz) score -= 0.6;
+      else if (t.isBlitz) score += 1.4;
     }
 
     // Package fit.
     if (t.isNickel) {
       score += 2.0;
       if (bucket !== "short" && !t.isBlitz) score += 0.8;
-      if (t.isBlitz && early && !shortSpot) score -= 0.8;
+      // In early downs, do not heavily penalize nickel blitzes (e.g. slot corners / nickel over pressures)
+      if (t.isZeroBlitz && early && !shortSpot) score -= 0.6;
     }
     if (t.isFourThree) {
       score += early ? 2.4 : 1.2;
@@ -887,6 +903,8 @@
 
   function coverageFamilyOf(play, traits) {
     const t = traits || defensivePlayTraitsOf(play);
+    if (t.isZoneBlitz) return "zone_blitz";
+    if (t.isManBlitz) return "man_blitz";
     if (t.isBlitz || t.isPressure) return "blitz";
     if (t.isCover1) return "cover1";
     if (t.isCover2) return "cover2";
@@ -903,6 +921,8 @@
     const key = lower(family);
     const labels = {
       blitz: "Blitz",
+      zone_blitz: "Zone Blitz",
+      man_blitz: "Man Blitz",
       cover1: "Cover 1",
       cover2: "Cover 2",
       cover3: "Cover 3",
@@ -1332,9 +1352,9 @@
         rng: params && params.rng,
         policy: {
           shownPlayBanBatches: 8,
-          shownConceptBanBatches: 4,
-          shownShellBanBatches: 3,
-          shownFamilyBanBatches: 2,
+          shownConceptBanBatches: 1,
+          shownShellBanBatches: 1,
+          shownFamilyBanBatches: 0,
           wildcardTemperature: 2.1,
           requireUniqueFormation: true,
         },

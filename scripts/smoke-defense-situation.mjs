@@ -180,4 +180,65 @@ test("goal line remains available inside the goal line", () => {
   assert.equal(sheet.recommendations.some((play) => play.id === goalLinePlay.id), false);
 });
 
+test("blitz classification separates zone blitz and man blitz", () => {
+  const zBlitzPlay = {
+    id: "chi|nickel|over|fire-zone-3",
+    team: "CHI",
+    formation: "Nickel",
+    set: "Over",
+    play_name: "Fire Zone 3",
+    type: "BLITZ",
+    concepts: ["Fire Zone", "Cover 3"],
+  };
+  const mBlitzPlay = {
+    id: "chi|nickel|over|nickel-blitz-man",
+    team: "CHI",
+    formation: "Nickel",
+    set: "Over",
+    play_name: "Cover 1 Hole Blitz",
+    type: "BLITZ",
+    concepts: ["Man", "Cover 1"],
+  };
+  const zTraits = Defense.defensivePlayTraitsOf(zBlitzPlay);
+  const mTraits = Defense.defensivePlayTraitsOf(mBlitzPlay);
+  assert.equal(zTraits.isBlitz, true);
+  assert.equal(zTraits.isZoneBlitz, true);
+  assert.equal(zTraits.isManBlitz, false);
+  assert.equal(Defense.coverageFamilyOf(zBlitzPlay, zTraits), "zone_blitz");
+
+  assert.equal(mTraits.isBlitz, true);
+  assert.equal(mTraits.isZoneBlitz, false);
+  assert.equal(mTraits.isManBlitz, true);
+  assert.equal(Defense.coverageFamilyOf(mBlitzPlay, mTraits), "man_blitz");
+});
+
+test("medium money down produces blitz recommendations in top 3", () => {
+  const blitzPlay = {
+    id: "chi|nickel|over|nickel-zone-blitz",
+    team: "CHI",
+    formation: "Nickel",
+    set: "Over",
+    play_name: "Zone Blitz 3",
+    type: "BLITZ",
+    concepts: ["Zone", "Blitz"],
+  };
+  const covPlay = {
+    id: "chi|4-3|over|cover-2-man",
+    team: "CHI",
+    formation: "4-3",
+    set: "Over",
+    play_name: "Cover 2 Man",
+    type: "MAN",
+    concepts: ["Cover 2", "Man"],
+  };
+  const res = Defense.computeDefensivePackageRecommendations({
+    plays: [blitzPlay, covPlay],
+    down: 3,
+    yards: 5,
+    situationChip: "money_medium",
+  });
+  const blitzRecs = res.recommendations.filter(r => r.pressure === "blitz");
+  assert.ok(blitzRecs.length > 0, "Expected at least 1 blitz recommendation on 3rd & 5");
+});
+
 console.log("OK defense situation smoke");
