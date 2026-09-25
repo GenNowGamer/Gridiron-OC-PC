@@ -44,5 +44,16 @@ Push the current branch to GitHub:
 git push -u <remote-name> <current-branch>
 ```
 
-### Step 5: Report Status
-Confirm success, showing the branch name, remote URL, and pushed commit range to the user.
+### Step 5: Check and Update GitHub Release (if installer version changed)
+If the version in `package.json` corresponds to a new installer in `dist/` (e.g. `Gridiron Play Advisor Setup <version>.exe`):
+Run:
+```powershell
+node ./scripts/publish-github-release.mjs
+```
+This automatically:
+- Creates and pushes the version Git tag (e.g. `v0.1.6`)
+- Creates the GitHub Release via GitHub API using stored credentials
+- Uploads the installer `.exe` directly to the release page
+
+### Step 6: Report Status
+Confirm success, showing the branch name, remote URL, pushed commit range, and any updated GitHub Release link to the user.
