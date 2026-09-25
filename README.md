@@ -1,12 +1,5 @@
 # Gridiron OC PC
 
-## PC-only maintenance update — 2026-09-25
-
-This checkout now builds independently. `PC/shared` is authoritative for this PC
-app. Start and installer builds validate those local modules with `check:core`;
-they do not read or copy Mobile files. The old sync script is disabled. Older
-Mobile parity/sync instructions below describe the previous workflow.
-
 - OC ranking retains the capped football-fit, identity, learning, historical
   variety, novelty, and mode/scoreboard contributions. The selection engine uses
   that score, applies recent-repeat penalties, and chooses the diverse slate;
@@ -26,70 +19,6 @@ Electron desktop build of the Gridiron OC play-calling app.
 
 Last updated: 2026-09-25 (v0.1.6)
 
-## Command Execution Protocol (Persistent Project Rule)
-
-For all future sessions on this project, any time the assistant asks the user to run terminal commands, instructions must always include:
-
-- terminal type: `PowerShell` or `Command Prompt (cmd)`
-- privilege requirement: `Administrator` or `non-Administrator`
-- exact run location with explicit `cd` step when needed
-- copy/paste-ready fenced command blocks
-
-Required format:
-
-1. `Terminal:` shell + admin status
-2. `Run from:` full path
-3. `Command(s):` one or more easy-copy code blocks
-
-Copy/paste requirement:
-
-- Command blocks must be ready to paste as-is (no placeholders unless explicitly marked like `<TARGET_PATH>`).
-- Prefer a single command window per step so the user can click Copy once and run immediately.
-
-If the user begins in `cmd` and needs Administrator PowerShell in a specific folder, provide this copy-ready bootstrap command with the path filled in:
-
-```cmd
-powershell -Command "Start-Process PowerShell -Verb RunAs -ArgumentList '-NoExit','-Command','cd ''<TARGET_PATH>'''"
-```
-
-## Tooling Recommendation Preference
-
-If a tool such as Docker, a Python virtual environment, or another extension/tool can improve reliability, setup, testing, or build speed for PC or Mobile work, proactively recommend it for that specific situation.
-Do not assume the current setup is best if there is a safer or faster option.
-
-## Extension Collaboration Protocol
-
-For all future PC or Mobile tasks, the assistant should evaluate whether an installed VS Code extension (or a relevant extension from the VS Code Marketplace) can materially improve speed, reliability, debugging, or safety for the requested work.
-
-If an extension can help:
-
-- Recommend it before implementation starts.
-- State the expected benefit for the current task.
-- Clearly state whether user action is required in VS Code.
-- Provide the exact command/action to run when needed, then continue once output is provided.
-
-Constraint reminder:
-
-- The assistant cannot directly click or run VS Code extension UI actions from chat tools.
-- Use CLI/tooling equivalents automatically when they provide the same benefit.
-## Recommendation Core Parity Update (2026-03-31)
-
-- Desktop now consumes a synced copy of the shared recommendation core.
-- Source of truth:
-  - `Mobile/shared/recommendationCore.js`
-  - `Mobile/shared/selectionEngine.js` (OC Stage-2 slate builder; anti-repeat 2026-09-22; keep Mobile↔PC synced)
-  - `Mobile/shared/defenseRecommendationCore.js` (DC top-3 + Offense Showing soft-bias; synced as of 2026-09-15)
-  - `Mobile/shared/coordinatorReport.js` (End Game report; synced as of 2026-09-11)
-  - `Mobile/shared/penaltyCatalog.js` (Penalty picker learning gates; synced as of 2026-09-11)
-- Desktop synced copies:
-  - `PC/shared/recommendationCore.js`
-  - `PC/shared/selectionEngine.js`
-  - `PC/shared/defenseRecommendationCore.js`
-  - `PC/shared/coordinatorReport.js`
-  - `PC/shared/penaltyCatalog.js`
-- **Sync**: `PC/shared/` is authoritative for this PC project. `npm run check:core`
-  validates all five shared modules locally. The old Mobile↔PC sync automation
-  is retired; the sync script now prints a message and exits cleanly.
 
 ## Overview
 
@@ -99,7 +28,6 @@ Current direction:
 
 - desktop branding now matches `Gridiron OC`
 - the packaged Windows build uses the custom Gridiron OC icon (embedded in the `.exe` PE resources, plus `icon.ico` outside the asar for shortcuts/window)
-- the desktop app now shares the same recommendation core paths with mobile for parity-critical logic
 
 ## Current Status (Last code/doc verification: 2026-09-25, v0.1.6)
 
