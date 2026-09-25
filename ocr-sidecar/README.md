@@ -1,20 +1,13 @@
 # Gridiron OC OCR sidecar
 
 Local Python 3.12 JSON-lines process for OCR of normalized regions from game
-frames. Capture ingest is either:
-
-- **Capture Bridge** (default) — Cap V1 shared-memory maps published by
-  `GridironCaptureBridge.exe` (`adapter: "capture-bridge"`; OBS not required)
-- **OBS** (legacy/manual) — WebSocket v5 screenshots and/or the native OBS
-  shared-frame plugin (`adapter: "websocket"` / `"obs-plugin"`)
+frames. Capture ingest is **Capture Bridge**: Cap V1 shared-memory maps published by
+`GridironCaptureBridge.exe` (`adapter: "capture-bridge"`).
 
 Transport is stdin/stdout only: one UTF-8 JSON request per line and one
 schema-versioned JSON response per line. Logs must go to stderr.
 
 ## Setup and test (Windows)
-
-For OBS legacy only: enable **Tools > WebSocket Server Settings > Enable
-WebSocket server** (OBS 28+ includes WebSocket v5). Bridge path skips OBS.
 
 ```powershell
 cd PC\ocr-sidecar
@@ -51,9 +44,7 @@ Requests have `id`, `command`, and optional `params`. Every response has
 
 ```json
 {"id":1,"command":"hello","params":{}}
-{"id":2,"command":"obs.configure","params":{"host":"127.0.0.1","port":4455,"password":"..."}}
-{"id":3,"command":"obs.list_sources","params":{}}
-{"id":4,"command":"obs.preview","params":{"source":"Game Capture","width":960}}
+{"id":2,"command":"obs.configure","params":{"adapter":"capture-bridge","freshFrameTimeoutMs":1000}}
 {"id":5,"command":"profile.test","params":{"source":"Game Capture","engine":"tesseract","profile":{"name":"scoreboard","rois":[{"id":"quarter","x":0.45,"y":0.02,"width":0.1,"height":0.06,"preprocess":{"grayscale":true,"scale":2,"threshold":"otsu"},"ocr":{"psm":7,"whitelist":"1234OT"}}]}}}
 {"id":"burst-1","command":"capture.analyze_burst","params":{"source":"Game Capture","frameCount":5,"intervalMs":100,"profile":{"name":"playcall","rois":[{"id":"defense","x":0.1,"y":0.75,"width":0.4,"height":0.1}]}}}
 {"id":7,"command":"capture.cancel","params":{"requestId":"burst-1"}}
@@ -72,8 +63,7 @@ scaling, odd Gaussian blur, inversion, binary/Otsu/adaptive thresholding, and
 open/close morphology.
 
 The sidecar keeps frames and crops in memory only for the current request.
-Raw image retention is disabled; no frame files are written. `obs.preview`
-necessarily returns one PNG data URL to the caller but does not retain it.
+Raw image retention is disabled; no frame files are written.
 
 ## Onedir build
 
@@ -96,7 +86,7 @@ or HUD Python change (`capture-bridge` must appear in `hello` /
 
 Before redistribution, inventory the exact wheels, native DLLs, OCR executable,
 language data, Paddle runtime, and model files in the produced onedir build.
-OpenCV, NumPy, Pillow, obsws-python, pytesseract, Tesseract, PaddlePaddle,
+OpenCV, NumPy, Pillow, pytesseract, Tesseract, PaddlePaddle,
 PaddleOCR, PyInstaller, and any OCR models retain their own licenses and notice
 requirements. Model licenses can differ from framework licenses. This project
 does not grant model redistribution rights. PyInstaller's bootloader exception

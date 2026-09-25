@@ -1,6 +1,6 @@
 # Gridiron Capture Bridge
 
-Bundled Windows helper that replaces OBS for OCR frame ingest (default Calibrate path).
+Bundled Windows helper for OCR frame ingest. It is the only capture path in Calibrate.
 
 ## What it does
 
@@ -33,7 +33,7 @@ Output: `PC\capture-bridge\dist\GridironCaptureBridge.exe`
 
 - MF capture runs on a dedicated **STA** thread (driver affinity).
 - Prefer ~1080p NV12/YUY2 paths; do not enable MF video processing for realtime RGB.
-- Close OBS (and other apps) before selecting the card — exclusive open fails or crashes.
+- Close any other app that has the capture card open before selecting it — exclusive open fails or crashes.
 - HDMI must be live for first frame / preview. Exit `3221226505` (`0xC0000409`) is typically Bridge abort, not the OCR sidecar.
 
 ## Requirements
