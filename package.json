@@ -1,9 +1,12 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
-  "description": "Desktop play-calling assistant for Madden. Ranks offensive and defensive calls from a local playbook using voice input or live HUD capture.",
+  "description": "Electron desktop build of Gridiron Play Advisor",
   "main": "main.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "check:ffmpeg-license": "node ./scripts/check-ffmpeg-license.mjs",
     "check:ocr-license": "node ./scripts/check-ocr-license.mjs",

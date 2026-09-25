@@ -80,12 +80,18 @@ enabled before any frame bundle can be retained.
 10. **Formation / personnel** repairs a dropped leading **I** on I Form
     (`| Form - Wing` / `Form - Close` → `I Form`), glued bars (`IRBITEIAWR` /
     `RBITEIAWR` → `1RB - 1TE 3WR`, TE=`I`→1), and common glue typos such as
-    `OTE`→`0TE`. OC chrome junk (`cYal`, lonely brackets) fails closed as empty.
+    `OTE`→`0TE`. OC chrome junk (`cYal`, `cYaalb`, lonely brackets) fails closed as empty.
+    Impossible full personnel counts (e.g. `1RB 3TE 3WR`) are withheld for review.
 11. **Previous-play text** repairs cover digit confusables (`COVERAQUARTERS`→
     Cover 4, `COVERIHOLE`→Cover 1, `COVERBCLOUD`→Cover 3), truncated `COV…`,
-    blitz glue, `NSDE`/`NSIDE`→INSIDE, HB glue (`HBSLIPSCREEN`, `HBLEAD`),
-    `L DOUBLE`→`1 DOUBLE`, `FELD`→FIELD, and spaced tokens (`MTN EMPTY…`,
-    `DOUBLE BRACKET SWITCH`) before catalog match.
+    blitz glue (`ZEROBITZ`→ZERO BLITZ, `LBROS`→LB CROSS 3 SHOW 2, `LOPHOTBLITZ`→LOOP HOT BLITZ 3),
+    `NSDE`/`NSIDE`→INSIDE, HB glue (`HBSLIPSCREEN`, `HBLEAD`), `REDZONEBSISRS`→REDZONE SCISSORS,
+    `CORERSTRKE`→CORNER STRIKE, `L DOUBLE`→`1 DOUBLE`, `FELD`→FIELD, and spaced tokens (`MTN EMPTY…`,
+    `DOUBLE BRACKET SWITCH`) before catalog match. Manual corrections resolve against catalog IDs.
+12. **Defensive Penalty Gating & Learning:** Logged defensive penalties on confirmed
+    Exact Calls safely gate out learnable outcomes so penalties never teach false stops or yard losses.
+    When the observed defensive play matches the confirmed call, learning attributes directly to that
+    call's confirmed formation/set identity.
 
 ## Troubleshooting (Capture Bridge)
 
@@ -154,12 +160,7 @@ confidence threshold or substitute cloud OCR.
   midfield so Exact Calls are not blocked at the 50.
 - **Exact Call Confirm / Audible / Penalty**: confirm a generated defensive
   call from the Recommendations panel, then optionally correct the logged play
-  or stamp a penalty (same pickers as the OC/DC boards). That confirmation is
-  what OCR learning uses when the observed defensive name matches it. A logged
-  defensive penalty is not learned. A later play-name correction replaces that
-  snap's learning record instead of adding a second one.
-- **Personnel** totals that cannot be a legal 11-man group stay unaccepted for
-  review. The parser does not invent a replacement count.
+  or stamp a penalty (same pickers as the OC/DC boards).
 - **Undo Last Snap**: appends an undo event and rebuilds learning.
 - **Reset Opponent**: excludes that opponent's learned aggregates.
 - **Export OCR Data**: exports profiles, event ledger, learning snapshot, and

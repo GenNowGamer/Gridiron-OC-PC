@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
 
-const html = readFileSync("PC/index.html", "utf8");
+const root = path.resolve(__dirname, "..");
+const html = readFileSync(path.join(root, "index.html"), "utf8");
 const dc = html.slice(
   html.indexOf('id="dcWorkspace"'),
   html.indexOf('id="coordinatorOverlay"')
@@ -16,7 +18,7 @@ console.log(
 console.log("ocRec", html.includes('id="ocRecPanel"'));
 console.log("sharedTrace", html.includes('id="sharedTraceSection"'));
 
-const s = readFileSync("PC/app.js", "utf8");
+const s = readFileSync(path.join(root, "app.js"), "utf8");
 console.log({
   mount: s.includes("sharedTraceSection.parentElement"),
   dcOpp: s.includes("dcOpponentValue"),
