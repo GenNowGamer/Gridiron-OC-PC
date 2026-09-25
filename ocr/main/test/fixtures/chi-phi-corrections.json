@@ -1,0 +1,86 @@
+[
+  {
+    "field": "previous_offense_play",
+    "roi": {
+      "text": "REDZONEBSISRS",
+      "confidence": 0.7621,
+      "agreement": 1,
+      "fieldSide": null,
+      "_playMatchQuery": "REDZONE SCISSORS",
+      "_emptyPreviousPlay": false
+    },
+    "expected": "RED ZONE SCISSORS"
+  },
+  {
+    "field": "previous_defense_play",
+    "roi": {
+      "text": "ZEROBITZ",
+      "confidence": 0.9348,
+      "agreement": 0.6667,
+      "fieldSide": null,
+      "_playMatchQuery": "ZERO BLITZ",
+      "_emptyPreviousPlay": false
+    },
+    "expected": "ZERO BLITZ"
+  },
+  {
+    "field": "previous_defense_play",
+    "roi": {
+      "text": "cYaalb",
+      "confidence": 0.5341,
+      "agreement": 0.3333,
+      "fieldSide": null,
+      "_playMatchQuery": "CYAALB",
+      "_emptyPreviousPlay": true
+    },
+    "expected": null
+  },
+  {
+    "field": "field_position",
+    "roi": {
+      "text": "Y'3'B",
+      "confidence": 0.5091,
+      "agreement": 1,
+      "fieldSide": "OWN",
+      "_fieldGlyphSide": null,
+      "_fieldSideHint": "OWN"
+    },
+    "expected": "OWN 38"
+  },
+  {
+    "field": "previous_defense_play",
+    "roi": {
+      "text": "LBROS",
+      "confidence": 0.7001,
+      "agreement": 1,
+      "fieldSide": null,
+      "_playMatchQuery": "CROSS 3 SHOW 2",
+      "_emptyPreviousPlay": false
+    },
+    "expected": "LB CROSS 3 SHOW 2"
+  },
+  {
+    "field": "previous_offense_play",
+    "roi": {
+      "text": "CORERSTRKE",
+      "confidence": 0.9653,
+      "agreement": 1,
+      "fieldSide": null,
+      "_playMatchQuery": "CORNER STRIKE",
+      "_emptyPreviousPlay": false
+    },
+    "expected": "CORNER STRIKE"
+  },
+  {
+    "field": "previous_defense_play",
+    "roi": {
+      "text": "LOPHOTBLITZ",
+      "confidence": 0.8616,
+      "agreement": 0.6667,
+      "fieldSide": null,
+      "_playMatchQuery": "LOOP HOT BLITZ 3",
+      "_emptyPreviousPlay": false
+    },
+    "expected": "LOOP HOT BLITZ 3"
+  }
+]

@@ -459,6 +459,14 @@
       });
     });
 
+    // Renderer keeps a bounded recent window, but game caps must outlive it.
+    Object.entries((params && params.sessionPlayShowCounts) || {}).forEach(function (entry) {
+      const count = Number(entry[1]);
+      if (Number.isFinite(count) && count >= 0) {
+        playShowCounts[entry[0]] = Math.max(playShowCounts[entry[0]] || 0, count);
+      }
+    });
+
     return {
       recentGameCalls: recentGameCalls,
       outcomeMemory: outcomeMemory,
@@ -564,7 +572,7 @@
       success += conceptSuccessAdjustment(identity, memory.outcomeMemory, policy);
       success += underusedBonus(identity, memory, policy);
 
-      const composed = composeScore({
+      let composed = composeScore({
         base: base,
         defense: defense,
         team: team,
@@ -572,6 +580,16 @@
         decay: decay + repeatTax,
         predictability: predictability,
       }, policy);
+
+      if (helpers && helpers.preserveInputScore) {
+        // OC already capped football fit, identity, learning, and history.
+        // Selection owns repetition and diversity, not a second learning score.
+        const foundation = readScore(item, scoreKey);
+        composed = {
+          score: foundation - decay - repeatTax - predictability,
+          parts: { foundation, decay, repeatTax, predictability },
+        };
+      }
 
       const ban = hardBanReason(memory, playId, shell, concept, family, policy);
       const softBlocked = !!(item && (item._cooldownBlocked === true || item.cooldownBlocked === true));
@@ -725,6 +743,7 @@
       formationSetKeyOf: params && params.formationSetKeyOf,
       normalizedConceptKey: params && params.normalizedConceptKey,
       scoreKey: scoreKey,
+      preserveInputScore: params && params.preserveInputScore === true,
     };
 
     const memory = buildSelectionMemory({
@@ -732,6 +751,7 @@
       recommendationExposureHistory: params && params.recommendationExposureHistory,
       driveRecommendationExposure: params && params.driveRecommendationExposure,
       outcomeMemory: params && params.outcomeMemory,
+      sessionPlayShowCounts: params && params.sessionPlayShowCounts,
       policy: policy,
     });
 

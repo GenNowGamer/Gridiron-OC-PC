@@ -696,6 +696,21 @@
     if (callState) local.exactCallState = callState;
     // Host already owns presented rows — refresh local chrome only.
     renderExactCallsCard(local.latestExactRecommendations || [], callState || exactCallState(), { syncHost: false });
+    const current = callState || exactCallState();
+    if (!isOcHostRole() && current?.sheetConfirmed && local.latestCapture?.id && desktop().ocrSetPendingCall) {
+      const payload = { captureId: local.latestCapture.id,
+        playId: current.audiblePlayId || current.confirmedPlayId, penalty: current.penalty || null };
+      const key = JSON.stringify(payload);
+      if (key !== local.pendingCallKey) {
+        local.pendingCallKey = key;
+        desktop().ocrSetPendingCall(payload).then(result => {
+          if (!result?.accepted && local.pendingCallKey === key) local.pendingCallKey = '';
+        }).catch(() => {
+          if (local.pendingCallKey === key) local.pendingCallKey = '';
+          if (ui.status) ui.status.textContent = 'Call could not be linked for learning. Confirm it again before the next capture.';
+        });
+      }
+    }
   }
 
   function renderCapture(capture) {
@@ -707,6 +722,9 @@
     const exactGate = exactCallGate(capture);
     const confidence = gate.confidence || captureConfidence(capture, gate.requiredFields);
     const situation = parseSituation(fields, scoreboardFromCapture(capture));
+    if (!isOcHostRole() && fields.down_distance?.accepted && fields.field_position?.accepted) {
+      ocrHost().beginOcrDefensiveSnap?.(situation);
+    }
     const exactAllowed = !isOcHostRole() && local.config.exactCallsEnabled && exactGate.ready;
     const recommendations = exactAllowed ? rankExactPlays(capture) : [];
     const offenseShowing = offenseShowingOf(fields);
@@ -1664,6 +1682,12 @@
     });
     if (desktop().onOcrEvent) {
       desktop().onOcrEvent((event) => {
+        if (event?.type === "session:reset") {
+          local.latestCapture = null;
+          local.pendingCallKey = '';
+          local.latestExactRecommendations = [];
+          renderStrip({});
+        }
         if (event?.type === "capture:complete" && event.capture) {
           renderCapture(attachLearningSnapshot(event.capture, event));
         }

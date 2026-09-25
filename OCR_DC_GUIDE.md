@@ -154,7 +154,12 @@ confidence threshold or substitute cloud OCR.
   midfield so Exact Calls are not blocked at the 50.
 - **Exact Call Confirm / Audible / Penalty**: confirm a generated defensive
   call from the Recommendations panel, then optionally correct the logged play
-  or stamp a penalty (same pickers as the OC/DC boards).
+  or stamp a penalty (same pickers as the OC/DC boards). That confirmation is
+  what OCR learning uses when the observed defensive name matches it. A logged
+  defensive penalty is not learned. A later play-name correction replaces that
+  snap's learning record instead of adding a second one.
+- **Personnel** totals that cannot be a legal 11-man group stay unaccepted for
+  review. The parser does not invent a replacement count.
 - **Undo Last Snap**: appends an undo event and rebuilds learning.
 - **Reset Opponent**: excludes that opponent's learned aggregates.
 - **Export OCR Data**: exports profiles, event ledger, learning snapshot, and

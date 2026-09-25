@@ -80,6 +80,7 @@ class VersionedConfigStore {
     this.migrations = options.migrations || {};
     this.state = clone(DEFAULT_STATE);
     this.loaded = false;
+    this._writeQueue = Promise.resolve();
   }
 
   get filePath() {
@@ -105,7 +106,12 @@ class VersionedConfigStore {
 
   async replace(nextState) {
     this.state = mergeState(nextState);
-    await this._writeAtomic(this.state);
+    const snapshot = this.get();
+    // Rapid role/scoreboard/session updates must not rename onto the same file
+    // concurrently on Windows or persist an older snapshot after a newer one.
+    const write = this._writeQueue.then(() => this._writeAtomic(snapshot));
+    this._writeQueue = write.catch(() => {});
+    await write;
     return this.get();
   }
 

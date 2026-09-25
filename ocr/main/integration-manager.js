@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { VersionedConfigStore } = require('./config-store');
-const { EventLedger } = require('./event-ledger');
+const { EventLedger, buildLearningSnapshot } = require('./event-ledger');
 const { SidecarManager } = require('./sidecar-manager');
 const { BridgeManager } = require('./bridge-manager');
 const { HotkeyManager } = require('./hotkey-manager');
@@ -15,6 +15,7 @@ const StateValidator = require('../shared/footballStateValidator');
 const Outcome = require('../shared/defensiveOutcomeInference');
 const SnapLifecycle = require('../shared/snapLifecycle');
 const Confidence = require('../shared/confidenceCalibration');
+const Penalties = require('../../shared/penaltyCatalog');
 const { OcrDebugPack } = require('./debug-pack');
 
 const REQUIRED_FIELDS = new Set([
@@ -43,6 +44,16 @@ function normalizePresentation(value) {
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function contextKey(context = {}) {
+  return [context.team, context.opponent, context.role || context.hostRole]
+    .map((value) => clean(value).toLowerCase()).join('|');
+}
+
+function snapSpot(state = {}) {
+  return JSON.stringify([state.down, state.yardsToGo, state.goalToGo === true,
+    state.fieldSide || state.side, state.fieldYardLine ?? state.yardLine]);
 }
 
 function clean(value) {
@@ -348,6 +359,8 @@ class IntegrationOcrManager extends EventEmitter {
     this.lastCapturePriorPending = null;
     this.snapLifecycle = SnapLifecycle.createLifecycleState();
     this.lastCapturePriorLifecycle = null;
+    this.sessionGeneration = 0;
+    this.sessionContextKey = '';
     this.diagnosticSamples = [];
     this.decisionTracePath = path.join(this.userData, 'dc-capture-decisions-v1.jsonl');
     this.engineWarm = null;
@@ -517,6 +530,7 @@ class IntegrationOcrManager extends EventEmitter {
         userScore: Math.max(0, Math.min(99, Number(patch.context.userScore) || 0)),
         oppScore: Math.max(0, Math.min(99, Number(patch.context.oppScore) || 0)),
       };
+      this._alignContext(config.context);
     }
     if (patch.burstFrames != null || patch.frameCount != null || patch.settleDelayMs != null
         || patch.intervalMs != null || patch.adapter != null
@@ -765,6 +779,8 @@ class IntegrationOcrManager extends EventEmitter {
     }
     this.busy = true;
     args = { ...state.config.context, ...args };
+    this._alignContext(args);
+    const generation = this.sessionGeneration;
     const started = this.now();
     this._emit('capture:started', { at: started });
     try {
@@ -809,6 +825,7 @@ class IntegrationOcrManager extends EventEmitter {
       }
       const completed = this.now();
       const fields = await this._resolveFields(result.rois, { ...args, profile });
+      this._assertSession(generation);
       const currentState = acceptedState(fields, args);
       const transition = this.previousAcceptedState
         ? StateValidator.validateTransition(this.previousAcceptedState, currentState)
@@ -854,6 +871,7 @@ class IntegrationOcrManager extends EventEmitter {
       this.lastCapturePriorPending = clone(this.pendingSnap);
       this.lastCapturePriorLifecycle = clone(this.snapLifecycle);
       capture.learningRecorded = await this._reconcileSnap(capture, args, state, this.lastCapturePriorPending);
+      this._assertSession(generation);
       await this._appendDecisionTrace(capture, result);
       await this._recordDebugEvent('capture', {
         id: capture.id,
@@ -880,12 +898,14 @@ class IntegrationOcrManager extends EventEmitter {
       ));
       // Advance baseline on soft transition mismatches so intermittent live
       // captures do not keep failing against a stale prior snap.
+      this._assertSession(generation);
       this.previousAcceptedState = hardTransitionFailure
         ? this.previousAcceptedState
         : (fields.down_distance && fields.down_distance.accepted ? currentState : this.previousAcceptedState);
       this.lastCapture = capture;
       this._recordDiagnostics(capture, result);
       const learningSnapshot = state.featureFlags.learning ? await this.ledger.getSnapshot() : null;
+      this._assertSession(generation);
       this._emit('capture:complete', { capture, learningSnapshot });
       return { capture, diagnostics: this._diagnostics(), learningSnapshot };
     } finally {
@@ -895,6 +915,7 @@ class IntegrationOcrManager extends EventEmitter {
 
   async _resolveFields(rois = {}, context = {}) {
     const catalogs = await this.loadCatalogs();
+    this.resolvedCatalogs = catalogs;
     const fields = {};
     const catalogMatchOpts = {
       minScore: 0.82,
@@ -1389,6 +1410,10 @@ class IntegrationOcrManager extends EventEmitter {
       const region = Array.isArray(profile && profile.regions)
         ? profile.regions.find((entry) => clean(entry.field || entry.id) === key)
         : null;
+      if (key === 'offense_formation_personnel' && !HudText.hasValidPersonnelCounts(value)) {
+        accepted = false;
+        decision.reasons = [...(decision.reasons || []), 'invalid_personnel_total'];
+      }
       fields[key] = {
         key,
         value,
@@ -1429,132 +1454,203 @@ class IntegrationOcrManager extends EventEmitter {
   }
 
   async correctCapture(args = {}) {
+    if (this.busy) throw new Error('Wait for the current capture before saving corrections.');
     if (!this.lastCapture || clean(args.captureId) !== this.lastCapture.id) throw new Error('Capture is no longer available for correction.');
-    const corrected = clone(this.lastCapture);
-    for (const [key, value] of Object.entries(args.corrections || {})) {
-      if (!corrected.fields[key]) continue;
-      let nextValue = clean(value);
-      let accepted = Boolean(nextValue);
-      if (key === 'offense_formation_personnel') {
-        nextValue = formationPersonnelFromValue(nextValue);
-        accepted = Boolean(nextValue.formation || nextValue.set || nextValue.label);
-      } else if (key === 'field_position') {
-        const parsed = HudText.parseFieldPositionText(nextValue);
-        if (parsed.ok) {
-          nextValue = {
-            side: parsed.side || null,
-            yardLine: parsed.yardLine,
-            label: parsed.label,
-          };
-          // Midfield 50 needs no OWN/OPP; other yard-only corrections stay reviewable.
-          accepted = Boolean(
-            Number.isFinite(Number(parsed.yardLine))
-            && (parsed.side || Number(parsed.yardLine) === 50),
-          );
-          if (accepted && Number(parsed.yardLine) === 50) {
-            nextValue = { side: 'MIDFIELD', yardLine: 50, label: 'MIDFIELD 50' };
+    this.busy = true;
+    try {
+      const corrected = clone(this.lastCapture);
+      const generation = this.sessionGeneration;
+      const state = this.store.get();
+      const context = state.config.context || {};
+      const catalogs = await this.loadCatalogs();
+      this._assertSession(generation);
+      if (this.lastCapture?.id !== corrected.id) throw new Error('Capture changed before corrections were saved.');
+      const playNameKey = value => clean(value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+      for (const [key, value] of Object.entries(args.corrections || {})) {
+        if (!corrected.fields[key]) continue;
+        let nextValue = clean(value);
+        let accepted = Boolean(nextValue);
+        if (key === 'offense_formation_personnel') {
+          nextValue = formationPersonnelFromValue(nextValue);
+          accepted = Boolean(nextValue.formation || nextValue.set || nextValue.label) && HudText.hasValidPersonnelCounts(nextValue);
+        } else if (key === 'field_position') {
+          const parsed = HudText.parseFieldPositionText(nextValue);
+          if (parsed.ok) {
+            nextValue = {
+              side: parsed.side || null,
+              yardLine: parsed.yardLine,
+              label: parsed.label,
+            };
+            // Midfield 50 needs no OWN/OPP; other yard-only corrections stay reviewable.
+            accepted = Boolean(
+              Number.isFinite(Number(parsed.yardLine))
+              && (parsed.side || Number(parsed.yardLine) === 50),
+            );
+            if (accepted && Number(parsed.yardLine) === 50) {
+              nextValue = { side: 'MIDFIELD', yardLine: 50, label: 'MIDFIELD 50' };
+            }
+          } else {
+            accepted = false;
           }
-        } else {
-          accepted = false;
-        }
-      } else if (key === 'down_distance') {
-        const parsed = HudText.parseDownDistanceText(nextValue);
-        if (parsed.ok) {
-          nextValue = parsed.label;
-          accepted = true;
-        } else {
-          accepted = Boolean(nextValue);
-        }
-      } else if (key === 'previous_offense_play' || key === 'previous_defense_play') {
-        // Blank / "--" correction = intentionally empty (opening drive).
-        if (
-          !nextValue
-          || (typeof HudText.isEmptyPreviousPlayOcr === 'function' && HudText.isEmptyPreviousPlayOcr(nextValue))
-          || (typeof HudText.isGarbagePreviousPlayOcr === 'function' && HudText.isGarbagePreviousPlayOcr(nextValue))
-        ) {
-          nextValue = null;
-          accepted = true;
-        } else {
-          // No-op name save: keep the catalog object so learning IDs stay stable.
-          const prior = corrected.fields[key].value;
-          if (prior && typeof prior === 'object' && !Array.isArray(prior)) {
-            const priorName = clean(prior.play_name || prior.playName || prior.name);
-            if (priorName && priorName.toLowerCase() === nextValue.toLowerCase()) {
-              nextValue = prior;
-              accepted = true;
+        } else if (key === 'down_distance') {
+          const parsed = HudText.parseDownDistanceText(nextValue);
+          if (parsed.ok) {
+            nextValue = parsed.label;
+            accepted = true;
+          } else {
+            accepted = false;
+          }
+        } else if (key === 'previous_offense_play' || key === 'previous_defense_play') {
+          // Blank / "--" correction = intentionally empty (opening drive).
+          if (
+            !nextValue
+            || (typeof HudText.isEmptyPreviousPlayOcr === 'function' && HudText.isEmptyPreviousPlayOcr(nextValue))
+            || (typeof HudText.isGarbagePreviousPlayOcr === 'function' && HudText.isGarbagePreviousPlayOcr(nextValue))
+          ) {
+            nextValue = null;
+            accepted = true;
+          } else {
+            const defensive = key === 'previous_defense_play';
+            const isOc = clean(context.role).toLowerCase() === 'oc';
+            const team = clean(defensive === isOc ? context.opponent : context.team).toUpperCase();
+            const catalog = defensive ? catalogs.defensive : catalogs.offensive;
+            const matches = catalog.filter(play => clean(play.team).toUpperCase() === team
+              && playNameKey(play.play_name || play.playName || play.name) === playNameKey(nextValue));
+            const confirmedId = defensive ? this.lastCapturePriorPending?.confirmedPlay?.id : null;
+            const priorId = corrected.fields[key].value?.id;
+            const resolved = matches.find(play => play.id === confirmedId)
+              || matches.find(play => play.id === priorId) || matches[0];
+            if (resolved) nextValue = resolved;
+            // No-op name save: keep the catalog object so learning IDs stay stable.
+            const prior = corrected.fields[key].value;
+            if (prior && typeof prior === 'object' && !Array.isArray(prior)) {
+              const priorName = clean(prior.play_name || prior.playName || prior.name);
+              if (priorName && typeof nextValue === 'string' && priorName.toLowerCase() === nextValue.toLowerCase()) {
+                nextValue = prior;
+                accepted = true;
+              }
             }
           }
         }
+        corrected.fields[key] = {
+          ...corrected.fields[key],
+          value: nextValue,
+          accepted,
+          source: 'user_correction',
+          resolverConfidence: 1,
+          ocrConfidence: Math.max(Number(corrected.fields[key].ocrConfidence) || 0, accepted ? 0.95 : 0),
+          effectiveOcrConfidence: Math.max(
+            Number(corrected.fields[key].effectiveOcrConfidence) || 0,
+            accepted ? 0.95 : 0,
+          ),
+          calibratedConfidence: accepted ? 1 : Number(corrected.fields[key].calibratedConfidence) || 0,
+        };
       }
-      corrected.fields[key] = {
-        ...corrected.fields[key],
-        value: nextValue,
-        accepted,
-        source: 'user_correction',
-        resolverConfidence: 1,
-        ocrConfidence: Math.max(Number(corrected.fields[key].ocrConfidence) || 0, accepted ? 0.95 : 0),
-        effectiveOcrConfidence: Math.max(
-          Number(corrected.fields[key].effectiveOcrConfidence) || 0,
-          accepted ? 0.95 : 0,
-        ),
-        calibratedConfidence: accepted ? 1 : Number(corrected.fields[key].calibratedConfidence) || 0,
-      };
-    }
-    corrected.correctedAt = this.now();
-    if (!corrected.learningRecorded && this.store.get().featureFlags.learning) {
+      corrected.correctedAt = this.now();
+      const correctedState = acceptedState(corrected.fields, corrected.scoreboard || context);
+      corrected.validation = this.lastCapturePriorPending
+        ? StateValidator.validateTransition(this.lastCapturePriorPending.state, correctedState)
+        : { accepted: true, reasons: [], warnings: [] };
+      // Corrections replay from the original baseline and replace that capture's
+      // learning atomically. They must never count the same football snap twice.
+      this.snapLifecycle = clone(this.lastCapturePriorLifecycle) || SnapLifecycle.createLifecycleState();
+      const currentCall = this.pendingSnap?.captureId === corrected.id && snapSpot(this.pendingSnap.state) === snapSpot(correctedState)
+        ? { confirmedPlay: this.pendingSnap.confirmedPlay, penalty: this.pendingSnap.penalty } : null;
+      corrected.replacesLearning = Boolean(corrected.learningRecorded);
       corrected.learningRecorded = await this._reconcileSnap(
-        corrected,
-        this.store.get().config.context,
-        this.store.get(),
-        this.lastCapturePriorPending,
-        false,
+        corrected, context, state, this.lastCapturePriorPending, true,
       );
+      if (corrected.replacesLearning && !corrected.learningRecorded) {
+        await this.ledger.correctSnap({ captureId: corrected.id, learningEvent: null });
+      }
+      this._assertSession(generation);
+      if (currentCall && this.pendingSnap?.captureId === corrected.id) Object.assign(this.pendingSnap, currentCall);
+      if (corrected.fields.down_distance?.accepted && corrected.fields.field_position?.accepted) {
+        this.previousAcceptedState = correctedState;
+      }
+      if (state.featureFlags.learning) corrected.learningSnapshot = await this.ledger.getSnapshot();
+      this._assertSession(generation);
+      this.lastCapture = corrected;
+      await this._appendDecisionTrace(corrected, { correction: true });
+      await this._recordDebugEvent('correction', {
+        id: corrected.id,
+        at: corrected.correctedAt || this.now(),
+        engine: corrected.engine || (this.engineWarm && this.engineWarm.engine),
+        engineWarm: this.engineWarm,
+        profileId: corrected.profileId,
+        presentation: corrected.presentation,
+        source: corrected.source,
+        fields: corrected.fields,
+        rois: this._roiGeometry(this._activeProfile()),
+        notes: 'user correction',
+      });
+      this._assertSession(generation);
+      this._emit('capture:complete', { capture: corrected });
+      return { capture: corrected };
+    } finally {
+      this.busy = false;
     }
-    this.lastCapture = corrected;
-    await this._appendDecisionTrace(corrected, { correction: true });
-    await this._recordDebugEvent('correction', {
-      id: corrected.id,
-      at: corrected.correctedAt || this.now(),
-      engine: corrected.engine || (this.engineWarm && this.engineWarm.engine),
-      engineWarm: this.engineWarm,
-      profileId: corrected.profileId,
-      presentation: corrected.presentation,
-      source: corrected.source,
-      fields: corrected.fields,
-      rois: this._roiGeometry(this._activeProfile()),
-      notes: 'user correction',
-    });
-    this._emit('capture:complete', { capture: corrected });
-    return { capture: corrected };
+  }
+
+  setPendingCall(args = {}) {
+    // A confirmed call belongs only to the latest accepted pre-snap screen.
+    // Keep this transient; never persist it across a game or application restart.
+    const captureId = clean(args.captureId);
+    if (this.busy || !captureId || captureId !== this.lastCapture?.id || !this.pendingSnap) return { accepted: false };
+    const pending = this.pendingSnap;
+    const catalogs = this.resolvedCatalogs;
+    if (!catalogs) return { accepted: false };
+    const context = this.store.get().config.context || {};
+    if (clean(context.role).toLowerCase() !== 'dc') return { accepted: false };
+    if (!this.lastCapture.fields.down_distance?.accepted || !this.lastCapture.fields.field_position?.accepted) return { accepted: false };
+    if (snapSpot(pending.state) !== snapSpot(acceptedState(this.lastCapture.fields, this.lastCapture.scoreboard))) return { accepted: false };
+    // The general audible picker uses space-separated IDs; OCR catalogs use
+    // hyphens. Compare canonical segments so both refer to the same actual play.
+    const idKey = value => clean(value).split('|')
+      .map(part => part.toLowerCase().replace(/[^a-z0-9]+/g, '-')).join('|');
+    const play = catalogs.defensive.find(item => idKey(item.id) === idKey(args.playId)
+      && clean(item.team).toUpperCase() === clean(context.team).toUpperCase());
+    if (!play) return { accepted: false };
+    pending.confirmedPlay = clone(play);
+    pending.penalty = Penalties.normalizePenaltyStamp(args.penalty);
+    return { accepted: true };
   }
 
   async _reconcileSnap(capture, args, state, priorPending = this.pendingSnap, updatePending = true) {
+    const generation = this.sessionGeneration;
     const fields = capture.fields;
     const scoreboard = resolveScoreboard(
       args || {},
       capture.scoreboard || {},
       state.config.context || {},
     );
-    const previousDefense = fields.previous_defense_play && fields.previous_defense_play.accepted
+    let previousDefense = fields.previous_defense_play && fields.previous_defense_play.accepted
       ? fields.previous_defense_play.value : null;
     const previousOffense = fields.previous_offense_play && fields.previous_offense_play.accepted
       ? fields.previous_offense_play.value : null;
     let learningRecorded = false;
-    const priorSnap = priorPending || (this.snapLifecycle && this.snapLifecycle.currentSnap
-      ? {
-        captureId: this.snapLifecycle.currentSnap.id,
-        state: this.snapLifecycle.currentSnap.preState,
-        offenseFormation: this.snapLifecycle.currentSnap.offensePlay
-          && this.snapLifecycle.currentSnap.offensePlay.formation,
-        offenseSet: this.snapLifecycle.currentSnap.offensePlay
-          && this.snapLifecycle.currentSnap.offensePlay.set,
-      }
-      : null);
+    const priorSnap = priorPending;
+    // OCR shows the name, not its formation. A matching confirmed call supplies
+    // the exact catalog identity; a different observed name is never overwritten.
+    const nameKey = play => clean(play?.play_name || play?.playName || play?.name).toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (previousDefense && priorSnap?.confirmedPlay && nameKey(previousDefense)
+      && nameKey(previousDefense) === nameKey(priorSnap.confirmedPlay)) {
+      previousDefense = priorSnap.confirmedPlay;
+    }
     const afterState = acceptedState(fields, scoreboard);
+    if (!fields.down_distance?.accepted || !fields.field_position?.accepted) return false;
+    // A fresh capture ID is not evidence of a fresh football snap.
+    // Repeated screens (including unchanged penalty spots) must not train learning.
+    if (priorSnap && snapSpot(priorSnap.state) === snapSpot(afterState)) {
+      capture.sameSpot = true;
+      return false;
+    }
     const driveStart = !previousDefense && !previousOffense
       && Number(afterState.down) === 1
-      && (!priorSnap || !priorSnap.state || Number(priorSnap.state.down) == null);
-    if (state.featureFlags.learning && priorSnap && previousDefense) {
+      && (!priorSnap || !priorSnap.state || priorSnap.state.down == null);
+    const role = clean(args.role || args.hostRole || state.config.context.role).toLowerCase();
+    if (role === 'dc' && state.featureFlags.learning && priorSnap && previousDefense
+      && (previousDefense.id || previousDefense.playId)) {
       const after = afterState;
       const outcome = Outcome.inferDefensiveOutcome({
         before: priorSnap.state,
@@ -1564,7 +1660,8 @@ class IntegrationOcrManager extends EventEmitter {
         driveStart: false,
       });
       const penaltyText = clean(fields.penalty_result && fields.penalty_result.value);
-      const penaltyAmbiguous = Boolean(penaltyText && !/^no\s+(?:flag|penalty)$/i.test(penaltyText));
+      const penaltyAmbiguous = Penalties.shouldSkipLearningForPenalty(priorSnap.penalty)
+        || Boolean(penaltyText && !/^no\s+(?:flag|penalty)$/i.test(penaltyText));
       if (penaltyAmbiguous) {
         outcome.learnable = false;
         outcome.evidence = [...(outcome.evidence || []), 'penalty_or_result_ambiguous'];
@@ -1619,19 +1716,10 @@ class IntegrationOcrManager extends EventEmitter {
           driveStart: false,
         },
       };
-      await this.ledger.recordSnap({ learningEvent, captureId: capture.id });
+      if (capture.replacesLearning) await this.ledger.correctSnap({ learningEvent, captureId: capture.id });
+      else await this.ledger.recordSnap({ learningEvent, captureId: capture.id });
+      this._assertSession(generation);
       learningRecorded = true;
-      if (updatePending) {
-        const ended = SnapLifecycle.reduceLifecycle(this.snapLifecycle, {
-          id: `${capture.id}:end`,
-          type: 'end',
-          at: capture.at,
-          state: after,
-          defensePlay: previousDefense,
-          offensePlay: previousOffense,
-        });
-        if (ended.accepted) this.snapLifecycle = ended.state;
-      }
     }
     // First snap of a drive often has empty previous-play crops — skip learning
     // rather than writing UNKNOWN noise into opponentTendency.
@@ -1639,6 +1727,14 @@ class IntegrationOcrManager extends EventEmitter {
       capture.driveStart = true;
     }
     if (updatePending) {
+      // Advance attribution even when learning is disabled or a play crop is absent.
+      // Otherwise the lifecycle keeps the first pre-snap state across later captures.
+      if (this.snapLifecycle.currentSnap) {
+        const ended = SnapLifecycle.reduceLifecycle(this.snapLifecycle, {
+          id: `${capture.id}:end`, type: 'end', at: capture.at, state: afterState,
+        });
+        if (ended.accepted) this.snapLifecycle = ended.state;
+      }
       const ready = SnapLifecycle.reduceLifecycle(this.snapLifecycle, {
         id: `${capture.id}:ready`,
         type: 'pre_snap',
@@ -1806,10 +1902,39 @@ class IntegrationOcrManager extends EventEmitter {
     return exported;
   }
 
+  resetSession(args = {}) {
+    this.sessionGeneration += 1;
+    this.lastCapture = null;
+    this.previousAcceptedState = null;
+    this.pendingSnap = null;
+    this.lastCapturePriorPending = null;
+    this.snapLifecycle = SnapLifecycle.createLifecycleState();
+    this.lastCapturePriorLifecycle = null;
+    this.sessionContextKey = args.context ? contextKey(args.context) : '';
+    this._emit('session:reset', { reason: clean(args.reason) || 'session_reset' });
+    return { reset: true };
+  }
+
+  _alignContext(context) {
+    const key = contextKey(context);
+    if (this.sessionContextKey && key !== this.sessionContextKey) {
+      this.resetSession({ reason: 'context_changed', context });
+    }
+    this.sessionContextKey = key;
+  }
+
+  _assertSession(generation) {
+    if (generation !== this.sessionGeneration) {
+      throw Object.assign(new Error('The game or coordinator changed during capture. Capture the current screen again.'), {
+        code: 'OCR_SESSION_CHANGED',
+      });
+    }
+  }
+
   async undoLastSnap() {
     const events = await this.ledger.readEvents();
-    const undone = new Set(events.filter((event) => event.type === 'undo').map((event) => event.payload.eventId));
-    const target = events.slice().reverse().find((event) => event.type === 'snap' && !undone.has(event.id));
+    const target = buildLearningSnapshot(events).samples.slice().reverse()
+      .find(event => event.type === 'snap' || event.type === 'snap_correction');
     if (!target) return { undone: false };
     const result = await this.ledger.undo(target.id);
     if (this.lastCapturePriorLifecycle) {

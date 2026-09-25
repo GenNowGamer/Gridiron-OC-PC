@@ -36,6 +36,8 @@ contextBridge.exposeInMainWorld("desktopApi", {
   ocrSaveProfile: (profile) => ipcRenderer.invoke("desktop:ocr-profile-save", profile),
   ocrTestProfile: (args) => ipcRenderer.invoke("desktop:ocr-profile-test", args),
   ocrCapture: (args) => ipcRenderer.invoke("desktop:ocr-capture", args),
+  ocrResetSession: (args) => ipcRenderer.invoke("desktop:ocr-reset-session", args),
+  ocrSetPendingCall: (args) => ipcRenderer.invoke("desktop:ocr-pending-call", args),
   ocrCorrectCapture: (args) => ipcRenderer.invoke("desktop:ocr-correct", args),
   ocrUndoLastSnap: () => ipcRenderer.invoke("desktop:ocr-undo-last-snap"),
   ocrResetOpponent: (args) => ipcRenderer.invoke("desktop:ocr-reset-opponent", args),

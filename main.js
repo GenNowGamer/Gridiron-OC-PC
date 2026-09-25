@@ -580,6 +580,12 @@ app.whenReady().then(() => {
   ipcMain.handle("desktop:ocr-profile-save", async (_event, profile) => ocrManager.saveProfile(profile));
   ipcMain.handle("desktop:ocr-profile-test", async (_event, args) => ocrManager.testProfile(args));
   ipcMain.handle("desktop:ocr-capture", async (_event, args) => ocrManager.capture(args));
+  ipcMain.handle("desktop:ocr-pending-call", async (_event, args) => ocrManager.setPendingCall(args));
+  ipcMain.handle("desktop:ocr-reset-session", async (_event, args = {}) => {
+    const result = ocrManager.resetSession(args);
+    if (args.context) await ocrManager.updateConfig({ context: args.context });
+    return result;
+  });
   ipcMain.handle("desktop:ocr-correct", async (_event, args) => ocrManager.correctCapture(args));
   ipcMain.handle("desktop:ocr-undo-last-snap", async () => ocrManager.undoLastSnap());
   ipcMain.handle("desktop:ocr-reset-opponent", async (_event, args) => ocrManager.resetOpponent(args));

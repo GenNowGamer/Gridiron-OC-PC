@@ -419,6 +419,11 @@
       preFold = preFold.replace(/^[O0](\d{1,2})\b/, "OPP $1");
     }
 
+    // Confirmed Default HUD read: Y is a damaged down arrow. Require
+    // independent OWN geometry and exactly two yard glyphs before repairing it.
+    if (sideHint === "OWN" && /^Y[0-9][0-9B]$/.test(preFold)) {
+      preFold = "OWN " + preFold.slice(1).replace(/B/g, "8");
+    }
     var raw = foldOcrDigits(preFold).toUpperCase();
     // Separate TNF arrow glyphs glued to yard digits so "V35" / "^42" parse.
     // Drop digits that appear *before* the arrow (left-side ROI bleed).
@@ -608,6 +613,8 @@
     if (isEmptyPreviousPlayOcr(value)) return true;
     var text = sanitizeHudText(value).replace(/\s+/g, " ").trim();
     if (!text) return true;
+    // Verified empty drive-opening crop; leave other unknown names reviewable.
+    if (/^CYAALB$/i.test(text)) return true;
     // Pure digit soup from empty-slot chrome ("900", "11") is not a play name.
     if (/^\d{2,}$/.test(text.replace(/\s+/g, ""))) return true;
     var letters = (text.match(/[A-Za-z]/g) || []).length;
@@ -735,6 +742,17 @@
     var text = sanitizeHudText(value).toUpperCase().replace(/\s+/g, " ").trim();
     if (!text) return "";
 
+    // Exact damaged strings verified against manual corrections in the CHI–PHI
+    // Default HUD export. Keep these narrow; do not loosen fuzzy matching globally.
+    var confirmedRepairs = {
+      REDZONEBSISRS: "REDZONE SCISSORS",
+      ZEROBITZ: "ZERO BLITZ",
+      CORERSTRKE: "CORNER STRIKE",
+      LBROS: "LB CROSS 3 SHOW 2",
+      LOPHOTBLITZ: "LOOP HOT BLITZ 3",
+    };
+    if (confirmedRepairs[text]) return confirmedRepairs[text];
+
     // COVERBUZMABLE: expand BUZ before B is stolen as the cover digit.
     text = text.replace(/BUZ(?!Z)/g, "BUZZ");
     // Truncated COVER → COV must run before shell/digit maps (export: COVBUZZMATCH).
@@ -812,13 +830,13 @@
     }
     text = text.replace(/\b[IL](?=DOUBLE)/g, "1 ");
     // LEVELS is a play name. Do not turn its leading L into a play number.
-    if (!/^(?:LEVELS|LEAD|LEFT|LINE)\b/.test(text)) {
+    if (!/^(?:LEVELS|LEAD|LEFT|LINE|LOOP|LB)/.test(text)) {
       text = text.replace(/^[IL](?=[A-Z])/g, "1 ");
     }
     // NVERT lost its leading I. Do not match the NVERT inside INVERT.
     text = text.replace(/(?<!I)NVERT/g, "INVERT");
     // ZE/Z6 → 26 for duo/power style play numbers.
-    text = text.replace(/\bZE(?=[A-Z])/g, "26 ");
+    text = text.replace(/\bZE(?!RO)(?=[A-Z])/g, "26 ");
     text = text.replace(/\bZ([0-9])(?=[A-Z])/g, "2$1 ");
     // Leading D→O for OUTS / OUT.
     text = text.replace(/\bDUT(S?)\b/g, "OUT$1");
@@ -959,6 +977,12 @@
     return text.replace(/\s+/g, " ").trim();
   }
 
+  function hasValidPersonnelCounts(value) {
+    var label = typeof value === "object" && value ? value.label : value;
+    var match = clean(label).match(/(\d+)\s*RB\b[^\d]*(\d+)\s*TE\b[^\d]*(\d+)\s*WR\b/i);
+    return !match || Number(match[1]) + Number(match[2]) + Number(match[3]) === 5;
+  }
+
   function parseFormationPersonnelText(value) {
     var packageOnly = clean(value).replace(/\s+/g, " ");
     // Whole-string special packages — do not split "Field Goal" into Field / Goal.
@@ -1058,7 +1082,8 @@
     var tokens = text.split(/\s+/).filter(Boolean);
     if (tokens.length <= 2) return text;
     function solid(token) {
-      return /[A-Za-z]{3,}/.test(token) || /^\d{1,2}$/.test(token);
+      return /[A-Za-z]{3,}/.test(token) || /^\d{1,2}$/.test(token)
+        || /^(LB|HB|FB|QB|WR|TE|CB|DB|SS|FS|PA|GL|DT|DE)$/i.test(token);
     }
     for (var start = 0; start < tokens.length - 1; start += 1) {
       var slice = tokens.slice(start);
@@ -1093,5 +1118,6 @@
     parseScoresText: parseScoresText,
     parseFormationPersonnelText: parseFormationPersonnelText,
     significantTokens: significantTokens,
+    hasValidPersonnelCounts: hasValidPersonnelCounts,
   };
 });

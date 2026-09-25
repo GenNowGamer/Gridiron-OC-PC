@@ -36,7 +36,13 @@ function buildLearningSnapshot(events) {
       active.delete(event.payload && event.payload.eventId);
       continue;
     }
-    if (event.type === 'snap' || event.type === 'observation' || event.type === 'feedback') {
+    if (event.type === 'snap_correction') {
+      for (const [id, prior] of active) {
+        if (event.payload?.captureId && prior.payload?.captureId === event.payload.captureId) active.delete(id);
+      }
+      if (!event.payload?.learningEvent) continue;
+    }
+    if (event.type === 'snap' || event.type === 'snap_correction' || event.type === 'observation' || event.type === 'feedback') {
       if (!undone.has(event.id)) active.set(event.id, clone(event));
     }
   }
@@ -118,6 +124,11 @@ class EventLedger {
 
   recordSnap(payload) {
     return this.append('snap', payload);
+  }
+
+  correctSnap(payload) {
+    if (!payload?.captureId) return Promise.reject(new TypeError('captureId is required'));
+    return this.append('snap_correction', payload);
   }
 
   recordFeedback(payload) {
