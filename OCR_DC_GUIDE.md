@@ -170,7 +170,7 @@ confidence threshold or substitute cloud OCR.
 - **Export OCR Data**: exports profiles, event ledger, learning snapshot, and
   decision traces without raw frames. Use this for OCR field quality. For
   **top-3 recommendation** rotation analysis, open
-  `%APPDATA%\gridiron-play-advisor-pc\trace-logs\gridiron-trace-current.txt`
+  `%APPDATA%\Gridiron Play Advisor\trace-logs\gridiron-trace-current.txt`
   (`recommendation-trace` blocks) — the OCR JSON export does not include slates.
 - **Delete OCR Data**: removes only the three versioned OCR files.
 
