@@ -522,6 +522,36 @@
     </div>
   </div>
 
+  <div class="overlay patOverlay hidden" id="patOverlay" aria-hidden="true">
+    <div class="patCard" id="patCard">
+      <div class="patBadgeRow">
+        <div class="patBadge" id="patBadge">
+          <span class="patBadgeText" id="patBadgeText">YOU SCORED</span>
+        </div>
+      </div>
+      <div class="patTitle" id="patTitle">TOUCHDOWN! (+6 PTS)</div>
+      <div class="patSub" id="patSub">Touchdown scored! +6 points added.</div>
+      <div class="patScoreBox">
+        <span class="patScoreLabel" id="patScoreLabel">SCORE: YOU 0 - 0 OPP</span>
+      </div>
+      <div class="patPrompt">Select Point After Touchdown (PAT)</div>
+      <div class="patButtonStack">
+        <button class="patButton patButtonPrimary" type="button" data-pat-points="1">
+          <div class="patButtonTitle">Extra Point (+1 pt)</div>
+          <div class="patButtonSub">Successful Kick · 1 point</div>
+        </button>
+        <button class="patButton patButtonSecondary" type="button" data-pat-points="2">
+          <div class="patButtonTitle">2-Point Conversion (+2 pts)</div>
+          <div class="patButtonSub">Successful 2-Pt Conversion · 2 points</div>
+        </button>
+        <button class="patButton patButtonGhost" type="button" data-pat-points="0">
+          <div class="patButtonTitle">Missed / No Try (+0 pts)</div>
+          <div class="patButtonSub">Failed or skipped PAT · Keep +6</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="shared/recommendationCore.js"></script>
   <script src="shared/selectionEngine.js"></script>
   <script src="shared/defenseRecommendationCore.js"></script>

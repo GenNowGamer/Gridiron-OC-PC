@@ -97,6 +97,10 @@
     if (/^(?:GOA[LI1]|GOLA|BOAL|G0AL|GOA1|6OAL|60AL|G0A1)$/.test(raw)) {
       return "GOAL";
     }
+    // Confusable trailing O in 2-digit yards like 2O -> 20
+    if (/^[1-4][Oo]$/.test(raw)) {
+      return raw[0] + "0";
+    }
     // Madden short-yardage HUD: "4th & Inches" → treat as 1 yard to go.
     // OCR often swaps letters: INGHES / INCRES / INCHES / MGHES / MCHES.
     if (
@@ -421,7 +425,7 @@
 
     // Confirmed Default HUD read: Y is a damaged down arrow. Require
     // independent OWN geometry and exactly two yard glyphs before repairing it.
-    if (sideHint === "OWN" && /^Y[0-9][0-9B]$/.test(preFold)) {
+    if (sideHint === "OWN" && /^[Y\-][0-9][0-9B]$/.test(preFold)) {
       preFold = "OWN " + preFold.slice(1).replace(/B/g, "8");
     }
     var raw = foldOcrDigits(preFold).toUpperCase();
@@ -439,6 +443,16 @@
     // Default outlined ▲ OCRs as A, and outlined 1 OCRs as T (or 7 in the tens place).
     // AT'3' → OPP 13, A'7''4' → OPP 14, A'3'A → OPP 34, IT'7' → 11.
     var defaultOppYard = "";
+    if (compactField === "A7" || compactField === "AT") {
+      return {
+        side: "OPP",
+        yardLine: 1,
+        label: "OPP 1",
+        ok: true,
+        glyphSide: "OPP",
+        alternatives: [],
+      };
+    }
     var atYard = compactField.match(/^AT(\d)$/);
     var aSeven = compactField.match(/^A7(\d)$/);
     // Leading A is the outlined ▲. The next two glyphs are the yard, with the
@@ -614,7 +628,7 @@
     var text = sanitizeHudText(value).replace(/\s+/g, " ").trim();
     if (!text) return true;
     // Verified empty drive-opening crop; leave other unknown names reviewable.
-    if (/^CYAALB$/i.test(text)) return true;
+    if (/^(?:CYAALB|CWB|CYALWBL|CALLW)$/i.test(text)) return true;
     // Pure digit soup from empty-slot chrome ("900", "11") is not a play name.
     if (/^\d{2,}$/.test(text.replace(/\s+/g, ""))) return true;
     var letters = (text.match(/[A-Za-z]/g) || []).length;
@@ -707,6 +721,7 @@
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
+    if (/^(?:AR|TER|RBITER)$/i.test(glued)) return "1RB - 1TE 3WR";
     glued = glued.replace(/^IRB/, "1RB");
     // 0 TE often OCR'd as OTE: "2RBIOTEI3WR" → 2RB - 0TE 3WR.
     glued = glued.replace(/RB([I|]?)OTE/g, "RB$10TE");
@@ -750,6 +765,10 @@
       CORERSTRKE: "CORNER STRIKE",
       LBROS: "LB CROSS 3 SHOW 2",
       LOPHOTBLITZ: "LOOP HOT BLITZ 3",
+      ENGAGEHT: "ENGAGE EIGHT",
+      HAEROBLAST: "HAMMER 0 BLAST",
+      GOVERG: "COVER 6",
+      MTNSHOKHBTON: "MTN SHOCK HB OPTION",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 
@@ -860,6 +879,10 @@
     text = text.replace(/BUTZ(?=L|$)/g, "BLITZ");
     text = text.replace(/SAWBITZI/g, "SAW BLITZ 1");
     text = text.replace(/NICKELBLITZL/g, "NICKEL BLITZ 1");
+    // NCHBLITZO / NCH BLITZ O -> PINCH BLITZ 0
+    text = text.replace(/\bNCH\s*BLITZ\s*[0O]\b/g, "PINCH BLITZ 0");
+    text = text.replace(/\bNCHBLITZ[0O]\b/g, "PINCH BLITZ 0");
+    text = text.replace(/\bCOVERZ(?=NVERT|INVERT)/g, "COVER 2 ");
     // Full glued names from the Default export. These run before the token
     // splitter so it cannot turn them into single letters.
     text = text.replace(/HBSLISGREEN/g, "HB SLIP SCREEN");
@@ -1119,5 +1142,6 @@
     parseFormationPersonnelText: parseFormationPersonnelText,
     significantTokens: significantTokens,
     hasValidPersonnelCounts: hasValidPersonnelCounts,
+    repairPersonnelOcrConfusions: repairPersonnelOcrConfusions,
   };
 });

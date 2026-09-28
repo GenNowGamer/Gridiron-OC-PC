@@ -1,4 +1,4 @@
-﻿# Gridiron OC (PC)
+# Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
 [![Version](https://img.shields.io/badge/Version-0.1.7-green.svg)](CHANGELOG.md)
@@ -81,16 +81,21 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 4. Game Management & Flow Controls
 
-- **Interactive Game Scoreboard:**
-  - Track score (*You / Opp*) and quarter (*Q1â€“Q4, OT*).
+- **Interactive Game Scoreboard & Automatic Scoring:**
+  - Track score (*You / Opp*) and quarter (*Q1–Q4, OT*).
   - Automatically factors score differential and remaining time into coordinator play-calling aggression.
+  - **Drive Result & Game State Scoring Integration:** Selecting scoring outcomes in OC or DC Game State automatically updates the scoreboard:
+    - *Touchdown (OC / DC):* Automatically awards 6 points and triggers a streamlined, transparent modal overlay prompting for extra point attempts (+1 PAT, +2 Two-Point Conversion, or 0 Missed/None).
+    - *Field Goal:* Automatically awards 3 points to the scoring side.
+    - *Safety:* Automatically awards 2 points to the defending side.
+    - *Pick 6 / Scoop & Score:* Automatically awards 6 points to the recovering side with the same transparent PAT overlay.
 - **Halftime Adjustments:**
   - Unlock mid-game coordinator style adjustments at the half without erasing accumulated opponent scouting or game drive history.
 - **Audible Overlay:**
   - If you audible at the line of scrimmage, swap your confirmed play to the actual play executed from the same formation/set so your learning model stays accurate.
 - **Penalty Tracking:**
   - Stamp Madden flags (*holding, pass interference, false start*) to ensure penalized snaps do not corrupt your playbook success metrics.
-- **Drive Result Tracking:**
+- **Drive Result Tracking & Coordinator Handoff:**
   - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack*) to reinforce situational learning and automatically hand off between OC and DC workspaces.
 
 ### 5. Opponent Scouting & Tendencies

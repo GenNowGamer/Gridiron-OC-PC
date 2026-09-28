@@ -1546,3 +1546,210 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* PAT Scoring Modal Overlay (matching mobile) */
+.patOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.84);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.patOverlay.hidden {
+  display: none !important;
+}
+
+.patCard {
+  width: 100%;
+  max-width: 380px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border);
+  background: var(--panel, #0f1620);
+  border-radius: 20px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+  box-shadow: var(--shadow);
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+.patBadgeRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.patBadge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border-width: 1px;
+  border-style: solid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.patBadge.userScored {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.18);
+}
+
+.patBadge.oppScored {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.18);
+}
+
+.patBadgeText {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.patBadge.userScored .patBadgeText {
+  color: #4ade80;
+}
+
+.patBadge.oppScored .patBadgeText {
+  color: #f87171;
+}
+
+.patTitle {
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 0.4px;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.patSub {
+  font-size: 13px;
+  text-align: center;
+  line-height: 18px;
+  color: var(--hint, #c3cede);
+}
+
+.patScoreBox {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-alt, #121b27);
+}
+
+.patScoreLabel {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.patPrompt {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: var(--hint, #c3cede);
+  margin-top: 2px;
+}
+
+.patButtonStack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patButton {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease, filter 0.12s ease;
+  font-family: inherit;
+  width: 100%;
+}
+
+.patButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.patButton:active {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+
+.patButtonPrimary {
+  border-color: var(--secondary, #8fb8ff);
+  background: var(--secondary, #8fb8ff);
+}
+
+.patButtonPrimary .patButtonTitle {
+  color: var(--secondary-contrast, #101820);
+}
+
+.patButtonPrimary .patButtonSub {
+  color: var(--secondary-contrast, #101820);
+  opacity: 0.88;
+}
+
+.patButtonSecondary {
+  border-color: var(--border-strong, #8fb8ff);
+  background: var(--control-bg, #111927);
+}
+
+.patButtonSecondary .patButtonTitle {
+  color: #ffffff;
+}
+
+.patButtonSecondary .patButtonSub {
+  color: var(--hint, #c3cede);
+}
+
+.patButtonGhost {
+  border-color: var(--border);
+  background: var(--panel, #0f1620);
+}
+
+.patButtonGhost .patButtonTitle {
+  color: #ffffff;
+}
+
+.patButtonGhost .patButtonSub {
+  color: var(--hint, #c3cede);
+}
+
+.patButtonTitle {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.patButtonSub {
+  font-size: 11px;
+  margin-top: 3px;
+}
+
