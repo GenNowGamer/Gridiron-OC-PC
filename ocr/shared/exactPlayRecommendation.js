@@ -227,6 +227,8 @@
       userScore: Number.isFinite(userScore) ? userScore : null,
       oppScore: Number.isFinite(oppScore) ? oppScore : null,
       scoreDiff: scoreDiff,
+      dcPlaycallingMode: input.dcPlaycallingMode || input.playcallingMode || null,
+      playcallingMode: input.dcPlaycallingMode || input.playcallingMode || null,
     };
     if (typeof core.buildDefensiveSituationPlan === "function") {
       context.situationPlan = core.buildDefensiveSituationPlan(context);
