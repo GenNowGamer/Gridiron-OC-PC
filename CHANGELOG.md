@@ -6,6 +6,13 @@ This document tracks release milestones, historical architecture shifts, and inc
 
 ## Current Active Release: v0.1.7 (2026-09-26)
 
+### Repository Hardening & Security Audit (2026-09-28)
+- **PII & Secret Elimination:** Executed comprehensive audit for secrets, credentials, and PII. Confirmed zero leaked keystores, private keys, or active AI API keys.
+- **Artifact Purge & Git History Rewrite:** Purged 5,463 untracked `.venv` files and the 100+ MB installer binary from Git history using `git-filter-repo`.
+- **Identity Privacy:** Rewrote all past commit metadata to map author/committer emails to `GenNowGamer@users.noreply.github.com`.
+- **Path Sanitization:** Converted all local absolute desktop paths in Markdown documentation into relative paths.
+- **Gitignore Protection:** Enforced strict `.gitignore` rules across PC and Mobile workspaces.
+
 ### Highlights & Recent Changes
 
 - **DC Blitz Recommendations & Concept Splitting (v0.1.7):**
