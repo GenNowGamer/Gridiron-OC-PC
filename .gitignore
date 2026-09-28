@@ -43,3 +43,11 @@ scripts/fix-*.mjs
 scripts/analyze-*.mjs
 scripts/probe-*.mjs
 scripts/sync-recommendation-core.mjs
+
+# Ignore all markdown and document files except README.md
+*.md
+!README.md
+!readme.md
+docs/
+*.pdf
+*.docx
