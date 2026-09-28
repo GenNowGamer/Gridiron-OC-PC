@@ -77,3 +77,12 @@ All three OCR switches remain off until every applicable gate is checked.
 If a gate fails, stop with OCR disabled. Do not substitute cloud OCR, custom
 training, a larger model, or lower confidence thresholds without a new explicit
 decision. Capture Bridge is the only OCR ingest path.
+
+
+## Release Hygiene & Repository Security
+
+- [x] Sensitive configs (`.env`, `.env.*`) excluded from Git tracking
+- [x] Virtual environments (`ocr-sidecar/.venv/`, `.venv/`) excluded from Git tracking
+- [x] Internal notes and developer logs (`session_handoff.md`, `*.log`) excluded from Git
+- [x] Installer executables (`dist/*.exe`) excluded from Git tracking (distributed via GitHub Releases)
+- [x] Git committer identity mapped to `GenNowGamer@users.noreply.github.com`

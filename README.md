@@ -26,6 +26,7 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 - [System Architecture](#system-architecture)
 - [Installation & Setup](#installation--setup)
 - [Testing & Quality Verification](#testing--quality-verification)
+- [Security & Privacy Standards](#security--privacy-standards)
 - [License & Trademarks](#license--trademarks)
 
 ---
@@ -219,6 +220,25 @@ npm run test:regression        # App UI & play-calling regressions
 npm run test:ocr:js            # OCR grammar, confusables, and parser checks
 node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance checks
 ```
+
+---
+
+## Security & Privacy Standards
+
+Gridiron OC enforces strict local-only execution and repository hygiene practices:
+
+- **100% Local Execution & Zero Telemetry:**
+  - Speech-to-Text runs locally using bundled Whisper models.
+  - OCR and computer vision run locally via on-device Tesseract and ONNX runtimes.
+  - No prompt data, game telemetry, audio, or video streams are ever transmitted to external cloud servers.
+- **Repository Hygiene & Secret Isolation:**
+  - Sensitive configurations (`.env`, `.env.*`), credentials (`credentials.json`), certificates (`*.jks`, `*.keystore`, `*.p12`), and private Electron `userData/` are strictly excluded via `.gitignore`.
+  - Python virtual environments (`ocr-sidecar/.venv/`, `.venv/`) and native build intermediate outputs are permanently ignored.
+  - Internal development records and hardware logs (`session_handoff.md`, `*.log`) remain exclusively local.
+- **Distribution Hygiene:**
+  - Packaged installers (`dist/`, `*.exe`) are excluded from Git repository tracking and are distributed exclusively through official GitHub Releases assets.
+- **Author Identity Privacy:**
+  - All repository commits are authored and mapped to verified GitHub no-reply addresses (`GenNowGamer@users.noreply.github.com`).
 
 ---
 
