@@ -578,7 +578,6 @@
           recentPlayIds,
           exposurePlayIds,
           exposureSheets: Array.isArray(variety.exposureSheets) ? variety.exposureSheets : [],
-          dcPlaycallingMode: typeof host.getDcPlaycallingMode === "function" ? host.getDcPlaycallingMode() : "normal",
           limit: 3,
         });
         const recommendations = result?.recommendations || [];

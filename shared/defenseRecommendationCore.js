@@ -30,32 +30,6 @@
 
   const DEFENSIVE_TYPES = ["MAN", "ZONE", "BLITZ", "MATCH", "RETURN", "OTHER"];
 
-  const DC_PLAYCALLING_MODE_NORMAL = "normal";
-  const DC_PLAYCALLING_MODE_ZONE = "zone";
-  const DC_PLAYCALLING_MODE_COVER_MAN = "cover_man";
-  const DC_PLAYCALLING_MODE_RUN_BLITZ = "run_blitz";
-  const DC_PLAYCALLING_MODE_MAN_BLITZ = "man_blitz";
-  const DC_PLAYCALLING_MODE_ZONE_BLITZ = "zone_blitz";
-  const DC_PLAYCALLING_MODE_GOAL_LINE = "goal_line";
-
-  const DC_PLAYCALLING_MODES = [
-    { id: DC_PLAYCALLING_MODE_NORMAL, label: "Normal", summary: "Normal mode keeps the standard adaptive DC coordinator logic active." },
-    { id: DC_PLAYCALLING_MODE_ZONE, label: "Zone", summary: "Surfaces zone coverage calls in the defensive playbook (excluding zone blitz)." },
-    { id: DC_PLAYCALLING_MODE_COVER_MAN, label: "Cover Man", summary: "Surfaces man coverage calls in the defensive playbook (excluding man blitz)." },
-    { id: DC_PLAYCALLING_MODE_RUN_BLITZ, label: "Run Blitz", summary: "Surfaces blitzes geared toward stopping the run (gap shoots, pinch, cross fire, heavy fronts)." },
-    { id: DC_PLAYCALLING_MODE_MAN_BLITZ, label: "Man Blitz", summary: "Surfaces blitzes with extra pressure on the QB and man coverage on the backend." },
-    { id: DC_PLAYCALLING_MODE_ZONE_BLITZ, label: "Zone Blitz", summary: "Surfaces blitzes that apply pressure from multiple angles while playing zone backend." },
-    { id: DC_PLAYCALLING_MODE_GOAL_LINE, label: "Goal Line", summary: "Surfaces plays exclusively from the team's Goal Line defensive playbook." },
-  ];
-
-  function normalizeDcPlaycallingMode(value) {
-    const raw = lower(value);
-    for (let i = 0; i < DC_PLAYCALLING_MODES.length; i += 1) {
-      if (DC_PLAYCALLING_MODES[i].id === raw) return raw;
-    }
-    return DC_PLAYCALLING_MODE_NORMAL;
-  }
-
   function distToBucket(yards) {
     const n = Number(yards);
     if (!Number.isFinite(n)) return "medium";
@@ -149,38 +123,8 @@
       isManBlitz: (type === "BLITZ" || /\bblitz|pressure\b/.test(blob)) && (
         type === "MAN" || /\b(man|cover\s*1|c1|1|hole|sting|brave|dog)\b/.test(blob) || !/\b(zone|fire\s*3|3|2|trap|cloud|sky|buzz)\b/.test(blob)
       ),
-      isRunBlitz: (function () {
-        const isBlitzish = type === "BLITZ" || /\bblitz|pressure|fire|send\b/.test(blob);
-        if (!isBlitzish) return false;
-        const isFrontHeavy = /4-4|44|46|5-2/.test(blob) || ["4-4", "46", "5-2"].indexOf(cleanText(play && play.formation)) >= 0;
-        const hasRunConcept = /\b(pinch|crash|gaps?|plug|shoot|scrape|slant|twist|dog|cross\s*fire|lb\s*fire|sting|storm|saw|buck|will\s*buck|mike\s*blitz|sam\s*blitz|inside\s*blitz|inside\s*fire|fire|overload|wham|smash)\b/.test(blob);
-        const isSecondaryBlitz = /\b(db\s*blitz|slot\s*blitz|corner\s*blitz|fs\s*blitz|ss\s*blitz|nickel\s*blitz|dime\s*blitz|cat|smoke|spinner)\b/.test(blob);
-        return (isFrontHeavy || hasRunConcept) && !(isSecondaryBlitz && !isFrontHeavy);
-      })(),
       concepts: Array.isArray(play && play.concepts) ? play.concepts.slice() : [],
     };
-  }
-
-  function matchesDcPlaycallingMode(play, mode, traits) {
-    const normMode = normalizeDcPlaycallingMode(mode);
-    if (normMode === DC_PLAYCALLING_MODE_NORMAL) return true;
-    const t = traits || defensivePlayTraitsOf(play);
-    switch (normMode) {
-      case DC_PLAYCALLING_MODE_ZONE:
-        return t.isZone && !t.isBlitz && !t.isZoneBlitz;
-      case DC_PLAYCALLING_MODE_COVER_MAN:
-        return t.isMan && !t.isBlitz && !t.isManBlitz;
-      case DC_PLAYCALLING_MODE_RUN_BLITZ:
-        return t.isRunBlitz === true;
-      case DC_PLAYCALLING_MODE_MAN_BLITZ:
-        return t.isManBlitz === true;
-      case DC_PLAYCALLING_MODE_ZONE_BLITZ:
-        return t.isZoneBlitz === true;
-      case DC_PLAYCALLING_MODE_GOAL_LINE:
-        return t.isGoalLine === true || upper(play && play.formation) === "GOAL LINE";
-      default:
-        return true;
-    }
   }
 
   function normalizeScoreDiff(ctx) {
@@ -395,11 +339,6 @@
     const t = traits || defensivePlayTraitsOf(play);
     if (t.isReturn || t.isSpecialTeams) return true;
     if (t.type === "OTHER" && !t.isPressure) return true;
-    const mode = normalizeDcPlaycallingMode(ctx && (ctx.dcPlaycallingMode || ctx.playcallingMode));
-    if (mode !== DC_PLAYCALLING_MODE_NORMAL) {
-      if (!matchesDcPlaycallingMode(play, mode, t)) return true;
-      if (mode === DC_PLAYCALLING_MODE_GOAL_LINE) return false;
-    }
     if (t.isPrevent && !isPreventEligibleContext(ctx)) return true;
     if (t.isGoalLine && !isTrueGoalLineDefenseContext(ctx)) return true;
     return false;
@@ -809,7 +748,6 @@
       (params && params.fieldPositionBucket) || buildFieldPositionBucket(fieldPosition, goalToGo);
     const offenseShowing = normalizeOffenseShowing(params && params.offenseShowing);
     const game = buildGameContextFields(params);
-    const dcPlaycallingMode = normalizeDcPlaycallingMode(params && (params.dcPlaycallingMode || params.playcallingMode));
     const ctx = {
       down: down,
       yards: yards,
@@ -818,8 +756,6 @@
       distBucket: distBucket,
       fieldPositionBucket: fieldPositionBucket,
       offenseShowing: offenseShowing,
-      dcPlaycallingMode: dcPlaycallingMode,
-      playcallingMode: dcPlaycallingMode,
       quarter: game.quarter,
       userScore: game.userScore,
       oppScore: game.oppScore,
@@ -847,23 +783,6 @@
     });
 
     const top = pickTopDefensiveRecommendationsCore({ scored: scored, limit: 3, scoreKey: "_score" });
-    if (top.length < 3 && scored.length > top.length) {
-      const pickedIds = new Set(top.map(function (item) {
-        const p = item.play || item;
-        return p && p.id ? String(p.id) : "";
-      }).filter(Boolean));
-      const sorted = scored.slice().sort(function (a, b) {
-        return (Number(b._score) || 0) - (Number(a._score) || 0);
-      });
-      for (let i = 0; i < sorted.length && top.length < 3; i += 1) {
-        const cand = sorted[i];
-        const p = cand.play || cand;
-        const id = p && p.id ? String(p.id) : "";
-        if (id && pickedIds.has(id)) continue;
-        top.push(cand);
-        if (id) pickedIds.add(id);
-      }
-    }
     return {
       context: ctx,
       recommendations: top.map(function (item) {
@@ -1554,8 +1473,6 @@
       situationChip: situationChip,
       offenseTag: offenseTag,
       offenseShowing: offenseShowing,
-      dcPlaycallingMode: normalizeDcPlaycallingMode(params && (params.dcPlaycallingMode || params.playcallingMode)),
-      playcallingMode: normalizeDcPlaycallingMode(params && (params.dcPlaycallingMode || params.playcallingMode)),
       opponent: cleanText(params && params.opponent) || null,
       quarter: null,
       userScore: null,
@@ -1738,15 +1655,5 @@
     boundedEffectivenessAdjustment: boundedEffectivenessAdjustment,
     pickTopDefensivePackagesCore: pickTopDefensivePackagesCore,
     computeDefensivePackageRecommendations: computeDefensivePackageRecommendations,
-    DC_PLAYCALLING_MODES: DC_PLAYCALLING_MODES,
-    normalizeDcPlaycallingMode: normalizeDcPlaycallingMode,
-    matchesDcPlaycallingMode: matchesDcPlaycallingMode,
-    DC_PLAYCALLING_MODE_NORMAL: DC_PLAYCALLING_MODE_NORMAL,
-    DC_PLAYCALLING_MODE_ZONE: DC_PLAYCALLING_MODE_ZONE,
-    DC_PLAYCALLING_MODE_COVER_MAN: DC_PLAYCALLING_MODE_COVER_MAN,
-    DC_PLAYCALLING_MODE_RUN_BLITZ: DC_PLAYCALLING_MODE_RUN_BLITZ,
-    DC_PLAYCALLING_MODE_MAN_BLITZ: DC_PLAYCALLING_MODE_MAN_BLITZ,
-    DC_PLAYCALLING_MODE_ZONE_BLITZ: DC_PLAYCALLING_MODE_ZONE_BLITZ,
-    DC_PLAYCALLING_MODE_GOAL_LINE: DC_PLAYCALLING_MODE_GOAL_LINE,
   };
 });

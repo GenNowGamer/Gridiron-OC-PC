@@ -62,18 +62,10 @@ In competitive football gaming, calling plays under a running play clock can lea
 ### 2. Defensive Coordinator (DC) Workspace
 
 - **Comprehensive Defensive Catalog:** Includes all 32 NFL teams and over 8,200 unique defensive plays across 3-4, 4-3, Nickel, Dime, Dollar, and Goal Line fronts.
-- **Playcalling Modes:** Just like the OC side, shape your defensive coordinator call sheet with specialized tactical modes:
-  - **Normal:** Balanced adaptive coordinator logic with situational mix.
-  - **Zone:** Surfaces zone coverage calls in your team's playbook (excluding zone blitzes).
-  - **Cover Man:** Surfaces man coverage calls in your team's playbook (excluding man blitzes).
-  - **Run Blitz:** Surfaces blitzes geared toward stopping the run (pinch, crash, gap shoots, cross fire, heavy fronts).
-  - **Man Blitz:** Surfaces blitzes with extra pressure on the QB and man coverage on the backend.
-  - **Zone Blitz:** Surfaces blitzes that apply pressure while rotating into zone coverage.
-  - **Goal Line:** Surfaces plays exclusively from your team's Goal Line defensive playbook.
-- **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
+- **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%â€“35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
 - **Sticky "Offense Showing" Biasing:** Quickly tap the opponent's offensive formation (e.g., *Gun Bunch*, *Singleback Wing*, *I-Form*) to bias defensive recommendations toward optimal personnel groupings.
 - **Strict Situation Gating:**
-  - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs (or overridden when Goal Line mode is selected).
+  - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs.
   - *Prevent Packages:* Restricted to Hail Mary situations or protect-the-lead late-game scenarios.
 - **Exact Calls vs. Package Calls:** Receive high-level package concepts or exact play calls matched directly to your current defensive playbook.
 
