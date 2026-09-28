@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.7-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.8-green.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -82,8 +82,8 @@ In competitive football gaming, calling plays under a running play clock can lea
 ### 4. Game Management & Flow Controls
 
 - **Interactive Game Scoreboard & Automatic Scoring:**
-  - Track score (*You / Opp*) and quarter (*Q1–Q4, OT*).
-  - Automatically factors score differential and remaining time into coordinator play-calling aggression.
+  - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
+  - Automatically factors score differential and remaining time into coordinator play-calling aggression and defensive shell eligibility.
   - **Drive Result & Game State Scoring Integration:** Selecting scoring outcomes in OC or DC Game State automatically updates the scoreboard:
     - *Touchdown (OC / DC):* Automatically awards 6 points and triggers a streamlined, transparent modal overlay prompting for extra point attempts (+1 PAT, +2 Two-Point Conversion, or 0 Missed/None).
     - *Field Goal:* Automatically awards 3 points to the scoring side.

@@ -236,6 +236,44 @@
           </div>
         </div>
 
+        <div class="modeSection scoreboardSection" id="dcScoreboardSection">
+          <div class="modeSectionHead">
+            <div>
+              <div class="eyebrow">Game Scoreboard</div>
+              <div class="modeSummary" id="dcScoreboardSummary">Set the live score and quarter. These update OC/DC situation for the next spoken call, OCR capture, or playcalling-mode change — they do not reshuffle a confirmed sheet.</div>
+            </div>
+          </div>
+          <div class="scoreboardBody">
+            <div class="scoreStepperGroup">
+              <div class="scoreStepper" data-score-side="user">
+                <span class="scoreStepperLabel">You</span>
+                <div class="scoreStepperControls">
+                  <button class="scoreStepBtn" type="button" data-score-action="dec" data-score-side="user" aria-label="Decrease your score">−</button>
+                  <span class="scoreStepValue" id="dcUserScoreValue">0</span>
+                  <button class="scoreStepBtn" type="button" data-score-action="inc" data-score-side="user" aria-label="Increase your score">+</button>
+                </div>
+              </div>
+              <div class="scoreStepper" data-score-side="opp">
+                <span class="scoreStepperLabel">Opp</span>
+                <div class="scoreStepperControls">
+                  <button class="scoreStepBtn" type="button" data-score-action="dec" data-score-side="opp" aria-label="Decrease opponent score">−</button>
+                  <span class="scoreStepValue" id="dcOppScoreValue">0</span>
+                  <button class="scoreStepBtn" type="button" data-score-action="inc" data-score-side="opp" aria-label="Increase opponent score">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="modeButtonRow quarterButtonRow" id="dcQuarterButtonGroup">
+              <button class="modeBtn is-active" type="button" data-quarter="1">Q1</button>
+              <button class="modeBtn" type="button" data-quarter="2">Q2</button>
+              <button class="modeBtn" type="button" data-quarter="3">Q3</button>
+              <button class="modeBtn" type="button" data-quarter="4">Q4</button>
+              <button class="modeBtn" type="button" data-quarter="5">OT</button>
+            </div>
+            <button class="secondaryBtn halftimeBtn" id="dcHalftimeBtn" type="button" disabled aria-disabled="true" title="Start a game before making a halftime adjustment">Halftime</button>
+            <div class="modeSummary halftimeHint">Opens style picker for a second-half lean, then sets the scoreboard to Q3. Does not start a new game. Available after New Game.</div>
+          </div>
+        </div>
+
         <div class="modeSection hidden" id="dcOffenseShowingPanel">
           <div class="modeSectionHead">
             <div>
