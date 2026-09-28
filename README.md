@@ -1,7 +1,7 @@
-# Gridiron OC (PC)
+﻿# Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.7-green.svg)](file:///d:/Robert/Desktop/App%20Project%20Builds/Gridiron_OC/Gridiron_OC/PC/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.7-green.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -61,7 +61,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 ### 2. Defensive Coordinator (DC) Workspace
 
 - **Comprehensive Defensive Catalog:** Includes all 32 NFL teams and over 8,200 unique defensive plays across 3-4, 4-3, Nickel, Dime, Dollar, and Goal Line fronts.
-- **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
+- **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%â€“35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
 - **Sticky "Offense Showing" Biasing:** Quickly tap the opponent's offensive formation (e.g., *Gun Bunch*, *Singleback Wing*, *I-Form*) to bias defensive recommendations toward optimal personnel groupings.
 - **Strict Situation Gating:**
   - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs.
@@ -81,7 +81,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 ### 4. Game Management & Flow Controls
 
 - **Interactive Game Scoreboard:**
-  - Track score (*You / Opp*) and quarter (*Q1–Q4, OT*).
+  - Track score (*You / Opp*) and quarter (*Q1â€“Q4, OT*).
   - Automatically factors score differential and remaining time into coordinator play-calling aggression.
 - **Halftime Adjustments:**
   - Unlock mid-game coordinator style adjustments at the half without erasing accumulated opponent scouting or game drive history.
@@ -143,23 +143,23 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
 
 ```
 [ Electron Main Process (main.js) ]
-       │
-       ├── IPC Bridge (preload.js)
-       │
+       â”‚
+       â”œâ”€â”€ IPC Bridge (preload.js)
+       â”‚
 [ Renderer Workspace (app.js, index.html) ]
-       ├── Adaptive Recommendation Core (shared/recommendationCore.js)
-       ├── Defense Scorer (shared/defenseRecommendationCore.js)
-       ├── Stage-2 Slate Builder (shared/selectionEngine.js)
-       ├── End Game Report Builder (shared/coordinatorReport.js)
-       └── Madden Penalty Catalog (shared/penaltyCatalog.js)
-       │
+       â”œâ”€â”€ Adaptive Recommendation Core (shared/recommendationCore.js)
+       â”œâ”€â”€ Defense Scorer (shared/defenseRecommendationCore.js)
+       â”œâ”€â”€ Stage-2 Slate Builder (shared/selectionEngine.js)
+       â”œâ”€â”€ End Game Report Builder (shared/coordinatorReport.js)
+       â””â”€â”€ Madden Penalty Catalog (shared/penaltyCatalog.js)
+       â”‚
 [ OCR & Vision Subsystem (ocr/) ]
-       ├── Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
-       ├── Python OCR Sidecar Worker (ocr-sidecar/ - OpenCV / Tesseract)
-       └── Shared Text & Grammar Parsers (ocr/shared/)
-       │
+       â”œâ”€â”€ Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
+       â”œâ”€â”€ Python OCR Sidecar Worker (ocr-sidecar/ - OpenCV / Tesseract)
+       â””â”€â”€ Shared Text & Grammar Parsers (ocr/shared/)
+       â”‚
 [ Audio Engine (vendor/whisper/) ]
-       └── On-device Whisper binary (local STT)
+       â””â”€â”€ On-device Whisper binary (local STT)
 ```
 
 - **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
@@ -214,7 +214,7 @@ Gridiron OC includes a comprehensive regression and domain validation suite. Alw
 npm run verify:pc
 
 # Run individual test components
-npm run check:core             # Validate shared engine parity
+npm run check:core             # Validate local PC shared modules
 npm run test:regression        # App UI & play-calling regressions
 npm run test:ocr:js            # OCR grammar, confusables, and parser checks
 node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance checks
@@ -225,5 +225,5 @@ node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance check
 ## License & Trademarks
 
 - **Proprietary Software:** All rights reserved.
-- **Third-Party Notices:** Bundled open-source libraries and licenses are detailed in [THIRD_PARTY_NOTICES.md](file:///d:/Robert/Desktop/App%20Project%20Builds/Gridiron_OC/Gridiron_OC/PC/THIRD_PARTY_NOTICES.md).
-- **Disclaimer:** Gridiron OC is an independent companion tool and is not affiliated with, endorsed by, sponsored by, or approved by Electronic Arts Inc., EA SPORTS, the National Football League (NFL), or any NFL team. All product and company names are trademarks™ or registered® trademarks of their respective holders.
+- **Third-Party Notices:** Bundled open-source libraries and licenses are detailed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- **Disclaimer:** Gridiron OC is an independent companion tool and is not affiliated with, endorsed by, sponsored by, or approved by Electronic Arts Inc., EA SPORTS, the National Football League (NFL), or any NFL team. All product and company names are trademarksâ„¢ or registeredÂ® trademarks of their respective holders.

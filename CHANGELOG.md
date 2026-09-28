@@ -1,6 +1,6 @@
-# Gridiron OC (PC) — Changelog & Evolution
+﻿# Gridiron OC (PC) â€” Changelog & Evolution
 
-This document tracks release milestones, historical architecture shifts, and incremental feature updates for the **Gridiron OC (PC)** desktop application. For current user-facing product features, architecture overview, and setup instructions, see [README.md](file:///d:/Robert/Desktop/App%20Project%20Builds/Gridiron_OC/Gridiron_OC/PC/README.md).
+This document tracks release milestones, historical architecture shifts, and incremental feature updates for the **Gridiron OC (PC)** desktop application. For current user-facing product features, architecture overview, and setup instructions, see [README.md](README.md).
 
 ---
 
@@ -9,7 +9,7 @@ This document tracks release milestones, historical architecture shifts, and inc
 ### Highlights & Recent Changes
 
 - **DC Blitz Recommendations & Concept Splitting (v0.1.7):**
-  - Rebalanced the defensive play-calling pipeline so blitz packages surface at realistic football frequencies (~25%–35% across games).
+  - Rebalanced the defensive play-calling pipeline so blitz packages surface at realistic football frequencies (~25%â€“35% across games).
   - Categorized pressures into `zone_blitz` and `man_blitz`, safely rewarding disguised zone pressures on early downs and 3rd & medium/long without over-promoting raw zero blitzes.
   - Relaxed DC package diversity bans (`shownFamilyBanBatches: 0`) to prevent global blitz lockouts after a single exposure.
   - Implemented complementary coverage/pressure counter-pairing in the DC selection engine.
@@ -22,14 +22,14 @@ This document tracks release milestones, historical architecture shifts, and inc
   - Ensured whole-game OC appearance counters survive rolling recent-history windows, and exact Call sheet IDs remain remembered until New Game.
 
 - **Defensive Situations & Goal-Line Logic (v0.1.6):**
-  - Defensive goal-line packages are restricted strictly to true goal-line situations (goal-to-go inside 3 yards or opponent 1–3 on short/late downs).
+  - Defensive goal-line packages are restricted strictly to true goal-line situations (goal-to-go inside 3 yards or opponent 1â€“3 on short/late downs).
   - Open-field 1st & 10, 2nd & 10, 3rd/4th & 1, and long goal-to-go do not surface Goal Line defenses.
   - Prevent defense eligibility restricted to Hail Mary looks or protect-the-lead late-game situations (Q4/OT, or late Q2 with 15+ yards to go).
 
 - **Madden OCR DC Capture Bridge & Pipeline Hardening:**
   - Migrated exclusively to **Gridiron Capture Bridge** (`GridironCaptureBridge.exe`) for low-latency Windows Desktop or Capture Card (e.g., Elgato 4K60 Pro) frame ingest.
   - Fully removed legacy OBS plugins and OBS WebSocket configurations.
-  - Added multiline HUD OCR parsing with confusable glyph repairs (e.g., `BOAL`/`G0AL` → Goal, `COVERA` → 4, `451` pipe-bleed suppression).
+  - Added multiline HUD OCR parsing with confusable glyph repairs (e.g., `BOAL`/`G0AL` â†’ Goal, `COVERA` â†’ 4, `451` pipe-bleed suppression).
   - OCR Opponent Scouting: Offensive OCR spots automatically log accepted previous defensive plays into the Last Defense Shown writer before down transitions.
   - Exact Call variety caps each play at two appearances per game; cleans on New Game.
   - Automatic mid-drive confirm scoring during offensive OCR spot progression.
@@ -52,7 +52,7 @@ This document tracks release milestones, historical architecture shifts, and inc
 ### v0.1.5 (2026-09-24)
 - **Goal-Line Gate:** Enforced true goal-line contexts for defensive goal-line calls.
 - **OCR Exact Call Variety:** Whole-game exact call memory with 2-appearance caps.
-- **HUD Digit Repairs:** Long-yardage down/distance repair (`1S1 & 20` → 1st & 20).
+- **HUD Digit Repairs:** Long-yardage down/distance repair (`1S1 & 20` â†’ 1st & 20).
 - **End Game Mode Reset:** Triggering End Game automatically restores the play-calling mode to `Normal` and writes to user preferences.
 - **Usage Recorder Script:** Added `PC/scripts/measure-gridiron-usage.ps1` for recording live CPU/memory footprints across app, sidecar, Whisper, and capture bridge.
 

@@ -1,13 +1,17 @@
-# Dependencies and local build caches
+﻿# Dependencies and local build caches
 node_modules/
 build/out/
 .cache/
 coverage/
 *.zip
 
-# electron-builder unpack/staging repeats the installer. The setup exe is tracked.
-dist/*
-!dist/Gridiron Play Advisor Setup 0.1.5.exe
+# Build outputs, installers, and distributables
+dist/
+*.exe
+ocr-sidecar/dist/
+ocr-sidecar/.venv/
+.venv/
+venv/
 
 # Secrets and local config
 .env
