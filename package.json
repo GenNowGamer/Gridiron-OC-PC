@@ -8,6 +8,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "test": "npm run verify:pc",
     "check:ffmpeg-license": "node ./scripts/check-ffmpeg-license.mjs",
     "check:ocr-license": "node ./scripts/check-ocr-license.mjs",
     "test:ocr:js": "node --test ./ocr/main/test/*.test.js && node ./scripts/smoke-ocr-domain.mjs",
@@ -39,8 +40,6 @@
       "ocr/main/**",
       "!ocr/main/test/**",
       "ocr-sidecar/README.md",
-      "OCR_DC_GUIDE.md",
-      "OCR_RELEASE_VALIDATION_CHECKLIST.md",
       "plays.json",
       "defensive_plays.json",
       "THIRD_PARTY_NOTICES.md",
