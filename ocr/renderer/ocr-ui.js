@@ -1736,5 +1736,12 @@
       renderStrip({});
       syncTeamContext();
     },
+    setPresentationStyle: async (style) => {
+      const canonical = canonicalPresentationStyle(style);
+      if (ui.presentationSelect) ui.presentationSelect.value = canonical;
+      await onPresentationStyleChange();
+      return canonical;
+    },
+    getPresentationStyle: () => selectedPresentationStyle(),
   };
 })();

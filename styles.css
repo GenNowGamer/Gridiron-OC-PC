@@ -1753,3 +1753,223 @@ body {
   margin-top: 3px;
 }
 
+/* Matchup & Broadcast Setup Overlay Modal */
+.matchupOverlay {
+  background: rgba(3, 7, 14, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 28;
+}
+
+.matchupCard {
+  width: min(580px, 94vw);
+  background: linear-gradient(175deg, rgba(17, 24, 38, 0.94) 0%, rgba(10, 15, 25, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 30px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-sizing: border-box;
+  animation: matchupModalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes matchupModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.matchupBadgeRow {
+  display: flex;
+  justify-content: center;
+}
+
+.matchupBadge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(42, 108, 255, 0.45);
+  background: rgba(42, 108, 255, 0.16);
+  display: inline-flex;
+  align-items: center;
+}
+
+.matchupBadgeText {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--secondary, #8fb8ff);
+}
+
+.matchupTitle {
+  font-size: 24px;
+  font-weight: 900;
+  text-align: center;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.matchupSub {
+  font-size: 13px;
+  text-align: center;
+  color: var(--hint, #c3cede);
+  line-height: 1.5;
+  margin-top: -6px;
+  max-width: 48ch;
+  align-self: center;
+}
+
+.matchupVsSection {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.matchupTeamCol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.matchupVsDivider {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--secondary, #8fb8ff);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 14px;
+}
+
+.matchupLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--hint, #c3cede);
+}
+
+.matchupSelect {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--control-bg, #111927);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.matchupSelect:focus {
+  border-color: var(--secondary, #8fb8ff);
+  box-shadow: 0 0 0 2px rgba(42, 108, 255, 0.35);
+}
+
+.matchupPresentationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.presentationPillGroup {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 540px) {
+  .presentationPillGroup {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.presentationPillBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  color: #ffffff;
+  text-align: center;
+}
+
+.presentationPillBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.presentationPillBtn:active {
+  transform: translateY(0);
+}
+
+.presentationPillBtn.is-active {
+  background: linear-gradient(145deg, rgba(42, 108, 255, 0.28), rgba(42, 108, 255, 0.14));
+  border-color: var(--secondary, #8fb8ff);
+  box-shadow: 0 0 16px rgba(42, 108, 255, 0.3), inset 0 0 0 1px var(--secondary, #8fb8ff);
+}
+
+.presentationPillBtn .pillTitle {
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: #ffffff;
+}
+
+.presentationPillBtn.is-active .pillTitle {
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(42, 108, 255, 0.6);
+}
+
+.presentationPillBtn .pillSub {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--hint, #c3cede);
+  margin-top: 3px;
+  white-space: nowrap;
+}
+
+.presentationPillBtn.is-active .pillSub {
+  color: var(--secondary, #8fb8ff);
+}
+
+.matchupActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.matchupConfirmBtn {
+  min-width: 150px;
+  padding: 12px 22px;
+  font-size: 14px;
+}
+

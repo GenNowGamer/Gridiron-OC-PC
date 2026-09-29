@@ -179,3 +179,22 @@ test('audible and next spoken snap retain learning and confirmation flow', async
   assert.equal(a.run('Object.keys(state.userLearning.global.plays)[0]'), audible);
   assert.equal(a.run('state.presentedRecommendations.length'), 3);
 });
+
+test('fresh start initializes coordinatorRole to OC even if persisted prefs had DC', () => {
+  const a = app();
+  a.run(`applyPersistedPreferences({ coordinatorRole: 'dc', selectedTeam: 'CHI' });`);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+});
+
+test('matchup setup modal updates team, opponent and presentation style', () => {
+  const a = app();
+  a.run(`
+    setMatchupPresentationStyle('Thursday Night Football');
+    state.selectedTeam = 'KC';
+    state.selectedOpponent = 'BUF';
+  `);
+  assert.equal(a.run('state.matchupPresentationStyle'), 'Thursday Night Football');
+  assert.equal(a.run('state.selectedTeam'), 'KC');
+  assert.equal(a.run('state.selectedOpponent'), 'BUF');
+});
+

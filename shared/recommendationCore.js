@@ -127,7 +127,7 @@
       type: { PA: 1.55, PASS: 0.85, RUN: 0.45 },
       families: { boot: 1.15, flood: 0.95, leak: 0.95, shot: 0.8, inside_zone: 0.35, wide_zone: 0.45, duo_power: 0.25 },
       concepts: { "play action": 0.95, post: 0.55, dagger: 0.55, seam: 0.55, "jet sweep": 0.45 },
-      tags: { underCenter: 1.0, motion: 1.05, bunch: 0.55, condensed: 0.55, vertical: 0.55 },
+      tags: { underCenter: 0.75, motion: 1.05, bunch: 0.55, condensed: 0.55, vertical: 0.55, shotgun: 0.45, spread: 0.35 },
       situational: { earlyRun: 0.05, earlyPa: 1.15, earlyMotion: 0.85, longPass: 0.45 },
     },
     VERSATILE_WEST_COAST: {

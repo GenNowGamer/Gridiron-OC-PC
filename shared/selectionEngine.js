@@ -76,6 +76,13 @@
     wildcardMaxPool: 48,
     wildcardTemperature: 2.35,
     underusedBonus: 3.5,
+    // Primary & Counter exploration (Cold-start entropy)
+    samplePrimary: true,
+    primaryExploreBand: 2.75,
+    primaryTemperature: 1.45,
+    sampleCounter: true,
+    counterExploreBand: 2.75,
+    counterTemperature: 1.45,
     // Slate rules
     limit: 3,
     requireUniqueFamilyType: true,
@@ -713,23 +720,26 @@
   }
 
   function buildWildcardPool(annotated, slate, policy) {
-    const sorted = annotated.slice().sort(function (a, b) {
-      if (b._selectionScore !== a._selectionScore) return b._selectionScore - a._selectionScore;
-      return cleanText(a._selectionPlayId).localeCompare(cleanText(b._selectionPlayId));
-    });
-    const percentile = clamp(Number(policy.wildcardPoolPercentile) || 0.5, 0.1, 1);
-    const minPool = Number(policy.wildcardMinPool) || 14;
-    const maxPool = Number(policy.wildcardMaxPool) || 48;
-    const count = Math.min(maxPool, Math.max(minPool, Math.ceil(sorted.length * percentile)));
-    const pool = sorted.slice(0, Math.max(count, Math.min(sorted.length, minPool)));
-    const eligible = pool.filter(function (item) {
+    const eligible = (Array.isArray(annotated) ? annotated : []).filter(function (item) {
       return canAdd(item, slate, policy, { allowBanned: false }).ok;
     });
-    // Prefer never-shown plays so slot #3 is not a stale-filler dump.
+    // Fresh plays from across the playbook that have 0 appearances this game
     const fresh = eligible.filter(function (item) {
       return !(Number(item._sessionShowCount) > 0);
     });
-    return fresh.length ? fresh : eligible;
+    if (fresh.length >= 8) {
+      return fresh;
+    }
+    const sorted = eligible.slice().sort(function (a, b) {
+      if (b._selectionScore !== a._selectionScore) return b._selectionScore - a._selectionScore;
+      return cleanText(a._selectionPlayId).localeCompare(cleanText(b._selectionPlayId));
+    });
+    const percentile = clamp(Number(policy.wildcardPoolPercentile) || 0.65, 0.1, 1);
+    const minPool = Number(policy.wildcardMinPool) || 16;
+    const maxPool = Number(policy.wildcardMaxPool) || 64;
+    const count = Math.min(maxPool, Math.max(minPool, Math.ceil(sorted.length * percentile)));
+    const pool = sorted.slice(0, Math.max(count, Math.min(sorted.length, minPool)));
+    return pool.length ? pool : eligible;
   }
 
   /**
@@ -806,9 +816,26 @@
     const bandPool = preferredForms.length ? pool.filter(inPreferredBand) : [];
 
     const primarySource = bandPool.length ? bandPool : pool;
-    const primary = primarySource.find(function (item) {
+    let primary = null;
+    const primaryEligible = primarySource.filter(function (item) {
       return canAdd(item, slate, policy, { allowBanned: !eligible.length }).ok;
-    }) || null;
+    });
+
+    if (policy.samplePrimary !== false && primaryEligible.length > 1) {
+      const topPrimaryScore = primaryEligible[0]._selectionScore;
+      const band = Number.isFinite(Number(policy.primaryExploreBand)) ? Number(policy.primaryExploreBand) : 2.75;
+      const nearPrimary = primaryEligible.filter(function (item) {
+        return (topPrimaryScore - item._selectionScore) <= band;
+      });
+      if (nearPrimary.length > 1) {
+        primary = softmaxSample(nearPrimary, policy.primaryTemperature || 1.45, rng);
+      } else {
+        primary = nearPrimary[0] || null;
+      }
+    } else {
+      primary = primaryEligible[0] || null;
+    }
+
     if (primary) {
       slate.push(primary);
       debug.pickReasons.push({ rank: 1, id: primary._selectionPlayId, via: "primary" });
@@ -836,11 +863,26 @@
           const boost = isComplementaryCounter(slate[0], item)
             ? (Number(policy.complementaryPaBoost) || 2.75)
             : 0;
-          return { item: item, rankScore: item._selectionScore + boost };
+          return { item: item, rankScore: item._selectionScore + boost, _selectionScore: item._selectionScore + boost };
         })
         .sort(function (a, b) { return b.rankScore - a.rankScore; });
 
-      let alt = counters.length ? counters[0].item : null;
+      let alt = null;
+      if (counters.length) {
+        if (policy.sampleCounter !== false && counters.length > 1) {
+          const topCounterScore = counters[0].rankScore;
+          const counterBand = Number.isFinite(Number(policy.counterExploreBand)) ? Number(policy.counterExploreBand) : 2.75;
+          const nearCounters = counters.filter(function (entry) {
+            return (topCounterScore - entry.rankScore) <= counterBand;
+          });
+          const sampledEntry = nearCounters.length > 1
+            ? softmaxSample(nearCounters, policy.counterTemperature || 1.45, rng)
+            : nearCounters[0];
+          alt = sampledEntry ? sampledEntry.item : null;
+        } else {
+          alt = counters[0].item;
+        }
+      }
       if (!alt) {
         alt = pool.find(function (item) {
           return canAdd(item, slate, policy, { allowBanned: !eligible.length }).ok;

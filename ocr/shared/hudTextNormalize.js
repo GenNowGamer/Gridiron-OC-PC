@@ -758,7 +758,7 @@
     if (!text) return "";
 
     // Exact damaged strings verified against manual corrections in the CHI–PHI
-    // Default HUD export. Keep these narrow; do not loosen fuzzy matching globally.
+    // and CHI–CIN HUD exports. Keep these narrow; do not loosen fuzzy matching globally.
     var confirmedRepairs = {
       REDZONEBSISRS: "REDZONE SCISSORS",
       ZEROBITZ: "ZERO BLITZ",
@@ -769,6 +769,16 @@
       HAEROBLAST: "HAMMER 0 BLAST",
       GOVERG: "COVER 6",
       MTNSHOKHBTON: "MTN SHOCK HB OPTION",
+      SAMISTING: "SAM 1 STING",
+      SAMEDGES: "SAM EDGE 3",
+      COVERSHOWZ: "COVER 4 SHOW 2",
+      LBBLITZI: "LB BLITZ 1",
+      LBDOGSS: "LB DOGS 3",
+      SAMWILLBLITZ: "SAM WILL 3",
+      FSWILLBLITZO: "FS FIRE 1",
+      INGO: "IN GO",
+      DUTSIDEZONE: "INSIDE ZONE",
+      DUTSDEZONE: "INSIDE ZONE",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 

@@ -590,6 +590,57 @@
     </div>
   </div>
 
+  <div class="overlay matchupOverlay hidden" id="matchupOverlay" aria-hidden="true">
+    <div class="matchupCard" id="matchupCard">
+      <div class="matchupBadgeRow">
+        <div class="matchupBadge">
+          <span class="matchupBadgeText">GAME SETUP</span>
+        </div>
+      </div>
+      <div class="matchupTitle">Matchup &amp; Broadcast Setup</div>
+      <div class="matchupSub">Select your teams and broadcast style to calibrate OCR recognition and live coordinator logic before kickoff.</div>
+      
+      <div class="matchupVsSection">
+        <div class="matchupTeamCol">
+          <label class="matchupLabel" for="matchupTeamSelect">YOUR TEAM (PLAYBOOK)</label>
+          <select class="matchupSelect" id="matchupTeamSelect"></select>
+        </div>
+        <div class="matchupVsDivider">VS</div>
+        <div class="matchupTeamCol">
+          <label class="matchupLabel" for="matchupOpponentSelect">OPPONENT</label>
+          <select class="matchupSelect" id="matchupOpponentSelect"></select>
+        </div>
+      </div>
+
+      <div class="matchupPresentationSection">
+        <label class="matchupLabel">BROADCAST PRESENTATION STYLE (OCR HUD)</label>
+        <div class="presentationPillGroup" id="presentationPillGroup" role="group" aria-label="Broadcast presentation style">
+          <button type="button" class="presentationPillBtn is-active" data-presentation="Default Presentation">
+            <span class="pillTitle">Default</span>
+            <span class="pillSub">Standard Broadcast</span>
+          </button>
+          <button type="button" class="presentationPillBtn" data-presentation="Thursday Night Football">
+            <span class="pillTitle">TNF</span>
+            <span class="pillSub">Thursday Night</span>
+          </button>
+          <button type="button" class="presentationPillBtn" data-presentation="Sunday Night Football">
+            <span class="pillTitle">SNF</span>
+            <span class="pillSub">Sunday Night</span>
+          </button>
+          <button type="button" class="presentationPillBtn" data-presentation="Monday Night Football">
+            <span class="pillTitle">MNF</span>
+            <span class="pillSub">Monday Night</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="matchupActions">
+        <button class="ghostBtn" id="matchupSkipBtn" type="button">Skip For Now</button>
+        <button class="micBtn matchupConfirmBtn" id="matchupConfirmBtn" type="button">Start Game</button>
+      </div>
+    </div>
+  </div>
+
   <script src="shared/recommendationCore.js"></script>
   <script src="shared/selectionEngine.js"></script>
   <script src="shared/defenseRecommendationCore.js"></script>
