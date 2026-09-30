@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.10-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.11-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -16,10 +16,12 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 - [Key Features](#key-features)
   - [Offensive Coordinator (OC) Workspace](#1-offensive-coordinator-oc-workspace)
   - [Defensive Coordinator (DC) Workspace](#2-defensive-coordinator-dc-workspace)
-  - [Hands-Free Input: Speech & Vision](#3-hands-free-input-speech--vision)
-  - [Game Management & Flow Controls](#4-game-management--flow-controls)
-  - [Opponent Scouting & Tendencies](#5-opponent-scouting--tendencies)
-  - [Post-Game Coordinator Report](#6-post-game-coordinator-report)
+  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
+  - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
+  - [Hands-Free Input: Speech & Vision](#5-hands-free-input-speech--vision)
+  - [Game Management & Flow Controls](#6-game-management--flow-controls)
+  - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
+  - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
 - [Operator's Field Manual (User Guide)](USER_GUIDE.md)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
   - [Voice Workflow](#voice-first-workflow-recommended)
@@ -77,7 +79,22 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Member Play Rotation:** Within each defensive package, candidate plays are dynamically scored and sorted by fewest session appearances, rotating through the entire playbook (achieving over 91% play surface rate in testing) rather than anchoring to the first static member.
   - **Selection Engine Diversity Alignment:** Both Exact Calls and Package Calls leverage the shared composite selection engine (`selectDiversitySlate`) with temperature exploration and multi-batch repetition bans while strictly preserving situational sound rules.
 
-### 3. Hands-Free Input: Speech & Vision
+### 3. Play Sequencing & Tactical Tendency Radar
+
+- **Play Sequencing Progression (`⚡ SEQUENCE PAYOFF`):** Detects established ground sequences ($\ge 2$ consecutive run or RPO calls) and highlights corresponding play-action, leak, boot, flood, shot, or vertical payoff passes with an eye-catching purple/indigo badge and dedicated setup context notes.
+- **Opponent Habits (Live Tendency Radar Banner):** Positioned immediately above the recommendation cards in both OC and DC workspaces. Analyzes live game scouting history to dynamically broadcast:
+  - *Observed Opponent Tendency:* (e.g., *"Shows Cover 3 on 2nd & 7"* or *"High Blitz Tendency on 3rd Down"*).
+  - *Recommended Tactical Hard Counter:* Surfaces proven conceptual counters (e.g., *"Hard Counter: Flood / Seams / PA Boot"* or *"Counter: Quick Slants / Bubble Screen"*).
+
+### 4. Halftime Review & Strategic Adjustments
+
+- **Strategic 1st-Half Debrief Panel:** Embedded directly inside the Halftime Adjustment overlay, delivering an instant tactical breakdown before entering Quarter 3:
+  - **1st Half Run/Pass Split:** Displays the exact ratio and percentage split of ground vs. aerial play calls.
+  - **Top Offensive Concept:** Identifies the highest-yield concept executed in the first half.
+  - **Primary Opponent Defense Faced:** Pinpoints the opponent's most heavily utilized coverage shell.
+  - **Coaching Takeaways & Adjustments:** Offers coordinator recommendations on whether to balance the attack, exploit coverage weaknesses, or maintain pressure.
+
+### 5. Hands-Free Input: Speech & Vision
 
 - **Local Whisper Speech Recognition:**
   - Press the mic button and speak natural football situations (e.g., *"3rd and 6"*, *"1st and goal on the 4"*, *"2nd and 8 cover 3"*).
@@ -88,7 +105,7 @@ In competitive football gaming, calling plays under a running play clock can lea
   - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
 
-### 4. Game Management & Flow Controls
+### 6. Game Management & Flow Controls
 
 - **Interactive Game Scoreboard & Automatic Scoring:**
   - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
@@ -98,8 +115,8 @@ In competitive football gaming, calling plays under a running play clock can lea
     - *Field Goal:* Automatically awards 3 points to the scoring side.
     - *Safety:* Automatically awards 2 points to the defending side.
     - *Pick 6 / Scoop & Score:* Automatically awards 6 points to the recovering side with the same transparent PAT overlay.
-- **Halftime Adjustments:**
-  - Unlock mid-game coordinator style adjustments at the half without erasing accumulated opponent scouting or game drive history.
+- **Halftime Adjustments & Debrief:**
+  - Unlock mid-game coordinator style adjustments alongside the 1st-half debrief panel without erasing accumulated opponent scouting or game drive history.
 - **Audible Overlay:**
   - If you audible at the line of scrimmage, swap your confirmed play to the actual play executed from the same formation/set so your learning model stays accurate.
 - **Penalty Tracking:**
@@ -107,15 +124,15 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Drive Result Tracking & Coordinator Handoff:**
   - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack*) to reinforce situational learning and automatically hand off between OC and DC workspaces.
 
-### 5. Opponent Scouting & Tendencies
+### 7. Opponent Scouting & Tendencies
 
 - **Last Defense Shown Bar:**
   - With a single tap, record the coverage shell the defense ran (*Blitz, Man, C1, C2, C3, C4, C6, C9, Tampa 2*).
   - Builds a multi-game tendency database against human opponents or CPU profiles.
-- **Predictive Pre-Snap Layering:**
-  - When the defensive look is unknown, Gridiron OC predicts the opponent's likely coverage based on historical tendencies in that down/distance and biases offensive calls accordingly.
+- **Predictive Pre-Snap Layering & Tendency Radar:**
+  - When the defensive look is unknown, Gridiron OC predicts the opponent's likely coverage based on historical tendencies in that down/distance and biases offensive calls accordingly, while displaying live tactical counters on the Opponent Tendency Radar banner.
 
-### 6. Post-Game Coordinator Report
+### 8. Post-Game Coordinator Report
 
 At the conclusion of each match, select **End Game** to view a comprehensive analytical debrief:
 - **Trust & Fidelity Scores:** Evaluates how consistently you executed the coordinator's recommendations.
