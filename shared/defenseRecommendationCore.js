@@ -65,6 +65,14 @@
     return upper(play && play.formation);
   }
 
+  function playIdOfDefensive(play) {
+    if (!play) return "";
+    if (play.id) return cleanText(play.id).toLowerCase();
+    return [play.team, play.formation, play.set, play.play_name]
+      .map(function (v) { return cleanText(v).toLowerCase(); })
+      .join("|");
+  }
+
   function defensiveFormationSetKeyOf(play) {
     const formation = upper(play && play.formation) || "BASE";
     const set = upper(play && play.set) || "BASE";
@@ -645,9 +653,11 @@
       const scored = Array.isArray(params && params.scored) ? params.scored : [];
       const limit = Number.isFinite(Number(params && params.limit)) ? Number(params.limit) : 3;
       const scoreKey = (params && params.scoreKey) || "_score";
+      const sessionPlayShowCounts = (params && params.sessionPlayShowCounts) || {};
       const result = SelectionEngine.selectDiversitySlate({
         scored: scored.map(function (item) {
-          const play = item.play || item;
+          const rawPlay = item.play || item;
+          const play = (rawPlay && rawPlay.id) ? rawPlay : Object.assign({}, rawPlay, { id: playIdOfDefensive(rawPlay) });
           return Object.assign({}, item, {
             play: play,
             compositeParts: item.compositeParts || {
@@ -666,13 +676,20 @@
           return coverageFamilyOf(play, defensivePlayTraitsOf(play));
         },
         scoreKey: scoreKey,
+        preserveInputScore: true,
+        sessionPlayShowCounts: sessionPlayShowCounts,
         limit: limit,
         recentGameCalls: params && params.recentGameCalls,
         recommendationExposureHistory: params && params.recommendationExposureHistory,
         driveRecommendationExposure: params && params.driveRecommendationExposure,
         outcomeMemory: params && params.outcomeMemory,
         rng: params && params.rng,
-        policy: params && params.policy,
+        policy: Object.assign({
+          wildcardTemperature: 2.1,
+          shownPlayBanBatches: 6,
+          shownConceptBanBatches: 1,
+          shownShellBanBatches: 1,
+        }, (params && params.policy) || {}),
       });
       return result.slate || [];
     }
@@ -782,7 +799,15 @@
       });
     });
 
-    const top = pickTopDefensiveRecommendationsCore({ scored: scored, limit: 3, scoreKey: "_score" });
+    const top = pickTopDefensiveRecommendationsCore({
+      scored: scored,
+      limit: 3,
+      scoreKey: "_score",
+      sessionPlayShowCounts: (params && params.sessionPlayShowCounts) || {},
+      recentGameCalls: params && params.recentGameCalls,
+      recommendationExposureHistory: params && params.recommendationExposureHistory,
+      driveRecommendationExposure: params && params.driveRecommendationExposure,
+    });
     return {
       context: ctx,
       recommendations: top.map(function (item) {
@@ -1346,6 +1371,8 @@
           return cleanText(play && (play.coverageFamily || play.family || play.packageKey || play.id)).toLowerCase();
         },
         scoreKey: scoreKey,
+        preserveInputScore: true,
+        sessionPlayShowCounts: (params && (params.sessionPackageShowCounts || params.sessionPlayShowCounts)) || {},
         limit: limit,
         recentGameCalls: recentGameCalls,
         recommendationExposureHistory: recommendationExposureHistory,
@@ -1446,6 +1473,8 @@
     const recentPlayIds = new Set(Array.isArray(params && params.recentPlayIds) ? params.recentPlayIds : []);
     const recentPackageKeys = Array.isArray(params && params.recentPackageKeys) ? params.recentPackageKeys : [];
     const exposurePackageKeys = Array.isArray(params && params.exposurePackageKeys) ? params.exposurePackageKeys : [];
+    const sessionPlayShowCounts = (params && params.sessionPlayShowCounts) || {};
+    const sessionPackageShowCounts = (params && params.sessionPackageShowCounts) || {};
     const learningSnapshot = params && params.learningSnapshot && typeof params.learningSnapshot === "object"
       ? params.learningSnapshot
       : null;
@@ -1543,17 +1572,36 @@
       else if (learningAdj <= -1.2) matchupWhy = "Learned stop rate cools this shell.";
       else if (tendencyAdj >= 1.0) matchupWhy = "Counters their OCR tendency in this look.";
 
-      group.members.sort(function (a, b) { return b.score - a.score; });
-      // Prefer an in-package example that is not the exact prior OCR defense play.
       const bannedPlayIds = new Set(recentPlayIds);
       matchupMemory.slice(-6).forEach(function (entry) {
         if (entry && entry.defensePlayId) bannedPlayIds.add(entry.defensePlayId);
       });
-      const example = group.members.find(function (entry) {
-        return entry.play && entry.play.id && !bannedPlayIds.has(entry.play.id);
-      }) || group.members.find(function (entry) {
-        return entry.play && entry.play.id && !recentPlayIds.has(entry.play.id);
-      }) || group.members[0] || null;
+
+      // Filter to valid member plays
+      const validMembers = group.members.filter(function (entry) {
+        return entry && entry.play && playIdOfDefensive(entry.play);
+      });
+
+      // To maximize variety across snaps, prefer plays in the package that have been shown
+      // fewest times this session, filtering out banned/recent plays where possible, and
+      // using candidate score as a tiebreaker.
+      function scoreCandidate(entry) {
+        const id = playIdOfDefensive(entry.play);
+        const showCount = Number(sessionPlayShowCounts[id]) || 0;
+        const isBanned = bannedPlayIds.has(id);
+        const isRecent = recentPlayIds.has(id);
+        // Penalty buckets: banned (huge penalty), recent (moderate penalty), then session shows
+        const penalty = (isBanned ? 1000 : 0) + (isRecent ? 100 : 0) + (showCount * 5);
+        return (Number(entry.score) || 0) - penalty;
+      }
+
+      validMembers.sort(function (a, b) {
+        const diff = scoreCandidate(b) - scoreCandidate(a);
+        if (Math.abs(diff) > 0.001) return diff;
+        return (b.score || 0) - (a.score || 0);
+      });
+
+      const example = validMembers[0] || group.members[0] || null;
 
       return {
         packageKey: group.packageKey,
@@ -1588,6 +1636,8 @@
       rng: params && params.rng,
       recentPackageKeys: recentPackageKeys,
       exposurePackageKeys: exposurePackageKeys,
+      sessionPackageShowCounts: sessionPackageShowCounts,
+      sessionPlayShowCounts: sessionPlayShowCounts,
     });
 
     return {
@@ -1606,7 +1656,7 @@
           why: item.why,
           _why: item.why,
           examplePlay: item.examplePlay,
-          examplePlayId: item.examplePlay && item.examplePlay.id ? item.examplePlay.id : null,
+          examplePlayId: item.examplePlay ? playIdOfDefensive(item.examplePlay) : null,
           examplePlayName: item.examplePlay ? cleanText(item.examplePlay.play_name) : "",
         };
       }),

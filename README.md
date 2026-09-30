@@ -20,6 +20,7 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
   - [Game Management & Flow Controls](#4-game-management--flow-controls)
   - [Opponent Scouting & Tendencies](#5-opponent-scouting--tendencies)
   - [Post-Game Coordinator Report](#6-post-game-coordinator-report)
+- [Operator's Field Manual (User Guide)](USER_GUIDE.md)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
   - [Voice Workflow](#voice-first-workflow-recommended)
   - [OCR Screen Ingest Workflow](#ocr-screen-capture-workflow)
@@ -71,6 +72,10 @@ In competitive football gaming, calling plays under a running play clock can lea
   - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs.
   - *Prevent Packages:* Restricted to Hail Mary situations or protect-the-lead late-game scenarios.
 - **Exact Calls vs. Package Calls:** Receive high-level package concepts or exact play calls matched directly to your current defensive playbook.
+- **Dynamic Package Member Rotation & Session Exposure:**
+  - **Session Play & Package Exposure Memory:** Retains game-long tracking of surfaced defensive calls and package keys across series, penalizing repetitive calls and ensuring balanced rotation.
+  - **Member Play Rotation:** Within each defensive package, candidate plays are dynamically scored and sorted by fewest session appearances, rotating through the entire playbook (achieving over 91% play surface rate in testing) rather than anchoring to the first static member.
+  - **Selection Engine Diversity Alignment:** Both Exact Calls and Package Calls leverage the shared composite selection engine (`selectDiversitySlate`) with temperature exploration and multi-batch repetition bans while strictly preserving situational sound rules.
 
 ### 3. Hands-Free Input: Speech & Vision
 
@@ -81,6 +86,7 @@ In competitive football gaming, calling plays under a running play clock can lea
   - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
   - Automatically reads the on-screen scoreboard (down, distance, yard line, and upcoming offensive formation) without sending video data to external servers.
   - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
+  - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
 
 ### 4. Game Management & Flow Controls
 

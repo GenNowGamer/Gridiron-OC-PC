@@ -287,6 +287,7 @@
       limit: limit,
       scoreKey: "_score",
       nearScoreWindow: 3.5,
+      sessionPlayShowCounts: input.sessionPlayShowCounts || {},
       recentGameCalls: input.recentGameCalls || selectionMemory.recentGameCalls,
       recommendationExposureHistory: input.recommendationExposureHistory || selectionMemory.recommendationExposureHistory,
       policy: input.selectionPolicy || selectionMemory.policy,

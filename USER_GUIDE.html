@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gridiron OC — Tactical Field Guide & Operator's Manual</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    :root {
+      --bg: #070d14;
+      --card-bg: #0e1724;
+      --card-alt: #132032;
+      --border: #1f324d;
+      --border-accent: #2a6cff;
+      --primary: #2a6cff;
+      --primary-light: #5991ff;
+      --cyan: #00d2ff;
+      --gold: #ffb703;
+      --red: #ff3366;
+      --green: #00e676;
+      --text: #e6eef8;
+      --text-muted: #94a9c7;
+      --text-dim: #5c7294;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 7mm 9mm 8mm 9mm;
+      @bottom-right {
+        content: counter(page);
+        font-family: 'Chakra Petch', sans-serif;
+        font-size: 8pt;
+        color: #5c7294;
+      }
+      @bottom-left {
+        content: "GRIDIRON OC // TACTICAL FIELD MANUAL";
+        font-family: 'Chakra Petch', sans-serif;
+        font-size: 7.5pt;
+        letter-spacing: 1px;
+        color: #5c7294;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 8.3pt;
+      line-height: 1.35;
+      -webkit-font-smoothing: antialiased;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .doc-page {
+      height: 281mm;
+      max-height: 281mm;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      padding-bottom: 1mm;
+    }
+
+    .doc-page:last-child {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    /* Page 1: Cover */
+    .cover-page {
+      padding: 8mm 8mm;
+      justify-content: space-between;
+      background: radial-gradient(circle at 85% 20%, rgba(42, 108, 255, 0.28), transparent 45%),
+                  radial-gradient(circle at 10% 80%, rgba(0, 210, 255, 0.16), transparent 45%),
+                  #070d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .cover-page::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--cyan), var(--gold));
+    }
+
+    .cover-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .tactical-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(42, 108, 255, 0.18);
+      border: 1px solid var(--border-accent);
+      border-radius: 4px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--cyan);
+      text-transform: uppercase;
+    }
+
+    .sec-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      color: var(--text-dim);
+    }
+
+    .cover-hero {
+      margin-top: 8mm;
+      margin-bottom: 6mm;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 6mm;
+    }
+
+    .brand-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 14px;
+      border: 2px solid var(--border-accent);
+      box-shadow: 0 0 30px rgba(42, 108, 255, 0.45);
+    }
+
+    .cover-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 34pt;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary-light) 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 3px;
+    }
+
+    .cover-sub {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 13pt;
+      letter-spacing: 3px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 5mm;
+    }
+
+    .cover-desc {
+      font-size: 10pt;
+      color: var(--text-muted);
+      max-width: 630px;
+      line-height: 1.55;
+    }
+
+    .cover-pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 7mm;
+    }
+
+    .pillar-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--primary);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+
+    .pillar-num {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8.5pt;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .pillar-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .pillar-text {
+      font-size: 8pt;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .cover-meta {
+      border-top: 1px solid var(--border);
+      padding-top: 5mm;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5pt;
+      color: var(--text-dim);
+    }
+
+    /* Headings */
+    h2 {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 11pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #ffffff;
+      margin-top: 1.8mm;
+      margin-bottom: 1.2mm;
+      padding-bottom: 0.8mm;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2::before {
+      content: "//";
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5pt;
+    }
+
+    h3 {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 9pt;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-top: 1.5mm;
+      margin-bottom: 0.8mm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin-bottom: 1.4mm;
+      color: var(--text);
+      font-size: 8.1pt;
+    }
+
+    ul {
+      margin-left: 14px;
+      margin-bottom: 1.4mm;
+      font-size: 8pt;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 0.8mm;
+    }
+
+    strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Callouts */
+    .callout {
+      background: var(--card-bg);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+      padding: 4px 8px;
+      margin: 1.2mm 0 1.8mm 0;
+    }
+
+    .callout.danger {
+      border-left-color: var(--red);
+      background: rgba(255, 51, 102, 0.08);
+      border-top: 1px solid rgba(255, 51, 102, 0.2);
+      border-right: 1px solid rgba(255, 51, 102, 0.2);
+      border-bottom: 1px solid rgba(255, 51, 102, 0.2);
+    }
+
+    .callout-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.6pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 1px;
+    }
+
+    .callout-body {
+      font-size: 7.4pt;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2mm 0 1.8mm 0;
+      font-size: 7.5pt;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #111a26;
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 3.5px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 3px 6px;
+      border-bottom: 1px solid rgba(31, 50, 77, 0.6);
+      color: var(--text-muted);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Steppers */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 1.2mm 0 1.8mm 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 7px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 7.2pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.6pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1px;
+    }
+
+    .step-desc {
+      font-size: 7.2pt;
+      color: var(--text-muted);
+      line-height: 1.26;
+    }
+
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.8pt;
+      padding: 1px 3.5px;
+      background: #182638;
+      border: 1px solid #2d4566;
+      border-radius: 3px;
+      color: var(--cyan);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    /* SCREENSHOT SHOWCASE & VISUAL CALLOUT ARROW SYSTEM */
+    .annotated-shot-card {
+      background: #09101b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 1.2mm 0 1.8mm 0;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.5);
+    }
+
+    .shot-header {
+      background: #101a27;
+      padding: 3px 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.2pt;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .shot-header .badge-tag {
+      background: rgba(42, 108, 255, 0.25);
+      border: 1px solid var(--primary);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 6.6pt;
+    }
+
+    .shot-viewport {
+      position: relative;
+      width: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .shot-viewport img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Precision Target Reticle & Pointer System */
+    .pointer-pin {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--cyan);
+      color: #070d14;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 6.6pt;
+      box-shadow: 0 0 8px rgba(0, 210, 255, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+      z-index: 10;
+      border: 1px solid #fff;
+    }
+
+    .pointer-pin.gold {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 183, 3, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    .pointer-pin.green {
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0, 230, 118, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    .pointer-pin.red {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 8px rgba(255, 51, 102, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    /* Callout Arrow Annotation Legend */
+    .callout-arrow-legend {
+      padding: 4px 7px;
+      background: #0b1420;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+    }
+
+    .callout-arrow-legend.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .callout-arrow-legend.cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      font-size: 6.8pt;
+      line-height: 1.22;
+      color: var(--text-muted);
+    }
+
+    .legend-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan);
+      color: #070d14;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 6.6pt;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .legend-badge.gold {
+      background: var(--gold);
+    }
+
+    .legend-badge.green {
+      background: var(--green);
+    }
+
+    .legend-badge.red {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .legend-label {
+      font-weight: 700;
+      color: #ffffff;
+      font-family: 'Chakra Petch', sans-serif;
+      text-transform: uppercase;
+      font-size: 6.8pt;
+    }
+
+    .arrow-indicator {
+      display: inline-block;
+      margin-left: 2px;
+      margin-right: 2px;
+      font-weight: 900;
+      color: var(--cyan);
+    }
+
+    .arrow-indicator.gold {
+      color: var(--gold);
+    }
+
+    .arrow-indicator.green {
+      color: var(--green);
+    }
+
+    .paired-shots {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 1.2mm 0 1.8mm 0;
+    }
+
+    .chip {
+      font-size: 6.5pt;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .chip.cyan {
+      background: rgba(0, 210, 255, 0.15);
+      border-color: rgba(0, 210, 255, 0.35);
+      color: var(--cyan);
+    }
+
+    .chip.gold {
+      background: rgba(255, 183, 3, 0.15);
+      border-color: rgba(255, 183, 3, 0.35);
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 1: COVER PAGE                                                    -->
+  <!-- ===================================================================== -->
+  <div class="doc-page cover-page">
+    <div class="cover-badge-row">
+      <div class="tactical-badge">
+        <span>★</span> TACTICAL FIELD MANUAL & OPERATOR'S COMPENDIUM
+      </div>
+      <div class="sec-badge">DOC-ID: GOC-PROD-2026 // EDITION 2.0</div>
+    </div>
+
+    <div class="cover-hero">
+      <div class="brand-mark">
+        <img class="brand-icon" src="assets/icon.png" alt="Gridiron OC Logo" />
+        <div>
+          <div class="cover-title">GRIDIRON OC</div>
+          <div class="cover-sub">DESKTOP SMART PLAYCALLING COMPANION</div>
+        </div>
+      </div>
+
+      <div class="cover-desc">
+        A low-latency, completely on-device situational coordinator engine engineered for competitive football simulation titles. Eliminates playbook stagnation and surfaces high-percentage, context-aware offensive and defensive schemes in real time with zero cloud dependency.
+      </div>
+
+      <div class="cover-pillars">
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 01</div>
+          <div class="pillar-title">ZERO-CLOUD ENGINE</div>
+          <div class="pillar-text">Runs 100% locally on your PC. Offline Whisper speech recognition and OpenCV frame analysis operate entirely on your hardware with zero telemetry leaks.</div>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 02</div>
+          <div class="pillar-title">FAST RECOMMENDATION</div>
+          <div class="pillar-text">Sub-50ms situational tree evaluates entire 32-team catalogs against field spot, score differential, and opponent defensive coverage habits.</div>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 03</div>
+          <div class="pillar-title">DUAL-INGEST MODES</div>
+          <div class="pillar-text">Command plays hands-free via natural conversational voice or tap your video stream for automated scoreboard HUD parsing.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cover-meta">
+      <div>TARGET PLATFORM: WINDOWS 10 / 11 x64</div>
+      <div>SIMULATION ENGINE: EA SPORTS™ MADDEN NFL</div>
+      <div>DEVELOPED BY GENNOWGAMER</div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 2: HARDWARE SPECS & MATCHUP SETUP (SCREENSHOT 1)                  -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>1. HARDWARE & SYSTEM REQUIREMENTS</h2>
+    <p>Gridiron OC is optimized for real-time play-clock execution. All computer vision and speech recognition tasks run locally on your workstation:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Minimum Spec</th>
+          <th>Recommended Spec (Real-Time Vision & Voice)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Operating System</strong></td>
+          <td>Windows 10 (64-bit) build 19041+</td>
+          <td>Windows 11 (64-bit) build 22621+</td>
+        </tr>
+        <tr>
+          <td><strong>Processor (CPU)</strong></td>
+          <td>Intel Core i5-8400 / AMD Ryzen 5 2600</td>
+          <td>Intel Core i7-10700K / AMD Ryzen 7 5800X</td>
+        </tr>
+        <tr>
+          <td><strong>System Memory</strong></td>
+          <td>8 GB Dual-Channel DDR4</td>
+          <td>16 GB Dual-Channel DDR4 / DDR5</td>
+        </tr>
+        <tr>
+          <td><strong>Graphics (GPU)</strong></td>
+          <td>Intel UHD 630 / Radeon Vega (DirectX 11)</td>
+          <td>NVIDIA GeForce GTX 1660 / AMD RX 5600 XT or higher</td>
+        </tr>
+        <tr>
+          <td><strong>Video Ingest</strong></td>
+          <td>Direct3D Window Capture (Madden Borderless)</td>
+          <td>DirectShow HDMI Card (Elgato HD60X / 4K60, AVerMedia)</td>
+        </tr>
+        <tr>
+          <td><strong>Audio Ingest</strong></td>
+          <td>Standard 3.5mm / USB Microphone</td>
+          <td>Noise-canceling Headset Mic with Push-to-Talk Bind</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger">
+      <div class="callout-title">⚠️ CRITICAL DIRECTX DISPLAY REQUIREMENT</div>
+      <div class="callout-body">
+        When capturing from Madden running on the same PC, <strong>do not enable Exclusive Fullscreen</strong>. Exclusive fullscreen causes the OS Desktop Window Manager to yield frame ownership, producing black frames in the video bridge. Always set Madden to <strong>Borderless Windowed</strong> or <strong>Windowed</strong>.
+      </div>
+    </div>
+
+    <h2>2. FIRST-TIME SETUP & BROADCAST CALIBRATION</h2>
+    <p>On initial launch, Gridiron OC presents the <strong>Matchup & Broadcast Setup</strong> dialog to calibrate teams, game modes, and scoreboard presentation:</p>
+
+    <!-- ANNOTATED SCREENSHOT 1: Matchup & Broadcast Setup (Exact UI Alignment) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // MATCHUP & BROADCAST PRESENTATION SETUP</div>
+        <span class="badge-tag">MODAL DIALOG</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/matchup_broadcast_setup.png" alt="Matchup and Broadcast Setup Dialog" />
+        <div class="pointer-pin" style="top: 46.7%; left: 34.1%;">❶</div>
+        <div class="pointer-pin gold" style="top: 46.7%; left: 59.3%;">❷</div>
+        <div class="pointer-pin green" style="top: 68.4%; left: 28.0%;">❸</div>
+        <div class="pointer-pin red" style="top: 84.2%; left: 65.0%;">❹</div>
+      </div>
+      <div class="callout-arrow-legend cols-4">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Your Team</span> <span class="arrow-indicator">➔</span>
+            <span>Selects playbook catalog & team identity.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Opponent</span> <span class="arrow-indicator gold">➔</span>
+            <span>Loads defensive roster tendencies & memory.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">HUD Pills</span> <span class="arrow-indicator green">➔</span>
+            <span>Selects OCR HUD (Default, TNF, SNF, MNF).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Start Game</span> <span class="arrow-indicator red">➔</span>
+            <span>Initializes live coordinator engine.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 3: OC WORKSPACE & TOP 3 RECOMMENDATIONS (SCREENSHOTS 2 & 3)      -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>3. OFFENSIVE COORDINATOR (OC) WORKSPACE ANATOMY</h2>
+    <p>The primary Offensive Coordinator interface delivers immediate situational command, telemetry tracking, and sub-50ms play recommendations:</p>
+
+    <!-- ANNOTATED SCREENSHOT 2: OC Playcall UI (Exact UI Alignment) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // OFFENSIVE COORDINATOR MAIN WORKSPACE</div>
+        <span class="badge-tag">OC CONSOLE</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/oc_playcall_ui.png" alt="OC Playcall Workspace Interface" />
+        <div class="pointer-pin" style="top: 12.7%; left: 48.5%;">❶</div>
+        <div class="pointer-pin gold" style="top: 17.9%; left: 43.7%;">❷</div>
+        <div class="pointer-pin green" style="top: 77.6%; left: 37.2%;">❸</div>
+        <div class="pointer-pin red" style="top: 31.0%; left: 63.5%;">❹</div>
+      </div>
+      <div class="callout-arrow-legend cols-4">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Tap & Speak</span> <span class="arrow-indicator">➔</span>
+            <span>Vocal situation ingest trigger button.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">New Game</span> <span class="arrow-indicator gold">➔</span>
+            <span>Resets active telemetry & starts new game ledger.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Last Defense</span> <span class="arrow-indicator green">➔</span>
+            <span>Quick-log observed shells (Blitz, Man, C1, C2, C3, C4).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Play Call Board</span> <span class="arrow-indicator red">➔</span>
+            <span>Surfaces instant Top 3 situation recommendations.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOTATED SCREENSHOT 3: OC Top 3 Recommendations (Exact Card Alignment) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // THREE-SLOT SITUATIONAL RECOMMENDATION SLATE</div>
+        <span class="badge-tag">SLATE DETAIL</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/oc_top_3_recommendations.png" alt="OC Top 3 Recommendations Cards Detail" />
+        <div class="pointer-pin" style="top: 29.5%; left: 93.5%;">❶</div>
+        <div class="pointer-pin gold" style="top: 57.5%; left: 93.5%;">❷</div>
+        <div class="pointer-pin green" style="top: 86.0%; left: 93.5%;">❸</div>
+      </div>
+      <div class="callout-arrow-legend cols-3">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Slot 1: Optimal Primary</span> <span class="arrow-indicator">➔</span>
+            <span>Tap to confirm primary concept (HB Slam) based on situation & identity fit.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Slot 2: Strategic Counter</span> <span class="arrow-indicator gold">➔</span>
+            <span>Tap to confirm counter look (Inside Zone vs blitz / Cover 9).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Slot 3: Freshness Elasticity</span> <span class="arrow-indicator green">➔</span>
+            <span>Tap to confirm unexposed play (MTN Flood) for full playbook variety.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 4: COORDINATOR STYLES, AUDIBLES & PENALTIES (SCREENSHOTS 4, 5, 6) -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>4. COORDINATOR STYLES & LIVE OVERLAY SELECTION</h2>
+    <p>Gridiron OC adapts play calling in real time through specialized game situations and line-of-scrimmage overrides:</p>
+
+    <!-- ANNOTATED SCREENSHOT 4: Coordinator Style Picker (Exact Box Alignment) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // COORDINATOR STYLE PICKER (PLAYCALLING MODES)</div>
+        <span class="badge-tag">MODE SELECTOR</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/coordinator_style_picker.png" alt="Coordinator Style Picker Modal" />
+        <div class="pointer-pin" style="top: 47.9%; left: 29.6%;">❶</div>
+        <div class="pointer-pin gold" style="top: 47.9%; left: 70.4%;">❷</div>
+        <div class="pointer-pin green" style="top: 65.9%; left: 29.6%;">❸</div>
+        <div class="pointer-pin red" style="top: 84.5%; left: 70.4%;">❹</div>
+      </div>
+      <div class="callout-arrow-legend cols-4">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Normal Mode</span> <span class="arrow-indicator">➔</span>
+            <span>Balanced situation calling honoring team baseline.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Run First</span> <span class="arrow-indicator gold">➔</span>
+            <span>Establishes line of scrimmage with heavy run schemes.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Pass First</span> <span class="arrow-indicator green">➔</span>
+            <span>Attacks through the air & controls the game by pass volume.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Tempo / Spread</span> <span class="arrow-indicator red">➔</span>
+            <span>Pace and space, quick RPOs, and motion perimeter attacks.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAIRED SCREENSHOTS 5 & 6: Audible Picker & Penalty Picker (Exact Alignment) -->
+    <div class="paired-shots">
+      <!-- Screenshot 5: Audible Picker -->
+      <div class="annotated-shot-card" style="margin: 0;">
+        <div class="shot-header">
+          <div>AUTHENTIC UI // AUDIBLE PICKER</div>
+          <span class="badge-tag"><kbd>Ctrl</kbd>+<kbd>A</kbd></span>
+        </div>
+        <div class="shot-viewport">
+          <img src="assets/screenshots/audible_picker.png" alt="Audible Picker Overlay" />
+          <div class="pointer-pin" style="top: 48.8%; left: 50.0%;">❶</div>
+          <div class="pointer-pin gold" style="top: 68.6%; left: 50.0%;">❷</div>
+        </div>
+        <div class="callout-arrow-legend">
+          <div class="legend-item">
+            <span class="legend-badge">❶</span>
+            <div>
+              <span class="legend-label">Pass Audible</span> <span class="arrow-indicator">➔</span>
+              <span>Re-tags play to quick pass audible (e.g. DBL Outs).</span>
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-badge gold">❷</span>
+            <div>
+              <span class="legend-label">Run Audible</span> <span class="arrow-indicator gold">➔</span>
+              <span>Re-tags play to ground audible (e.g. HB Iso).</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot 6: Penalty Picker -->
+      <div class="annotated-shot-card" style="margin: 0;">
+        <div class="shot-header">
+          <div>AUTHENTIC UI // PENALTY PICKER</div>
+          <span class="badge-tag"><kbd>Ctrl</kbd>+<kbd>P</kbd></span>
+        </div>
+        <div class="shot-viewport">
+          <img src="assets/screenshots/penalty_picker.png" alt="Penalty Picker Overlay" />
+          <div class="pointer-pin green" style="top: 52.4%; left: 50.0%;">❶</div>
+          <div class="pointer-pin red" style="top: 66.0%; left: 50.0%;">❷</div>
+        </div>
+        <div class="callout-arrow-legend">
+          <div class="legend-item">
+            <span class="legend-badge green">❶</span>
+            <div>
+              <span class="legend-label">Defense Penalty</span> <span class="arrow-indicator green">➔</span>
+              <span>Offside flag: free play, skips learning noise.</span>
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-badge red">❷</span>
+            <div>
+              <span class="legend-label">Offense Penalty</span> <span class="arrow-indicator red">➔</span>
+              <span>False Start: voids snap from variety stats.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 5: DEFENSIVE COORDINATOR (DC) OPERATIONS (SCREENSHOT 7)          -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>5. DEFENSIVE COORDINATOR (DC) OPERATIONS</h2>
+    <p>The DC workspace catalogs over 8,200 authentic NFL defensive plays, matching personnel packages and situational pressure schemes against what the opponent shows at the line:</p>
+
+    <!-- ANNOTATED SCREENSHOT 7: DC Playcall UI (Exact UI Alignment) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // DEFENSIVE COORDINATOR WORKSPACE</div>
+        <span class="badge-tag">DC CONSOLE</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/dc_playcall_ui.png" alt="DC Playcall Interface" />
+        <div class="pointer-pin" style="top: 13.0%; left: 48.6%;">❶</div>
+        <div class="pointer-pin gold" style="top: 18.3%; left: 43.6%;">❷</div>
+        <div class="pointer-pin green" style="top: 62.8%; left: 13.3%;">❸</div>
+        <div class="pointer-pin red" style="top: 31.0%; left: 63.5%;">❹</div>
+      </div>
+      <div class="callout-arrow-legend cols-4">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Tap & Speak</span> <span class="arrow-indicator">➔</span>
+            <span>Vocal DC situation ingest (e.g. "3rd & 8 on Opp 45").</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Game State</span> <span class="arrow-indicator gold">➔</span>
+            <span>Toggles possession result modal (Punt, Turnover, Downs).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Quarter Toggles</span> <span class="arrow-indicator green">➔</span>
+            <span>Syncs active quarter (Q1, Q2, Q3, Q4, OT).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Package Call</span> <span class="arrow-indicator red">➔</span>
+            <span>DC slate surfacing authentic NFL defensive schemes.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>DC Tactical Rules & Packaging Intelligence</h3>
+    <ul>
+      <li><strong>Personnel Matching:</strong> Selecting <em>Gun</em> or <em>Empty</em> automatically prioritizes Nickel and Dime sub-packages with fast pass rushers; selecting <em>I-Form</em> or <em>Singleback</em> automatically prioritizes Base 4-3/3-4 fronts with run-stopping gap integrity.</li>
+      <li><strong>Balanced Pressure Frequencies:</strong> Blitz calls are metered to authentic NFL distributions (~28% to 34%), differentiating between 5-man fire zones and cover-0 all-out pressure.</li>
+      <li><strong>Strict Situational Gating:</strong> <em>Goal Line Defense</em> is strictly reserved for inside the opponent 3-yard line. <em>Prevent Shells</em> are locked to end-of-half prevent situations or 3rd/4th &amp; 25+.</li>
+      <li><strong>Slot 3 Defensive Freshness:</strong> Like the OC engine, Slot 3 on the DC slate surfaces under-utilized defensive schemes, ensuring varied defensive fronts across all four quarters.</li>
+    </ul>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 6: GAME STATE MANAGEMENT & DRIVE RESULTS (SCREENSHOTS 8, 9, 10)  -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>6. IN-GAME STATE MANAGEMENT & DRIVE RESULTS</h2>
+    <p>Gridiron OC tracks every possession transition seamlessly, automatically awarding points and toggling between OC and DC coordinator workspaces:</p>
+
+    <!-- PAIRED SCREENSHOTS 8 & 9: OC Game State & DC Game State Options (Exact Button Centers) -->
+    <div class="paired-shots">
+      <!-- Screenshot 8: OC Game State Options -->
+      <div class="annotated-shot-card" style="margin: 0;">
+        <div class="shot-header">
+          <div>AUTHENTIC UI // OC DRIVE RESULTS</div>
+          <span class="badge-tag">OC STATE</span>
+        </div>
+        <div class="shot-viewport">
+          <img src="assets/screenshots/oc_gamestate_options.png" alt="OC Game State Options Modal" />
+          <div class="pointer-pin" style="top: 44.3%; left: 26.8%;">❶</div>
+          <div class="pointer-pin gold" style="top: 51.9%; left: 73.7%;">❷</div>
+        </div>
+        <div class="callout-arrow-legend">
+          <div class="legend-item">
+            <span class="legend-badge">❶</span>
+            <div>
+              <span class="legend-label">Touchdown (+6)</span> <span class="arrow-indicator">➔</span>
+              <span>Awards +6 and opens the PAT choice modal.</span>
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-badge gold">❷</span>
+            <div>
+              <span class="legend-label">Punt</span> <span class="arrow-indicator gold">➔</span>
+              <span>Logs change of possession and flips workspace to DC.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot 9: DC Game State Options -->
+      <div class="annotated-shot-card" style="margin: 0;">
+        <div class="shot-header">
+          <div>AUTHENTIC UI // DC DRIVE RESULTS</div>
+          <span class="badge-tag">DC STATE</span>
+        </div>
+        <div class="shot-viewport">
+          <img src="assets/screenshots/dc_gamestate_options.png" alt="DC Game State Options Modal" />
+          <div class="pointer-pin green" style="top: 56.7%; left: 73.0%;">❶</div>
+          <div class="pointer-pin red" style="top: 85.6%; left: 73.0%;">❷</div>
+        </div>
+        <div class="callout-arrow-legend">
+          <div class="legend-item">
+            <span class="legend-badge green">❶</span>
+            <div>
+              <span class="legend-label">Interception</span> <span class="arrow-indicator green">➔</span>
+              <span>Logs defensive takeaway and switches back to OC.</span>
+            </div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-badge red">❷</span>
+            <div>
+              <span class="legend-label">Turnover on Downs</span> <span class="arrow-indicator red">➔</span>
+              <span>Stops drive on 4th down and restores OC workspace.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNOTATED SCREENSHOT 10: Touchdown PAT Overlay Picker (Exact Button Centers) -->
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // TOUCHDOWN POINT-AFTER-TOUCHDOWN (PAT) MODAL</div>
+        <span class="badge-tag">PAT SELECTOR</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="assets/screenshots/cropped/touchdown_overlay_picker.png" alt="Touchdown PAT Overlay Modal" />
+        <div class="pointer-pin" style="top: 54.4%; left: 51.3%;">❶</div>
+        <div class="pointer-pin gold" style="top: 66.0%; left: 51.3%;">❷</div>
+        <div class="pointer-pin red" style="top: 77.6%; left: 51.3%;">❸</div>
+      </div>
+      <div class="callout-arrow-legend cols-3">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Extra Point (+1 pt)</span> <span class="arrow-indicator">➔</span>
+            <span>Logs successful kick, awards +1 point, updates score to +7 total.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">2-Point Conversion (+2 pts)</span> <span class="arrow-indicator gold">➔</span>
+            <span>Logs successful 2-point conversion, awards +2 points (+8 total).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❸</span>
+          <div>
+            <span class="legend-label">Missed / No Try (+0 pts)</span> <span class="arrow-indicator red">➔</span>
+            <span>Leaves touchdown score at +6 without awarding PAT points.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 7: INGEST WORKFLOWS & FIELD OPERATIONS                           -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>7. LIVE INGEST WORKFLOWS: STEP-BY-STEP FIELD GUIDE</h2>
+    <p>Gridiron OC provides two rapid situational input workflows tailored for intense gameplay:</p>
+
+    <div class="two-col">
+      <div>
+        <h3>WORKFLOW ALPHA: Hands-Free Voice (Recommended)</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-num">A</div>
+            <div class="step-content">
+              <div class="step-title">Hold Push-to-Talk (<kbd>Space</kbd>)</div>
+              <div class="step-desc">Activate Whisper speech parser right as the tackle whistle blows.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">B</div>
+            <div class="step-content">
+              <div class="step-title">Speak Situation Clearly</div>
+              <div class="step-desc">Natural football syntax: <em>"3rd and 6 on opponent 34"</em> or <em>"1st and 10 on my own 25"</em>.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">C</div>
+            <div class="step-content">
+              <div class="step-title">Confirm Call & Log Coverage</div>
+              <div class="step-desc">Confirm call (<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>), and tap observed defensive shell (<kbd>C3</kbd>, <kbd>C2</kbd>, <kbd>Blitz</kbd>).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>WORKFLOW BRAVO: Autonomous Video OCR</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Burst Capture (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>)</div>
+              <div class="step-desc">Trigger frame capture when scoreboard reveals down and formation.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Burst Consensus Analysis</div>
+              <div class="step-desc">OpenCV parses down/distance grammar, field arrow vector, and formation line.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Instant Exact Call Execution</div>
+              <div class="step-desc">Top 3 Exact Calls surface immediately in the coordinator slate.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>8. STRATEGIC "WHY-THIS-CALL" RATIONALE BADGES</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Badge Token</th>
+          <th style="width: 25%;">Strategic Intent</th>
+          <th>Football Context & Application</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="chip gold">Identity Fit</span></td>
+          <td>Core Philosophy</td>
+          <td>Matches offensive personnel strengths (e.g. West Coast quick-game, Power Gap run).</td>
+        </tr>
+        <tr>
+          <td><span class="chip cyan">Setup Payoff</span></td>
+          <td>Sequencing Trigger</td>
+          <td>Capitalizes on established early-down run concepts to spring play-action shot plays behind bite angles.</td>
+        </tr>
+        <tr>
+          <td><span class="chip cyan">Coverage Beater</span></td>
+          <td>Scouting Counter</td>
+          <td>Routes mathematically structured to flood the opponent's most frequent coverage shell in this spot.</td>
+        </tr>
+        <tr>
+          <td><span class="chip">3rd Down Converter</span></td>
+          <td>Sticks Leverage</td>
+          <td>Route stem depths guaranteed to break past the line to gain on critical conversion downs.</td>
+        </tr>
+        <tr>
+          <td><span class="chip">Hot Read / Blitz</span></td>
+          <td>Pressure Release</td>
+          <td>Built-in quick perimeter outlets, smoke screens, or slip screens to punish aggressive blitzes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- PAGE 8: POST-GAME DEBRIEF, SHORTCUTS & TROUBLESHOOTING                -->
+  <!-- ===================================================================== -->
+  <div class="doc-page">
+    <h2>9. POST-GAME COORDINATOR DEBRIEF</h2>
+    <p>Selecting <strong>End Game</strong> delivers an executive breakdown of your matchup performance:</p>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30%;">Metric</th>
+          <th>Analytical Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Coordinator Trust Rating</strong></td>
+          <td>Percentage of offensive snaps where you executed one of the Top 3 coordinator recommendations.</td>
+        </tr>
+        <tr>
+          <td><strong>Explosive Efficiency</strong></td>
+          <td>Rate of drives yielding 20+ yard chunk plays.</td>
+        </tr>
+        <tr>
+          <td><strong>Third Down Yield</strong></td>
+          <td>Conversion rate across Short (1-2), Medium (3-6), and Long (7+) yardage tiers.</td>
+        </tr>
+        <tr>
+          <td><strong>Concept Leaders</strong></td>
+          <td>Most effective plays exceeding 6.5 yards/play over a minimum 3-snap sample.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>10. KEYBOARD SHORTCUTS & HOTKEYS</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 25%;">Command</th>
+          <th style="width: 30%;">Global Shortcut</th>
+          <th>Function</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Push-to-Talk</strong></td>
+          <td><kbd>Space</kbd> (Hold)</td>
+          <td>Records voice telemetry for real-time Whisper parsing.</td>
+        </tr>
+        <tr>
+          <td><strong>OCR Burst Capture</strong></td>
+          <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></td>
+          <td>Captures active scoreboard HUD and extracts situation.</td>
+        </tr>
+        <tr>
+          <td><strong>Switch Workspace</strong></td>
+          <td><kbd>Ctrl</kbd> + <kbd>1</kbd> / <kbd>Ctrl</kbd> + <kbd>2</kbd></td>
+          <td>Instant toggle between Offensive and Defensive Coordinator.</td>
+        </tr>
+        <tr>
+          <td><strong>Confirm Call</strong></td>
+          <td><kbd>1</kbd>, <kbd>2</kbd>, or <kbd>3</kbd></td>
+          <td>Registers selected recommendation tile to learning ledger.</td>
+        </tr>
+        <tr>
+          <td><strong>Log Flag / Penalty</strong></td>
+          <td><kbd>Ctrl</kbd> + <kbd>P</kbd></td>
+          <td>Neutralizes penalized snap from playbook success scoring.</td>
+        </tr>
+        <tr>
+          <td><strong>Audible Substitution</strong></td>
+          <td><kbd>Ctrl</kbd> + <kbd>A</kbd></td>
+          <td>Swaps confirmed call with audible executed at the line.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>11. DIAGNOSTICS & TROUBLESHOOTING</h2>
+    <ul>
+      <li><strong>OCR Capture Error <code>3221226505</code>:</strong> Indicates hardware lock on capture device. Quit OBS Studio or Elgato 4K Capture Utility, then relaunch Gridiron OC.</li>
+      <li><strong>Bare Digits Recognized (No Field Side):</strong> Open <em>Calibrate Capture</em>. Expand the <em>Field Position</em> box slightly leftward to include the up/down directional triangle arrow.</li>
+      <li><strong>Voice Ingest Inactive:</strong> Ensure Windows Microphone Permissions are set to <em>Allow desktop apps to access your microphone</em>.</li>
+    </ul>
+
+    <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 3mm; display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; color: var(--text-dim);">
+      <div>GRIDIRON OC — THE SMART PLAYCALLING COMPANION</div>
+      <div>COPYRIGHT © 2026 GENNOWGAMER. ALL RIGHTS RESERVED.</div>
+    </div>
+  </div>
+
+</body>
+</html>

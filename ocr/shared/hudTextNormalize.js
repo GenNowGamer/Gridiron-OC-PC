@@ -721,13 +721,17 @@
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
-    if (/^(?:AR|TER|RBITER)$/i.test(glued)) return "1RB - 1TE 3WR";
+    if (/^(?:AR|TER|RBITER|RITER|RTER|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR)$/i.test(glued)) return "1RB - 1TE 3WR";
     glued = glued.replace(/^IRB/, "1RB");
+    glued = glued.replace(/^ORB/, "1RB");
+    glued = glued.replace(/^LRB/, "1RB");
+    glued = glued.replace(/^ZRB/, "2RB");
+    glued = glued.replace(/^RBY?/, "1RB");
     // 0 TE often OCR'd as OTE: "2RBIOTEI3WR" → 2RB - 0TE 3WR.
     glued = glued.replace(/RB([I|]?)OTE/g, "RB$10TE");
     // Allow I/L as TE count 1: "2RBIITEIZWR" → 2RB - 1TE 2WR.
     // TE count uses the same outlined-digit map as WR (MNF: IRBIATEIIWR → 3TE 1WR).
-    var personnel = glued.match(/^(\d)?RB[I|]?([0-9OILABESZ])?TE[I|]?([0-9A-Z])?WR$/);
+    var personnel = glued.match(/^(\d)?RB[I|L]?([0-9OILABESZ])?TE[I|L]?([0-9A-Z])?WR$/);
     if (personnel) {
       var rb = personnel[1] || "1";
       var countMap = {
@@ -779,6 +783,17 @@
       INGO: "IN GO",
       DUTSIDEZONE: "INSIDE ZONE",
       DUTSDEZONE: "INSIDE ZONE",
+      ESCAPE: "ESCAPE",
+      FKTOSSSLIDE: "FK TOSS SLIDE",
+      DEEPSTICK: "DEEP STICK",
+      MTNDRIVE: "MTN DRIVE",
+      PAFKCHEATPOSTROSS: "PA FK CHEAT POST CROSS",
+      HBSLIPSREEN: "HB SLIP SCREEN",
+      PALEAK: "PA LEAK",
+      PAPYLONSAIL: "PA PYLON SAIL",
+      HBANGLE: "HB ANGLE",
+      PASPRINTHBFLAT: "PA SPRINT HB FLAT",
+      FOURVERTICALS: "FOUR VERTICALS",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 
@@ -859,7 +874,7 @@
     }
     text = text.replace(/\b[IL](?=DOUBLE)/g, "1 ");
     // LEVELS is a play name. Do not turn its leading L into a play number.
-    if (!/^(?:LEVELS|LEAD|LEFT|LINE|LOOP|LB)/.test(text)) {
+    if (!/^(?:LEVELS|LEAD|LEFT|LINE|LOOP|LB|INSIDE|ISO)/.test(text)) {
       text = text.replace(/^[IL](?=[A-Z])/g, "1 ");
     }
     // NVERT lost its leading I. Do not match the NVERT inside INVERT.
