@@ -24,7 +24,7 @@
 
     <main class="layout" id="ocWorkspace">
       <section class="panel heroPanel">
-        <div class="heroTop">
+        <div class="heroTop" id="heroTopControls">
           <div>
             <div class="eyebrow">Adaptive Playcalling</div>
             <h1 class="heroTitle">Capture the situation with OCR. Get the call.</h1>
@@ -167,7 +167,7 @@
 
     <main class="layout hidden" id="dcWorkspace" aria-hidden="true">
       <section class="panel heroPanel" id="dcHeroPanel">
-        <div class="heroTop">
+        <div class="heroTop" id="dcHeroTopControls">
           <div>
             <div class="eyebrow">Defensive Coordinator</div>
             <h1 class="heroTitle">Defense call sheet</h1>
@@ -182,7 +182,7 @@
 
         <div id="dcGameStatePanel" class="driveResultPanel hidden"></div>
 
-        <div class="statusCard">
+        <div class="statusCard" id="dcStatusCard">
           <div class="statusRow">
             <span class="statusLabel">Defense Playbook</span>
             <span class="statusValue" id="dcTeamValue">Loading...</span>
@@ -382,7 +382,11 @@
       <select id="layoutSelect" class="settingsSelect">
         <option value="vertical">Vertical Split (Side by Side)</option>
         <option value="horizontal">Horizontal Split (Top / Bottom)</option>
+        <option value="freeform">Freeform Floating Cockpit (Drag &amp; Resize)</option>
       </select>
+      <div class="settingsActions" style="margin-top: 8px;">
+        <button class="ghostBtn" id="resetLayoutBtn" type="button" title="Reset all window positions and sizes to default">Reset Window Positions</button>
+      </div>
 
       <div class="settingsDivider"></div>
       <div class="ocrSettingsHead">

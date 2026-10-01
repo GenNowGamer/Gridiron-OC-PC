@@ -4,7 +4,7 @@ const SelectionEngine=globalThis.GridironSelectionEngine||{};
 const CoordinatorReport=globalThis.GridironCoordinatorReport||{};
 const PenaltyCatalog=globalThis.GridironPenaltyCatalog||{};
 
-const STORAGE_KEYS={preferences:"goc-desktop-preferences-v3",playHistory:"goc-desktop-play-history-v1",userLearning:"goc-desktop-user-learning-v1"};
+const STORAGE_KEYS={preferences:"goc-desktop-preferences-v3",playHistory:"goc-desktop-play-history-v1",userLearning:"goc-desktop-user-learning-v1",floatingLayout:"goc-desktop-floating-layout-v1"};
 const APP_DISPLAY_NAME="Gridiron OC";
 const APP_TAGLINE="Smart Play calling App";
 const COORDINATOR_ROLE_OC="oc";
@@ -200,15 +200,252 @@ function createOutcomeContext(play,team,down,yardsToGo,defense,goalToGo,fieldPos
 function inferPendingOutcome(pendingContext,nextSituation){if(!pendingContext||!nextSituation)return null;const prevDown=Number(pendingContext.down),nextDown=Number(nextSituation.down),prevYardsToGo=hasKnownNumericValue(pendingContext.yardsToGo)?Number(pendingContext.yardsToGo):null,nextYardsToGo=hasKnownNumericValue(nextSituation.yardsToGo)?Number(nextSituation.yardsToGo):null,previousProgress=situationProgressValue(pendingContext),nextProgress=situationProgressValue(nextSituation);if(!Number.isFinite(prevDown)||!Number.isFinite(nextDown))return null;const isFreshSeries=nextDown===1,isNormalDownAdvance=nextDown===Math.min(prevDown+1,4);if(!isFreshSeries&&!isNormalDownAdvance)return null;if(prevDown===4&&!isFreshSeries)return null;let yardsGained=null;if(Number.isFinite(previousProgress)&&Number.isFinite(nextProgress))yardsGained=nextProgress-previousProgress;else if(Number.isFinite(prevYardsToGo)&&Number.isFinite(nextYardsToGo)){if(isFreshSeries)yardsGained=prevYardsToGo;else yardsGained=prevYardsToGo-nextYardsToGo;}const minYards=isFreshSeries?-25:-15,maxYards=isFreshSeries?80:40;if(!Number.isFinite(yardsGained)||yardsGained<minYards||yardsGained>maxYards)return null;if(isFreshSeries&&Number.isFinite(prevYardsToGo)&&yardsGained+.5<prevYardsToGo)return null;let successPoints=0;if(isFreshSeries)successPoints=3;else if(prevDown===1){if(yardsGained>=6)successPoints=2;else if(yardsGained>=4)successPoints=1.25;else if(yardsGained>=1)successPoints=.25;else if(yardsGained===0)successPoints=-.75;else successPoints=-1.5;}else if(prevDown===2){if(Number.isFinite(prevYardsToGo)&&yardsGained>=prevYardsToGo)successPoints=2.75;else if(nextDown===3&&Number.isFinite(nextYardsToGo)&&nextYardsToGo<=3)successPoints=1.5;else if(yardsGained>=3)successPoints=.5;else if(yardsGained===0)successPoints=-.75;else successPoints=-1.5;}else{if(isFreshSeries)successPoints=3;else if(Number.isFinite(prevYardsToGo)&&yardsGained>=Math.max(prevYardsToGo-2,1))successPoints=.75;else if(yardsGained>=1)successPoints=-.5;else if(yardsGained===0)successPoints=-1;else successPoints=-2;}const explosiveGain=yardsGained>=12;if(explosiveGain)successPoints+=.5;return{yardsGained,successPoints,firstDownAchieved:isFreshSeries,explosiveGain,negativePlay:yardsGained<0,stuffedPlay:yardsGained<=0,nextDown,nextYardsToGo,inferredAt:Date.now()};}
 function buildDriveResultOutcome(resultId,pendingContext){const option=DRIVE_RESULT_OPTIONS.find(item=>item.id===resultId);if(!option||!pendingContext)return null;if(option.driveEnding===false)return null;const goalLineGain=pendingContext.goalToGo&&hasKnownNumericValue(pendingContext.yardsToGo)?Math.max(0,Number(pendingContext.yardsToGo)):0;return{yardsGained:option.id==="touchdown"?goalLineGain:0,successPoints:Number(option.successPoints)||0,firstDownAchieved:option.firstDownAchieved===true,explosiveGain:option.id==="touchdown"&&goalLineGain>=12,negativePlay:option.negativePlay===true,stuffedPlay:false,nextDown:null,nextYardsToGo:null,terminalResult:option.id,inferredAt:Date.now()};}
 const state={selectedTeam:"CHI",selectedOpponent:"DAL",themeTeam:"NFL",layoutMode:"vertical",coordinatorRole:COORDINATOR_ROLE_OC,autoPlaycallerEnabled:false,normalizedDefensivePlays:[],presentedDcRecommendations:[],presentedDcPackages:[],dcRecentPlays:[],dcRecentPackages:[],dcExposurePackages:[],dcSessionPlayShowCounts:{},dcOcrMatchupMemory:[],dcOcrLearningSnapshot:null,dcSituationChip:"",dcOffenseTag:"unknown",confirmedDcPackageKey:null,confirmedDcPackageSetKey:"",confirmedDcRecommendationId:null,confirmedDcRecommendationSetKey:"",dcUsageCommittedForSetKey:"",confirmedDcBasePlay:null,dcAudiblePlayId:"",dcPendingPenalty:null,presentedOcrExactPlays:[],ocrExactExposurePlays:[],ocrExactExposureSheets:[],confirmedOcrExactSetKey:"",dcOffenseShowingFormation:"",dcOffenseShowingSet:"",dcOffenseShowingExpanded:"",audiblePickerMode:"oc",penaltyPickerMode:"oc",gameStarted:false,gameCoordinatorProfile:"normal",coordinatorPickerMode:"newGame",matchupPresentationStyle:"Default Presentation",sessionReport:null,coordinatorReport:null,reportOpen:false,patModalState:null,userScore:0,oppScore:0,quarter:1,scoreboardDebounceTimer:null,scoreboardTraceDebounceTimer:null,down:1,yards:10,lastDefenseShown:SCORING_DEFENSE_UNKNOWN,activeDefenseTendency:null,lastDefenseObservationAnchor:"",lastSnapDefenseAnswer:null,usageCommittedForSetKey:"",gameScoutingLog:[],gameOutcomeMemory:[],driveOutcomeMemory:[],goalToGo:false,fieldPosition:createEmptyFieldPosition(),playcallingMode:PLAYCALLING_MODE_NORMAL,transcript:"",normalizedPlays:[],recommendations:[],presentedRecommendations:[],visibleRecommendationIndex:0,driveResultMenuOpen:false,dcGameStateMenuOpen:false,confirmedRecommendationId:null,confirmedRecommendationSetKey:"",audiblePlayId:"",confirmedBasePlay:null,confirmedPlayUsage:null,recentPlays:[],recentCalls:[],recentGameCalls:[],recommendationExposureHistory:[],sessionPlayShowCounts:{},recommendationBatchId:0,driveRecommendationExposure:[],lastOcrRecFingerprint:"",lastOcrRecAt:0,typeHist:[],lastCalls:[],scriptIndex:0,scriptStep:0,playHistory:createEmptyPlayHistory(),userLearning:createEmptyUserLearning(),pendingOutcome:null,hasActiveSituation:false,traceLogText:"",traceLogLoaded:false,tracePanelOpen:false};
-const dom={teamValue:document.getElementById("teamValue"),opponentValue:document.getElementById("opponentValue"),identityValue:document.getElementById("identityValue"),heardValue:document.getElementById("heardValue"),situationValue:document.getElementById("situationValue"),statusValue:document.getElementById("statusValue"),headerSub:document.getElementById("headerSub"),heroCopy:document.getElementById("heroCopy"),scoreboardSummary:document.getElementById("scoreboardSummary"),scoreboardSection:document.getElementById("scoreboardSection"),halftimeBtn:document.getElementById("halftimeBtn"),coordinatorPickerTitle:document.getElementById("coordinatorPickerTitle"),coordinatorPickerSub:document.getElementById("coordinatorPickerSub"),userScoreValue:document.getElementById("userScoreValue"),oppScoreValue:document.getElementById("oppScoreValue"),quarterButtonGroup:document.getElementById("quarterButtonGroup"),defenseLogSummary:document.getElementById("defenseLogSummary"),defenseLogSection:document.getElementById("defenseLogSection"),lastDefenseShownValue:document.getElementById("lastDefenseShownValue"),defenseLogButtonGroup:document.getElementById("defenseLogButtonGroup"),playcallingModeSummary:document.getElementById("playcallingModeSummary"),playcallingModeGroup:document.getElementById("playcallingModeGroup"),recCard:document.getElementById("recommendationCard"),opponentRadarBanner:document.getElementById("opponentRadarBanner"),halftimeReviewPanel:document.getElementById("halftimeReviewPanel"),recommendationToggleBtn:document.getElementById("recommendationToggleBtn"),audibleOverlay:document.getElementById("audibleOverlay"),audibleList:document.getElementById("audibleList"),audibleSearchInput:document.getElementById("audibleSearchInput"),audiblePickerSub:document.getElementById("audiblePickerSub"),closeAudiblePickerBtn:document.getElementById("closeAudiblePickerBtn"),penaltyOverlay:document.getElementById("penaltyOverlay"),penaltyList:document.getElementById("penaltyList"),penaltyPickerSub:document.getElementById("penaltyPickerSub"),closePenaltyPickerBtn:document.getElementById("closePenaltyPickerBtn"),clearPenaltyBtn:document.getElementById("clearPenaltyBtn"),patOverlay:document.getElementById("patOverlay"),patCard:document.getElementById("patCard"),patBadge:document.getElementById("patBadge"),patBadgeText:document.getElementById("patBadgeText"),patTitle:document.getElementById("patTitle"),patSub:document.getElementById("patSub"),patScoreLabel:document.getElementById("patScoreLabel"),matchupOverlay:document.getElementById("matchupOverlay"),matchupTeamSelect:document.getElementById("matchupTeamSelect"),matchupOpponentSelect:document.getElementById("matchupOpponentSelect"),presentationPillGroup:document.getElementById("presentationPillGroup"),matchupSkipBtn:document.getElementById("matchupSkipBtn"),matchupConfirmBtn:document.getElementById("matchupConfirmBtn"),autoPlaycallerToggleBtn:document.getElementById("autoPlaycallerToggleBtn"),matchupAutoPlaycallerBtn:document.getElementById("matchupAutoPlaycallerBtn"),driveResultPanel:document.getElementById("driveResultPanel"),traceMeta:document.getElementById("traceMeta"),traceCount:document.getElementById("traceCount"),toggleTraceBtn:document.getElementById("toggleTraceBtn"),exportTraceBtn:document.getElementById("exportTraceBtn"),openTraceFolderBtn:document.getElementById("openTraceFolderBtn"),newTraceBtn:document.getElementById("newTraceBtn"),tracePanel:document.getElementById("tracePanel"),traceText:document.getElementById("traceText"),newDriveBtn:document.getElementById("newDriveBtn"),settingsBtn:document.getElementById("settingsBtn"),closeSettingsBtn:document.getElementById("closeSettingsBtn"),settingsOverlay:document.getElementById("settingsOverlay"),teamSelect:document.getElementById("teamSelect"),opponentSelect:document.getElementById("opponentSelect"),themeSelect:document.getElementById("themeSelect"),layoutSelect:document.getElementById("layoutSelect"),coordinatorOverlay:document.getElementById("coordinatorOverlay"),closeCoordinatorPickerBtn:document.getElementById("closeCoordinatorPickerBtn"),reportOverlay:document.getElementById("reportOverlay"),reportContent:document.getElementById("reportContent"),newSessionBtn:document.getElementById("newSessionBtn"),ocWorkspace:document.getElementById("ocWorkspace"),dcWorkspace:document.getElementById("dcWorkspace"),roleOcBtn:document.getElementById("roleOcBtn"),roleDcBtn:document.getElementById("roleDcBtn"),dcOffenseShowingPanel:document.getElementById("dcOffenseShowingPanel"),dcRecPanelTitle:document.getElementById("dcRecPanelTitle"),dcSituationChipRow:document.getElementById("dcSituationChipRow"),dcOffenseTagRow:document.getElementById("dcOffenseTagRow"),dcOffenseTagValue:document.getElementById("dcOffenseTagValue"),dcOffenseTagPanel:document.getElementById("dcOffenseTagPanel"),dcRecommendationCard:document.getElementById("dcRecommendationCard"),ocRecPanel:document.getElementById("ocRecPanel"),dcRecPanel:document.getElementById("dcRecPanel"),sharedTraceSection:document.getElementById("sharedTraceSection"),ocrStrip:document.getElementById("ocrDcStrip"),dcOpponentValue:document.getElementById("dcOpponentValue"),dcOffenseShowingHint:document.getElementById("dcOffenseShowingHint"),dcOffenseShowingValue:document.getElementById("dcOffenseShowingValue"),dcOffenseFormationRow:document.getElementById("dcOffenseFormationRow"),dcOffenseSetPanel:document.getElementById("dcOffenseSetPanel"),dcOffenseSetTitle:document.getElementById("dcOffenseSetTitle"),dcOffenseSetRow:document.getElementById("dcOffenseSetRow"),dcTeamValue:document.getElementById("dcTeamValue"),dcHeardValue:document.getElementById("dcHeardValue"),dcSituationValue:document.getElementById("dcSituationValue"),dcStatusValue:document.getElementById("dcStatusValue"),dcHeroCopy:document.getElementById("dcHeroCopy"),dcGameStateBtn:document.getElementById("dcGameStateBtn"),dcGameStatePanel:document.getElementById("dcGameStatePanel"),dcScoreboardSummary:document.getElementById("dcScoreboardSummary"),dcScoreboardSection:document.getElementById("dcScoreboardSection"),dcHalftimeBtn:document.getElementById("dcHalftimeBtn"),dcUserScoreValue:document.getElementById("dcUserScoreValue"),dcOppScoreValue:document.getElementById("dcOppScoreValue"),dcQuarterButtonGroup:document.getElementById("dcQuarterButtonGroup"),roleToggle:document.getElementById("roleToggle")};
+const dom={teamValue:document.getElementById("teamValue"),opponentValue:document.getElementById("opponentValue"),identityValue:document.getElementById("identityValue"),heardValue:document.getElementById("heardValue"),situationValue:document.getElementById("situationValue"),statusValue:document.getElementById("statusValue"),headerSub:document.getElementById("headerSub"),heroCopy:document.getElementById("heroCopy"),scoreboardSummary:document.getElementById("scoreboardSummary"),scoreboardSection:document.getElementById("scoreboardSection"),halftimeBtn:document.getElementById("halftimeBtn"),coordinatorPickerTitle:document.getElementById("coordinatorPickerTitle"),coordinatorPickerSub:document.getElementById("coordinatorPickerSub"),userScoreValue:document.getElementById("userScoreValue"),oppScoreValue:document.getElementById("oppScoreValue"),quarterButtonGroup:document.getElementById("quarterButtonGroup"),defenseLogSummary:document.getElementById("defenseLogSummary"),defenseLogSection:document.getElementById("defenseLogSection"),lastDefenseShownValue:document.getElementById("lastDefenseShownValue"),defenseLogButtonGroup:document.getElementById("defenseLogButtonGroup"),playcallingModeSummary:document.getElementById("playcallingModeSummary"),playcallingModeGroup:document.getElementById("playcallingModeGroup"),recCard:document.getElementById("recommendationCard"),opponentRadarBanner:document.getElementById("opponentRadarBanner"),halftimeReviewPanel:document.getElementById("halftimeReviewPanel"),recommendationToggleBtn:document.getElementById("recommendationToggleBtn"),audibleOverlay:document.getElementById("audibleOverlay"),audibleList:document.getElementById("audibleList"),audibleSearchInput:document.getElementById("audibleSearchInput"),audiblePickerSub:document.getElementById("audiblePickerSub"),closeAudiblePickerBtn:document.getElementById("closeAudiblePickerBtn"),penaltyOverlay:document.getElementById("penaltyOverlay"),penaltyList:document.getElementById("penaltyList"),penaltyPickerSub:document.getElementById("penaltyPickerSub"),closePenaltyPickerBtn:document.getElementById("closePenaltyPickerBtn"),clearPenaltyBtn:document.getElementById("clearPenaltyBtn"),patOverlay:document.getElementById("patOverlay"),patCard:document.getElementById("patCard"),patBadge:document.getElementById("patBadge"),patBadgeText:document.getElementById("patBadgeText"),patTitle:document.getElementById("patTitle"),patSub:document.getElementById("patSub"),patScoreLabel:document.getElementById("patScoreLabel"),matchupOverlay:document.getElementById("matchupOverlay"),matchupTeamSelect:document.getElementById("matchupTeamSelect"),matchupOpponentSelect:document.getElementById("matchupOpponentSelect"),presentationPillGroup:document.getElementById("presentationPillGroup"),matchupSkipBtn:document.getElementById("matchupSkipBtn"),matchupConfirmBtn:document.getElementById("matchupConfirmBtn"),autoPlaycallerToggleBtn:document.getElementById("autoPlaycallerToggleBtn"),matchupAutoPlaycallerBtn:document.getElementById("matchupAutoPlaycallerBtn"),driveResultPanel:document.getElementById("driveResultPanel"),traceMeta:document.getElementById("traceMeta"),traceCount:document.getElementById("traceCount"),toggleTraceBtn:document.getElementById("toggleTraceBtn"),exportTraceBtn:document.getElementById("exportTraceBtn"),openTraceFolderBtn:document.getElementById("openTraceFolderBtn"),newTraceBtn:document.getElementById("newTraceBtn"),tracePanel:document.getElementById("tracePanel"),traceText:document.getElementById("traceText"),newDriveBtn:document.getElementById("newDriveBtn"),settingsBtn:document.getElementById("settingsBtn"),closeSettingsBtn:document.getElementById("closeSettingsBtn"),settingsOverlay:document.getElementById("settingsOverlay"),teamSelect:document.getElementById("teamSelect"),opponentSelect:document.getElementById("opponentSelect"),themeSelect:document.getElementById("themeSelect"),layoutSelect:document.getElementById("layoutSelect"),resetLayoutBtn:document.getElementById("resetLayoutBtn"),coordinatorOverlay:document.getElementById("coordinatorOverlay"),closeCoordinatorPickerBtn:document.getElementById("closeCoordinatorPickerBtn"),reportOverlay:document.getElementById("reportOverlay"),reportContent:document.getElementById("reportContent"),newSessionBtn:document.getElementById("newSessionBtn"),ocWorkspace:document.getElementById("ocWorkspace"),dcWorkspace:document.getElementById("dcWorkspace"),roleOcBtn:document.getElementById("roleOcBtn"),roleDcBtn:document.getElementById("roleDcBtn"),dcOffenseShowingPanel:document.getElementById("dcOffenseShowingPanel"),dcRecPanelTitle:document.getElementById("dcRecPanelTitle"),dcSituationChipRow:document.getElementById("dcSituationChipRow"),dcOffenseTagRow:document.getElementById("dcOffenseTagRow"),dcOffenseTagValue:document.getElementById("dcOffenseTagValue"),dcOffenseTagPanel:document.getElementById("dcOffenseTagPanel"),dcRecommendationCard:document.getElementById("dcRecommendationCard"),ocRecPanel:document.getElementById("ocRecPanel"),dcRecPanel:document.getElementById("dcRecPanel"),sharedTraceSection:document.getElementById("sharedTraceSection"),ocrStrip:document.getElementById("ocrDcStrip"),dcOpponentValue:document.getElementById("dcOpponentValue"),dcOffenseShowingHint:document.getElementById("dcOffenseShowingHint"),dcOffenseShowingValue:document.getElementById("dcOffenseShowingValue"),dcOffenseFormationRow:document.getElementById("dcOffenseFormationRow"),dcOffenseSetPanel:document.getElementById("dcOffenseSetPanel"),dcOffenseSetTitle:document.getElementById("dcOffenseSetTitle"),dcOffenseSetRow:document.getElementById("dcOffenseSetRow"),dcTeamValue:document.getElementById("dcTeamValue"),dcHeardValue:document.getElementById("dcHeardValue"),dcSituationValue:document.getElementById("dcSituationValue"),dcStatusValue:document.getElementById("dcStatusValue"),dcHeroCopy:document.getElementById("dcHeroCopy"),dcGameStateBtn:document.getElementById("dcGameStateBtn"),dcGameStatePanel:document.getElementById("dcGameStatePanel"),dcScoreboardSummary:document.getElementById("dcScoreboardSummary"),dcScoreboardSection:document.getElementById("dcScoreboardSection"),dcHalftimeBtn:document.getElementById("dcHalftimeBtn"),dcUserScoreValue:document.getElementById("dcUserScoreValue"),dcOppScoreValue:document.getElementById("dcOppScoreValue"),dcQuarterButtonGroup:document.getElementById("dcQuarterButtonGroup"),roleToggle:document.getElementById("roleToggle")};
 function getDisplayedRecommendations(){return state.hasActiveSituation?state.presentedRecommendations:[];}
 function getRecommendationSetKey(displayedRecommendations=getDisplayedRecommendations()){return displayedRecommendations.slice(0,3).map(item=>item?.play?.id).filter(Boolean).join("|");}
 function canScoreDriveResult(recommendationSetKey=getRecommendationSetKey()){return ENABLE_DRIVE_RESULT_PICKER&&Boolean(state.confirmedRecommendationId)&&state.confirmedRecommendationSetKey===recommendationSetKey;}
-function buildPreferencesPayload(){return{selectedTeam:state.selectedTeam,selectedOpponent:state.selectedOpponent,themeTeam:state.themeTeam,layoutMode:state.layoutMode==="horizontal"?"horizontal":"vertical",coordinatorRole:state.coordinatorRole===COORDINATOR_ROLE_DC?COORDINATOR_ROLE_DC:COORDINATOR_ROLE_OC,playcallingMode:state.playcallingMode,autoPlaycallerEnabled:state.autoPlaycallerEnabled===true};}
+function buildPreferencesPayload(){return{selectedTeam:state.selectedTeam,selectedOpponent:state.selectedOpponent,themeTeam:state.themeTeam,layoutMode:(state.layoutMode==="horizontal"||state.layoutMode==="freeform")?state.layoutMode:"vertical",coordinatorRole:state.coordinatorRole===COORDINATOR_ROLE_DC?COORDINATOR_ROLE_DC:COORDINATOR_ROLE_OC,playcallingMode:state.playcallingMode,autoPlaycallerEnabled:state.autoPlaycallerEnabled===true};}
 function updateAutoPlaycallerToggleUi(){const on=state.autoPlaycallerEnabled===true;[dom.autoPlaycallerToggleBtn,dom.matchupAutoPlaycallerBtn].forEach(btn=>{if(!btn)return;btn.textContent=on?"On":"Off";btn.classList.toggle("is-active",on);btn.setAttribute("aria-pressed",on?"true":"false");});}
 function setAutoPlaycallerEnabled(enabled){state.autoPlaycallerEnabled=enabled===true;updateAutoPlaycallerToggleUi();savePreferences(true);recordTraceEvent("auto-playcaller-toggled",{enabled:state.autoPlaycallerEnabled,at:new Date().toISOString()});}
-function applyLayoutMode(mode){const layout=mode==="horizontal"?"horizontal":"vertical";state.layoutMode=layout;if(document.body){document.body.setAttribute("data-layout-mode",layout);}if(dom.layoutSelect){dom.layoutSelect.value=layout;}}
-function persistLayoutMode(nextMode){const layout=cleanText(nextMode).toLowerCase()==="horizontal"?"horizontal":"vertical";applyLayoutMode(layout);savePreferences(true);recordTraceEvent("layout-mode-changed",{layout:state.layoutMode,at:new Date().toISOString()});}
+const FLOATING_MODULE_CONFIGS = [
+  { id: "heroTopControls", defaultLeft: 16, defaultTop: 16, defaultWidth: 420, defaultHeight: 130, title: "Controls & Status" },
+  { id: "scoreboardSection", defaultLeft: 16, defaultTop: 160, defaultWidth: 420, defaultHeight: 210, title: "Scoreboard" },
+  { id: "ocStatusCard", defaultLeft: 16, defaultTop: 384, defaultWidth: 420, defaultHeight: 230, title: "Game Context" },
+  { id: "playcallingModeSection", defaultLeft: 450, defaultTop: 16, defaultWidth: 380, defaultHeight: 280, title: "Playcalling Mode" },
+  { id: "ocRecPanel", defaultLeft: 846, defaultTop: 16, defaultWidth: 460, defaultHeight: 640, title: "Recommendations" },
+  { id: "dcHeroTopControls", defaultLeft: 16, defaultTop: 16, defaultWidth: 420, defaultHeight: 130, title: "Controls & Status" },
+  { id: "dcGameStatePanel", defaultLeft: 16, defaultTop: 160, defaultWidth: 420, defaultHeight: 140, title: "Game State" },
+  { id: "dcStatusCard", defaultLeft: 16, defaultTop: 314, defaultWidth: 420, defaultHeight: 230, title: "Defense Context" },
+  { id: "dcScoreboardSection", defaultLeft: 450, defaultTop: 16, defaultWidth: 380, defaultHeight: 260, title: "Scoreboard" },
+  { id: "dcOffenseShowingPanel", defaultLeft: 450, defaultTop: 290, defaultWidth: 380, defaultHeight: 320, title: "Offense Showing" },
+  { id: "dcRecPanel", defaultLeft: 846, defaultTop: 16, defaultWidth: 460, defaultHeight: 640, title: "Defense Calls" }
+];
+
+let floatingCockpitInitialized = false;
+let floatingMaxZIndex = 10;
+
+function getStoredFloatingLayout() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.floatingLayout);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch (_e) {
+    return {};
+  }
+}
+
+function saveStoredFloatingLayout(layoutMap) {
+  try {
+    localStorage.setItem(STORAGE_KEYS.floatingLayout, JSON.stringify(layoutMap));
+  } catch (_e) {}
+}
+
+function updateFloatingCockpitState(layoutMode) {
+  const isFreeform = layoutMode === "freeform";
+  const storedPositions = getStoredFloatingLayout();
+
+  FLOATING_MODULE_CONFIGS.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (!el) return;
+
+    if (isFreeform) {
+      el.classList.add("floatingModule");
+
+      // Inject drag handle if not already present
+      let handle = el.querySelector(":scope > .floatingHandle");
+      if (!handle) {
+        handle = document.createElement("div");
+        handle.className = "floatingHandle";
+        handle.setAttribute("title", "Click and drag to move panel");
+        handle.innerHTML = `<span class="dragIndicator">⠿</span><span class="floatingTitle">${cfg.title}</span>`;
+        if (el.firstChild) {
+          el.insertBefore(handle, el.firstChild);
+        } else {
+          el.appendChild(handle);
+        }
+      }
+
+      // Inject corner resizer if not already present
+      let resizer = el.querySelector(":scope > .moduleResizer");
+      if (!resizer) {
+        resizer = document.createElement("div");
+        resizer.className = "moduleResizer";
+        resizer.setAttribute("title", "Drag to resize panel");
+        el.appendChild(resizer);
+      }
+
+      // Apply saved or default coordinates
+      const saved = storedPositions[cfg.id] || {};
+      const left = Number.isFinite(saved.left) ? saved.left : cfg.defaultLeft;
+      const top = Number.isFinite(saved.top) ? saved.top : cfg.defaultTop;
+      const width = Number.isFinite(saved.width) ? saved.width : cfg.defaultWidth;
+      const height = Number.isFinite(saved.height) ? saved.height : cfg.defaultHeight;
+      const zIndex = Number.isFinite(saved.zIndex) ? saved.zIndex : 10;
+      if (zIndex > floatingMaxZIndex) floatingMaxZIndex = zIndex;
+
+      el.style.left = `${left}px`;
+      el.style.top = `${top}px`;
+      el.style.width = `${width}px`;
+      el.style.height = `${height}px`;
+      el.style.zIndex = `${zIndex}`;
+    } else {
+      // Restore standard layout flow
+      el.classList.remove("floatingModule", "is-dragging", "is-resizing");
+      el.style.removeProperty("left");
+      el.style.removeProperty("top");
+      el.style.removeProperty("width");
+      el.style.removeProperty("height");
+      el.style.removeProperty("z-index");
+    }
+  });
+
+  if (isFreeform && !floatingCockpitInitialized) {
+    initFloatingInteractions();
+  }
+}
+
+function resetFloatingCockpitLayout() {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.floatingLayout);
+  } catch (_e) {}
+  FLOATING_MODULE_CONFIGS.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (!el) return;
+    el.style.left = `${cfg.defaultLeft}px`;
+    el.style.top = `${cfg.defaultTop}px`;
+    el.style.width = `${cfg.defaultWidth}px`;
+    el.style.height = `${cfg.defaultHeight}px`;
+    el.style.zIndex = "10";
+  });
+  floatingMaxZIndex = 10;
+  setStatus("Layout reset to default positions");
+}
+
+function initFloatingInteractions() {
+  if (floatingCockpitInitialized) return;
+  floatingCockpitInitialized = true;
+
+  let activeDrag = null;
+  let activeResize = null;
+
+  document.addEventListener("mousedown", event => {
+    if (state.layoutMode !== "freeform") return;
+
+    // Check for resize handle
+    const resizer = event.target.closest(".moduleResizer");
+    if (resizer) {
+      const module = resizer.closest(".floatingModule");
+      if (!module) return;
+      event.preventDefault();
+      const rect = module.getBoundingClientRect();
+      activeResize = {
+        module,
+        startX: event.clientX,
+        startY: event.clientY,
+        startWidth: rect.width,
+        startHeight: rect.height,
+        minWidth: 220,
+        minHeight: 120
+      };
+      floatingMaxZIndex += 1;
+      module.style.zIndex = `${floatingMaxZIndex}`;
+      module.classList.add("is-resizing");
+      return;
+    }
+
+    // Check for drag handle
+    const handle = event.target.closest(".floatingHandle");
+    if (handle) {
+      const module = handle.closest(".floatingModule");
+      if (!module) return;
+      event.preventDefault();
+      const rect = module.getBoundingClientRect();
+      activeDrag = {
+        module,
+        startX: event.clientX,
+        startY: event.clientY,
+        initialLeft: rect.left,
+        initialTop: rect.top - (document.querySelector(".topbar")?.offsetHeight || 54),
+        width: rect.width,
+        height: rect.height
+      };
+      floatingMaxZIndex += 1;
+      module.style.zIndex = `${floatingMaxZIndex}`;
+      module.classList.add("is-dragging");
+    }
+  });
+
+  document.addEventListener("mousemove", event => {
+    if (activeDrag) {
+      event.preventDefault();
+      const dx = event.clientX - activeDrag.startX;
+      const dy = event.clientY - activeDrag.startY;
+      const containerWidth = window.innerWidth;
+      const topbarHeight = document.querySelector(".topbar")?.offsetHeight || 54;
+      const containerHeight = window.innerHeight - topbarHeight;
+
+      let newLeft = activeDrag.initialLeft + dx;
+      let newTop = activeDrag.initialTop + dy;
+
+      // Keep within bounds
+      newLeft = Math.max(0, Math.min(newLeft, Math.max(0, containerWidth - 40)));
+      newTop = Math.max(0, Math.min(newTop, Math.max(0, containerHeight - 40)));
+
+      activeDrag.module.style.left = `${newLeft}px`;
+      activeDrag.module.style.top = `${newTop}px`;
+    } else if (activeResize) {
+      event.preventDefault();
+      const dx = event.clientX - activeResize.startX;
+      const dy = event.clientY - activeResize.startY;
+      const newWidth = Math.max(activeResize.minWidth, activeResize.startWidth + dx);
+      const newHeight = Math.max(activeResize.minHeight, activeResize.startHeight + dy);
+
+      activeResize.module.style.width = `${newWidth}px`;
+      activeResize.module.style.height = `${newHeight}px`;
+    }
+  });
+
+  function stopDragOrResize() {
+    if (activeDrag) {
+      activeDrag.module.classList.remove("is-dragging");
+      const id = activeDrag.module.id;
+      if (id) {
+        const stored = getStoredFloatingLayout();
+        stored[id] = {
+          left: parseInt(activeDrag.module.style.left, 10) || 0,
+          top: parseInt(activeDrag.module.style.top, 10) || 0,
+          width: parseInt(activeDrag.module.style.width, 10) || activeDrag.width,
+          height: parseInt(activeDrag.module.style.height, 10) || activeDrag.height,
+          zIndex: parseInt(activeDrag.module.style.zIndex, 10) || 10
+        };
+        saveStoredFloatingLayout(stored);
+      }
+      activeDrag = null;
+    }
+    if (activeResize) {
+      activeResize.module.classList.remove("is-resizing");
+      const id = activeResize.module.id;
+      if (id) {
+        const stored = getStoredFloatingLayout();
+        stored[id] = {
+          left: parseInt(activeResize.module.style.left, 10) || 0,
+          top: parseInt(activeResize.module.style.top, 10) || 0,
+          width: parseInt(activeResize.module.style.width, 10) || activeResize.startWidth,
+          height: parseInt(activeResize.module.style.height, 10) || activeResize.startHeight,
+          zIndex: parseInt(activeResize.module.style.zIndex, 10) || 10
+        };
+        saveStoredFloatingLayout(stored);
+      }
+      activeResize = null;
+    }
+  }
+
+  document.addEventListener("mouseup", stopDragOrResize);
+}
+
+function applyLayoutMode(mode){const clean=cleanText(mode).toLowerCase();const layout=(clean==="horizontal"||clean==="freeform")?clean:"vertical";state.layoutMode=layout;if(document.body){document.body.setAttribute("data-layout-mode",layout);}if(dom.layoutSelect){dom.layoutSelect.value=layout;}updateFloatingCockpitState(layout);}
+function persistLayoutMode(nextMode){const clean=cleanText(nextMode).toLowerCase();const layout=(clean==="horizontal"||clean==="freeform")?clean:"vertical";applyLayoutMode(layout);savePreferences(true);recordTraceEvent("layout-mode-changed",{layout:state.layoutMode,at:new Date().toISOString()});}
 function savePreferences(sync=false){const payload=buildPreferencesPayload();localStorage.setItem(STORAGE_KEYS.preferences,JSON.stringify(payload));if(sync&&window.desktopApi?.writePreferencesSync){try{const result=window.desktopApi.writePreferencesSync(payload);if(result?.error)throw new Error(result.error);return;}catch(_error){}}if(window.desktopApi?.writePreferences)window.desktopApi.writePreferences(payload).catch(()=>{});}
 function savePlayHistory(){localStorage.setItem(STORAGE_KEYS.playHistory,JSON.stringify(prunePlayHistory(state.playHistory)));}
 function saveUserLearning(){localStorage.setItem(STORAGE_KEYS.userLearning,JSON.stringify(pruneUserLearning(state.userLearning)));}
@@ -862,7 +1099,7 @@ function scheduleScoreboardTraceLog(){if(state.scoreboardTraceDebounceTimer)clea
 function setQuarter(nextQuarter){const normalized=normalizeQuarter(nextQuarter);if(normalized===normalizeQuarter(state.quarter))return;state.quarter=normalized;setStatus(`Scoreboard ${formatScoreboardText()}`);render();scheduleScoreboardRefresh();scheduleScoreboardTraceLog();}
 function adjustGameScore(side,delta){const key=side==="opp"?"oppScore":"userScore",next=normalizeGameScore((Number(state[key])||0)+Number(delta||0));if(next===normalizeGameScore(state[key]))return;state[key]=next;setStatus(`Scoreboard ${formatScoreboardText()}`);render();scheduleScoreboardRefresh();scheduleScoreboardTraceLog();}
 function backToTeamSelect(){resetOcrSession("end_game");state.pendingOutcome=null;state.confirmedPlayUsage=null;state.gameStarted=false;state.gameCoordinatorProfile="normal";state.coordinatorPickerMode="newGame";state.sessionReport=null;state.coordinatorReport=null;state.reportOpen=false;if(dom.reportOverlay)closeOverlay(dom.reportOverlay);resetScoreboardState();resetDefenseLogState();state.gameScoutingLog=[];state.lastSnapDefenseAnswer=null;state.gameOutcomeMemory=[];state.driveOutcomeMemory=[];state.down=1;state.yards=10;state.goalToGo=false;state.fieldPosition=createEmptyFieldPosition();state.transcript="";state.recentPlays=[];state.recentCalls=[];state.recentGameCalls=[];state.recommendationExposureHistory=[];state.sessionPlayShowCounts={};state.dcSessionPlayShowCounts={};state.dcSessionPackageShowCounts={};state.recommendationBatchId=0;state.driveRecommendationExposure=[];state.lastOcrRecFingerprint="";state.lastOcrRecAt=0;state.typeHist=[];state.lastCalls=[];state.scriptIndex=0;state.scriptStep=0;state.hasActiveSituation=false;state.presentedRecommendations=[];state.presentedDcRecommendations=[];clearDcV2PackageState();state.dcRecentPlays=[];state.dcOcrMatchupMemory=[];state.dcOcrLearningSnapshot=null;state.ocrExactExposurePlays=[];state.ocrExactExposureSheets=[];state.confirmedDcRecommendationId=null;state.confirmedDcRecommendationSetKey="";state.dcUsageCommittedForSetKey="";state.confirmedDcBasePlay=null;state.dcAudiblePlayId="";state.dcPendingPenalty=null;state.dcOffenseShowingFormation="";state.dcOffenseShowingSet="";state.dcOffenseShowingExpanded="";state.audiblePickerMode="oc";state.penaltyPickerMode="oc";resetRecommendationUi();recordTraceEvent("team-cleared",{team:state.selectedTeam||null,at:new Date().toISOString(),desktopWorkaround:true});setStatus("Choose a team in Settings to continue.");openSettings();render();}
-function bindEvents(){dom.newDriveBtn.addEventListener("click",onPressNewDrive);dom.settingsBtn.addEventListener("click",openSettings);dom.roleOcBtn?.addEventListener("click",()=>setCoordinatorRole(COORDINATOR_ROLE_OC));dom.roleDcBtn?.addEventListener("click",()=>setCoordinatorRole(COORDINATOR_ROLE_DC));dom.dcGameStateBtn?.addEventListener("click",()=>onPressDcGameState());dom.dcGameStatePanel?.addEventListener("click",event=>{const button=event.target.closest("button[data-action=\"dc-game-state\"][data-result-id]");if(!button)return;applyDcGameState(button.getAttribute("data-result-id"));});dom.coordinatorOverlay?.addEventListener("click",event=>{const button=event.target.closest("button[data-profile-id]");if(!button)return;const profileId=button.getAttribute("data-profile-id");if(state.coordinatorPickerMode==="halftime")confirmHalftimeStyle(profileId);else confirmNewGame(profileId);});dom.closeCoordinatorPickerBtn?.addEventListener("click",()=>closeCoordinatorPicker());dom.halftimeBtn?.addEventListener("click",()=>onPressHalftime());dom.dcHalftimeBtn?.addEventListener("click",()=>onPressHalftime());dom.closeSettingsBtn.addEventListener("click",()=>closeOverlay(dom.settingsOverlay));dom.newSessionBtn?.addEventListener("click",()=>{closeCoordinatorReportAndReset();});dom.playcallingModeGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-mode]");if(!button)return;setPlaycallingMode(button.getAttribute("data-mode"));});dom.quarterButtonGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-quarter]");if(!button)return;setQuarter(button.getAttribute("data-quarter"));});dom.dcQuarterButtonGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-quarter]");if(!button)return;setQuarter(button.getAttribute("data-quarter"));});dom.defenseLogSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-defense]");if(!button)return;setLastDefenseShown(button.getAttribute("data-defense"));});dom.scoreboardSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-score-action][data-score-side]");if(!button)return;const side=button.getAttribute("data-score-side"),action=button.getAttribute("data-score-action"),delta=action==="dec"?-1:1;adjustGameScore(side,delta);});dom.dcScoreboardSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-score-action][data-score-side]");if(!button)return;const side=button.getAttribute("data-score-side"),action=button.getAttribute("data-score-action"),delta=action==="dec"?-1:1;adjustGameScore(side,delta);});dom.recommendationToggleBtn?.addEventListener("click",cycleVisibleRecommendations);dom.recCard?.addEventListener("click",event=>{const audibleBtn=event.target.closest("button[data-action=\"open-audible\"]");if(audibleBtn){openAudiblePicker();return;}const penaltyBtn=event.target.closest("button[data-action=\"open-penalty\"]");if(penaltyBtn){openPenaltyPicker();return;}const button=event.target.closest("button[data-action=\"confirm-play\"][data-play-id]");if(!button)return;confirmRecommendedPlay(button.getAttribute("data-play-id"));});dom.dcRecommendationCard?.addEventListener("click",event=>{const audibleBtn=event.target.closest("button[data-action=\"open-dc-audible\"]");if(audibleBtn){openDcAudiblePicker();return;}const penaltyBtn=event.target.closest("button[data-action=\"open-dc-penalty\"]");if(penaltyBtn){openDcPenaltyPicker();return;}const exactBtn=event.target.closest("button[data-action=\"ocr-confirm-play\"][data-play-id]");if(exactBtn){confirmOcrExactPlay(exactBtn.getAttribute("data-play-id"));return;}const button=event.target.closest("button[data-action=\"confirm-dc-play\"][data-play-id]");if(!button)return;confirmDcRecommendedPlay(button.getAttribute("data-play-id"));});dom.dcRecommendationCard?.addEventListener("click",event=>{const pkgBtn=event.target.closest("button[data-action=\"dc-package-called\"][data-package-key]");if(!pkgBtn)return;const key=pkgBtn.getAttribute("data-package-key");const pkg=(state.presentedDcPackages||[]).find(item=>item.packageKey===key);if(pkg)confirmDcPackage(pkg);});dom.dcOffenseFormationRow?.addEventListener("click",event=>{const clearBtn=event.target.closest("button[data-action=\"dc-offense-clear\"]");if(clearBtn){clearDcOffenseShowing();return;}const formationBtn=event.target.closest("button[data-action=\"dc-offense-formation\"][data-formation]");if(!formationBtn)return;onToggleDcOffenseFormation(formationBtn.getAttribute("data-formation"));});dom.dcOffenseSetRow?.addEventListener("click",event=>{const setBtn=event.target.closest("button[data-action=\"dc-offense-set\"][data-formation][data-set]");if(!setBtn)return;onSelectDcOffenseSet(setBtn.getAttribute("data-formation"),setBtn.getAttribute("data-set"));});dom.closeAudiblePickerBtn?.addEventListener("click",()=>closeAudiblePicker());dom.audibleSearchInput?.addEventListener("input",()=>renderAudiblePickerList());dom.audibleList?.addEventListener("click",event=>{const button=event.target.closest("button[data-audible-play-id]");if(!button)return;applyAudiblePlay(button.getAttribute("data-audible-play-id"));});dom.closePenaltyPickerBtn?.addEventListener("click",()=>closePenaltyPicker());dom.clearPenaltyBtn?.addEventListener("click",()=>clearPenalty());dom.penaltyList?.addEventListener("click",event=>{const button=event.target.closest("button[data-penalty-id]");if(!button)return;applyPenalty(button.getAttribute("data-penalty-id"));});dom.patOverlay?.addEventListener("click",event=>{const button=event.target.closest("button[data-pat-points]");if(!button)return;const pts=Number(button.getAttribute("data-pat-points"));resolvePatAttempt(pts);});dom.driveResultPanel?.addEventListener("click",event=>{const button=event.target.closest("button[data-action='drive-result']");if(button){const resultId=cleanText(button.getAttribute("data-result-id"));applyDriveResultAndReset(resultId||null);return;}const endBtn=event.target.closest("button[data-action='end-game']");if(endBtn)onPressEndGame();});dom.teamSelect.addEventListener("change",()=>{state.pendingOutcome=null;state.confirmedPlayUsage=null;state.selectedTeam=dom.teamSelect.value;resetOcrSession("team_change");if(dom.opponentSelect&&normalizeOpponentTeam(dom.opponentSelect.value)===state.selectedTeam){const fallback=NFL_TEAMS.find(team=>team.code!==state.selectedTeam)?.code||"DAL";dom.opponentSelect.value=fallback;state.selectedOpponent=fallback;}state.scriptIndex=0;state.scriptStep=0;state.lastCalls=[];state.typeHist=[];state.recentPlays=[];state.recentCalls=[];state.recentGameCalls=[];state.recommendationExposureHistory=[];state.sessionPlayShowCounts={};state.dcSessionPlayShowCounts={};state.dcSessionPackageShowCounts={};state.recommendationBatchId=0;state.driveRecommendationExposure=[];state.lastOcrRecFingerprint="";state.lastOcrRecAt=0;state.hasActiveSituation=false;state.presentedRecommendations=[];state.presentedDcRecommendations=[];clearDcV2PackageState();state.dcRecentPlays=[];state.dcOcrMatchupMemory=[];state.dcOcrLearningSnapshot=null;state.ocrExactExposurePlays=[];state.ocrExactExposureSheets=[];state.confirmedDcRecommendationId=null;state.confirmedDcRecommendationSetKey="";state.dcUsageCommittedForSetKey="";state.confirmedDcBasePlay=null;state.dcAudiblePlayId="";state.dcPendingPenalty=null;state.dcOffenseShowingFormation="";state.dcOffenseShowingSet="";state.dcOffenseShowingExpanded="";state.audiblePickerMode="oc";state.penaltyPickerMode="oc";resetRecommendationUi();savePreferences(true);computeRecommendations();recordTraceEvent("team-change",{at:new Date().toISOString(),team:state.selectedTeam,opponent:normalizeOpponentTeam(state.selectedOpponent)||null});render();});dom.opponentSelect?.addEventListener("change",()=>{const next=normalizeOpponentTeam(dom.opponentSelect.value);if(!next)return;state.selectedOpponent=next;resetOcrSession("opponent_change");clearDcOffenseShowing({render:false,trace:true});savePreferences(true);recordTraceEvent("opponent-change",{at:new Date().toISOString(),opponent:state.selectedOpponent});render();});dom.themeSelect.addEventListener("change",()=>persistThemeSelection(dom.themeSelect.value));dom.themeSelect.addEventListener("input",()=>persistThemeSelection(dom.themeSelect.value));dom.layoutSelect?.addEventListener("change",()=>persistLayoutMode(dom.layoutSelect.value));dom.layoutSelect?.addEventListener("input",()=>persistLayoutMode(dom.layoutSelect.value));dom.toggleTraceBtn.addEventListener("click",()=>{state.tracePanelOpen=!state.tracePanelOpen;render();});dom.exportTraceBtn.addEventListener("click",()=>{exportTraceSession().catch(error=>setStatus(`Trace export failed: ${cleanText(error?.message||error)}`));});dom.openTraceFolderBtn?.addEventListener("click",()=>{openTraceFolder().catch(error=>setStatus(`Open trace folder failed: ${cleanText(error?.message||error)}`));});dom.newTraceBtn.addEventListener("click",()=>{resetTraceSession("manual_reset");render();});dom.autoPlaycallerToggleBtn?.addEventListener("click",()=>setAutoPlaycallerEnabled(!state.autoPlaycallerEnabled));dom.matchupAutoPlaycallerBtn?.addEventListener("click",()=>setAutoPlaycallerEnabled(!state.autoPlaycallerEnabled));dom.matchupSkipBtn?.addEventListener("click",closeMatchupModal);
+function bindEvents(){dom.newDriveBtn.addEventListener("click",onPressNewDrive);dom.settingsBtn.addEventListener("click",openSettings);dom.roleOcBtn?.addEventListener("click",()=>setCoordinatorRole(COORDINATOR_ROLE_OC));dom.roleDcBtn?.addEventListener("click",()=>setCoordinatorRole(COORDINATOR_ROLE_DC));dom.dcGameStateBtn?.addEventListener("click",()=>onPressDcGameState());dom.dcGameStatePanel?.addEventListener("click",event=>{const button=event.target.closest("button[data-action=\"dc-game-state\"][data-result-id]");if(!button)return;applyDcGameState(button.getAttribute("data-result-id"));});dom.coordinatorOverlay?.addEventListener("click",event=>{const button=event.target.closest("button[data-profile-id]");if(!button)return;const profileId=button.getAttribute("data-profile-id");if(state.coordinatorPickerMode==="halftime")confirmHalftimeStyle(profileId);else confirmNewGame(profileId);});dom.closeCoordinatorPickerBtn?.addEventListener("click",()=>closeCoordinatorPicker());dom.halftimeBtn?.addEventListener("click",()=>onPressHalftime());dom.dcHalftimeBtn?.addEventListener("click",()=>onPressHalftime());dom.closeSettingsBtn.addEventListener("click",()=>closeOverlay(dom.settingsOverlay));dom.newSessionBtn?.addEventListener("click",()=>{closeCoordinatorReportAndReset();});dom.playcallingModeGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-mode]");if(!button)return;setPlaycallingMode(button.getAttribute("data-mode"));});dom.quarterButtonGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-quarter]");if(!button)return;setQuarter(button.getAttribute("data-quarter"));});dom.dcQuarterButtonGroup?.addEventListener("click",event=>{const button=event.target.closest("button[data-quarter]");if(!button)return;setQuarter(button.getAttribute("data-quarter"));});dom.defenseLogSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-defense]");if(!button)return;setLastDefenseShown(button.getAttribute("data-defense"));});dom.scoreboardSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-score-action][data-score-side]");if(!button)return;const side=button.getAttribute("data-score-side"),action=button.getAttribute("data-score-action"),delta=action==="dec"?-1:1;adjustGameScore(side,delta);});dom.dcScoreboardSection?.addEventListener("click",event=>{const button=event.target.closest("button[data-score-action][data-score-side]");if(!button)return;const side=button.getAttribute("data-score-side"),action=button.getAttribute("data-score-action"),delta=action==="dec"?-1:1;adjustGameScore(side,delta);});dom.recommendationToggleBtn?.addEventListener("click",cycleVisibleRecommendations);dom.recCard?.addEventListener("click",event=>{const audibleBtn=event.target.closest("button[data-action=\"open-audible\"]");if(audibleBtn){openAudiblePicker();return;}const penaltyBtn=event.target.closest("button[data-action=\"open-penalty\"]");if(penaltyBtn){openPenaltyPicker();return;}const button=event.target.closest("button[data-action=\"confirm-play\"][data-play-id]");if(!button)return;confirmRecommendedPlay(button.getAttribute("data-play-id"));});dom.dcRecommendationCard?.addEventListener("click",event=>{const audibleBtn=event.target.closest("button[data-action=\"open-dc-audible\"]");if(audibleBtn){openDcAudiblePicker();return;}const penaltyBtn=event.target.closest("button[data-action=\"open-dc-penalty\"]");if(penaltyBtn){openDcPenaltyPicker();return;}const exactBtn=event.target.closest("button[data-action=\"ocr-confirm-play\"][data-play-id]");if(exactBtn){confirmOcrExactPlay(exactBtn.getAttribute("data-play-id"));return;}const button=event.target.closest("button[data-action=\"confirm-dc-play\"][data-play-id]");if(!button)return;confirmDcRecommendedPlay(button.getAttribute("data-play-id"));});dom.dcRecommendationCard?.addEventListener("click",event=>{const pkgBtn=event.target.closest("button[data-action=\"dc-package-called\"][data-package-key]");if(!pkgBtn)return;const key=pkgBtn.getAttribute("data-package-key");const pkg=(state.presentedDcPackages||[]).find(item=>item.packageKey===key);if(pkg)confirmDcPackage(pkg);});dom.dcOffenseFormationRow?.addEventListener("click",event=>{const clearBtn=event.target.closest("button[data-action=\"dc-offense-clear\"]");if(clearBtn){clearDcOffenseShowing();return;}const formationBtn=event.target.closest("button[data-action=\"dc-offense-formation\"][data-formation]");if(!formationBtn)return;onToggleDcOffenseFormation(formationBtn.getAttribute("data-formation"));});dom.dcOffenseSetRow?.addEventListener("click",event=>{const setBtn=event.target.closest("button[data-action=\"dc-offense-set\"][data-formation][data-set]");if(!setBtn)return;onSelectDcOffenseSet(setBtn.getAttribute("data-formation"),setBtn.getAttribute("data-set"));});dom.closeAudiblePickerBtn?.addEventListener("click",()=>closeAudiblePicker());dom.audibleSearchInput?.addEventListener("input",()=>renderAudiblePickerList());dom.audibleList?.addEventListener("click",event=>{const button=event.target.closest("button[data-audible-play-id]");if(!button)return;applyAudiblePlay(button.getAttribute("data-audible-play-id"));});dom.closePenaltyPickerBtn?.addEventListener("click",()=>closePenaltyPicker());dom.clearPenaltyBtn?.addEventListener("click",()=>clearPenalty());dom.penaltyList?.addEventListener("click",event=>{const button=event.target.closest("button[data-penalty-id]");if(!button)return;applyPenalty(button.getAttribute("data-penalty-id"));});dom.patOverlay?.addEventListener("click",event=>{const button=event.target.closest("button[data-pat-points]");if(!button)return;const pts=Number(button.getAttribute("data-pat-points"));resolvePatAttempt(pts);});dom.driveResultPanel?.addEventListener("click",event=>{const button=event.target.closest("button[data-action='drive-result']");if(button){const resultId=cleanText(button.getAttribute("data-result-id"));applyDriveResultAndReset(resultId||null);return;}const endBtn=event.target.closest("button[data-action='end-game']");if(endBtn)onPressEndGame();});dom.teamSelect.addEventListener("change",()=>{state.pendingOutcome=null;state.confirmedPlayUsage=null;state.selectedTeam=dom.teamSelect.value;resetOcrSession("team_change");if(dom.opponentSelect&&normalizeOpponentTeam(dom.opponentSelect.value)===state.selectedTeam){const fallback=NFL_TEAMS.find(team=>team.code!==state.selectedTeam)?.code||"DAL";dom.opponentSelect.value=fallback;state.selectedOpponent=fallback;}state.scriptIndex=0;state.scriptStep=0;state.lastCalls=[];state.typeHist=[];state.recentPlays=[];state.recentCalls=[];state.recentGameCalls=[];state.recommendationExposureHistory=[];state.sessionPlayShowCounts={};state.dcSessionPlayShowCounts={};state.dcSessionPackageShowCounts={};state.recommendationBatchId=0;state.driveRecommendationExposure=[];state.lastOcrRecFingerprint="";state.lastOcrRecAt=0;state.hasActiveSituation=false;state.presentedRecommendations=[];state.presentedDcRecommendations=[];clearDcV2PackageState();state.dcRecentPlays=[];state.dcOcrMatchupMemory=[];state.dcOcrLearningSnapshot=null;state.ocrExactExposurePlays=[];state.ocrExactExposureSheets=[];state.confirmedDcRecommendationId=null;state.confirmedDcRecommendationSetKey="";state.dcUsageCommittedForSetKey="";state.confirmedDcBasePlay=null;state.dcAudiblePlayId="";state.dcPendingPenalty=null;state.dcOffenseShowingFormation="";state.dcOffenseShowingSet="";state.dcOffenseShowingExpanded="";state.audiblePickerMode="oc";state.penaltyPickerMode="oc";resetRecommendationUi();savePreferences(true);computeRecommendations();recordTraceEvent("team-change",{at:new Date().toISOString(),team:state.selectedTeam,opponent:normalizeOpponentTeam(state.selectedOpponent)||null});render();});dom.opponentSelect?.addEventListener("change",()=>{const next=normalizeOpponentTeam(dom.opponentSelect.value);if(!next)return;state.selectedOpponent=next;resetOcrSession("opponent_change");clearDcOffenseShowing({render:false,trace:true});savePreferences(true);recordTraceEvent("opponent-change",{at:new Date().toISOString(),opponent:state.selectedOpponent});render();});dom.themeSelect.addEventListener("change",()=>persistThemeSelection(dom.themeSelect.value));dom.themeSelect.addEventListener("input",()=>persistThemeSelection(dom.themeSelect.value));dom.layoutSelect?.addEventListener("change",()=>persistLayoutMode(dom.layoutSelect.value));dom.layoutSelect?.addEventListener("input",()=>persistLayoutMode(dom.layoutSelect.value));dom.resetLayoutBtn?.addEventListener("click",()=>resetFloatingCockpitLayout());dom.toggleTraceBtn.addEventListener("click",()=>{state.tracePanelOpen=!state.tracePanelOpen;render();});dom.exportTraceBtn.addEventListener("click",()=>{exportTraceSession().catch(error=>setStatus(`Trace export failed: ${cleanText(error?.message||error)}`));});dom.openTraceFolderBtn?.addEventListener("click",()=>{openTraceFolder().catch(error=>setStatus(`Open trace folder failed: ${cleanText(error?.message||error)}`));});dom.newTraceBtn.addEventListener("click",()=>{resetTraceSession("manual_reset");render();});dom.autoPlaycallerToggleBtn?.addEventListener("click",()=>setAutoPlaycallerEnabled(!state.autoPlaycallerEnabled));dom.matchupAutoPlaycallerBtn?.addEventListener("click",()=>setAutoPlaycallerEnabled(!state.autoPlaycallerEnabled));dom.matchupSkipBtn?.addEventListener("click",closeMatchupModal);
 dom.matchupConfirmBtn?.addEventListener("click",()=>confirmMatchupModal().catch(()=>{}));
 dom.presentationPillGroup?.addEventListener("click",event=>{
   const button=event.target.closest("button[data-presentation]");

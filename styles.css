@@ -2378,4 +2378,149 @@ body[data-layout-mode="horizontal"] .recPlayName {
   font-size: 24px;
 }
 
+/* ==========================================================================
+   Freeform Floating Cockpit Layout
+   ========================================================================== */
+
+.floatingHandle {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.floatingHandle:active {
+  cursor: grabbing;
+}
+
+.dragIndicator {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.45;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: grab;
+  margin-right: 4px;
+  transition: opacity 0.16s ease;
+}
+
+.floatingHandle:hover .dragIndicator {
+  opacity: 0.9;
+}
+
+/* Freeform layout mode active styles */
+body[data-layout-mode="freeform"] .layout {
+  position: relative;
+  display: block !important;
+  width: 100vw;
+  height: calc(100vh - 54px);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body[data-layout-mode="freeform"] .floatingModule {
+  position: absolute !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(143, 184, 255, 0.28);
+  backdrop-filter: blur(16px);
+  z-index: 10;
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
+  overflow: auto;
+  min-width: 220px;
+  min-height: 120px;
+}
+
+body[data-layout-mode="freeform"] .floatingModule.is-dragging {
+  opacity: 0.92;
+  box-shadow: 0 20px 50px rgba(42, 108, 255, 0.35), 0 0 0 2px var(--secondary);
+  cursor: grabbing;
+  z-index: 50 !important;
+}
+
+body[data-layout-mode="freeform"] .floatingModule.is-resizing {
+  user-select: none;
+  z-index: 50 !important;
+}
+
+/* Resize handle */
+.moduleResizer {
+  display: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  z-index: 25;
+}
+
+.moduleResizer::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--secondary);
+  border-bottom: 2px solid var(--secondary);
+  opacity: 0.75;
+}
+
+body[data-layout-mode="freeform"] .moduleResizer {
+  display: block;
+}
+
+body[data-layout-mode="freeform"] .floatingHandle {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  margin-bottom: 6px;
+  cursor: grab;
+}
+
+body[data-layout-mode="freeform"] .floatingHandle:hover {
+  background: rgba(42, 108, 255, 0.18);
+  border-color: var(--secondary);
+}
+
+body[data-layout-mode="freeform"] .heroPanel {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+body[data-layout-mode="freeform"] .gameContextRow,
+body[data-layout-mode="freeform"] .ocContextSubRow {
+  display: contents !important;
+}
+
+body[data-layout-mode="freeform"] #heroTopControls,
+body[data-layout-mode="freeform"] #dcHeroTopControls {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+}
+
+/* Freeform specific overrides for recommendation cards */
+body[data-layout-mode="freeform"] #ocRecPanel,
+body[data-layout-mode="freeform"] #dcRecPanel {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body[data-layout-mode="freeform"] .recommendationCard.stacked {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+
 
