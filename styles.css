@@ -348,6 +348,22 @@ body {
   margin-top: 0;
   height: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.ocContextSubRow .playcallingModeRow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+}
+
+.ocContextSubRow .playcallingModeRow .modeBtn {
+  padding: 10px 8px;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  word-break: normal;
 }
 
 .gameContextRow .modeSummary {
@@ -2262,7 +2278,15 @@ body[data-layout-mode="horizontal"] .ocContextSubRow {
 body[data-layout-mode="horizontal"] .ocContextSubRow > .statusCard {
   margin-top: 0;
   padding: 16px;
+  display: grid;
   grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+body[data-layout-mode="horizontal"] .ocContextSubRow .statusRow {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
 }
 
 body[data-layout-mode="horizontal"] .modeSection {
@@ -2270,8 +2294,13 @@ body[data-layout-mode="horizontal"] .modeSection {
   padding: 16px;
 }
 
+body[data-layout-mode="horizontal"] .ocContextSubRow #playcallingModeGroup {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
 body[data-layout-mode="horizontal"] #playcallingModeGroup {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 body[data-layout-mode="horizontal"] .recPanel {
