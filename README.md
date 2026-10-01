@@ -6,7 +6,7 @@
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
 
-Gridiron OC operates completely on-device with zero cloud dependencies, utilizing local speech recognition and low-latency video capture to deliver seamless coordinator intelligence.
+Gridiron OC operates completely on-device with zero cloud dependencies, utilizing low-latency video capture and computer vision OCR to deliver seamless coordinator intelligence.
 
 ---
 
@@ -18,13 +18,12 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
   - [Defensive Coordinator (DC) Workspace](#2-defensive-coordinator-dc-workspace)
   - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
   - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
-  - [Hands-Free Input: Speech & Vision](#5-hands-free-input-speech--vision)
+  - [Computer Vision OCR Capture](#5-computer-vision-ocr-capture)
   - [Game Management & Flow Controls](#6-game-management--flow-controls)
   - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
   - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
 - [Operator's Field Manual (User Guide)](USER_GUIDE.md)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
-  - [Voice Workflow](#voice-first-workflow-recommended)
   - [OCR Screen Ingest Workflow](#ocr-screen-capture-workflow)
 - [System Architecture](#system-architecture)
 - [Installation & Setup](#installation--setup)
@@ -99,16 +98,14 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Primary Opponent Defense Faced:** Pinpoints the opponent's most heavily utilized coverage shell.
   - **Coaching Takeaways & Adjustments:** Offers coordinator recommendations on whether to balance the attack, exploit coverage weaknesses, or maintain pressure.
 
-### 5. Hands-Free Input: Speech & Vision
-
-- **Local Whisper Speech Recognition:**
-  - Press the mic button and speak natural football situations (e.g., *"3rd and 6"*, *"1st and goal on the 4"*, *"2nd and 8 cover 3"*).
-  - Robust parser handles natural speech, ordinals, yard-line phrasing (*"on my own 30"*, *"at the 50"*), and common STT homophones.
-- **Local Computer Vision (Madden OCR DC):**
-  - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
-  - Automatically reads the on-screen scoreboard (down, distance, yard line, and upcoming offensive formation) without sending video data to external servers.
-  - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
-  - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
+### 5. Computer Vision OCR Capture
+ 
+ - **Local Computer Vision (Madden OCR DC & OC):**
+   - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
+   - Automatically reads the on-screen scoreboard (down, distance, yard line, and upcoming offensive formation) without sending video data to external servers.
+   - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
+   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
+   - **Auto Playcaller Option:** When enabled, automatically generates and surfaces coordinator play calls upon each successful OCR snap detection.
 
 ### 6. Game Management & Flow Controls
 
@@ -131,7 +128,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 7. Opponent Scouting & Tendencies
 
-- **Last Defense Shown Bar:**
+- **Last Defense Shown Bar (DC side):**
   - With a single tap, record the coverage shell the defense ran (*Blitz, Man, C1, C2, C3, C4, C6, C9, Tampa 2*).
   - Builds a multi-game tendency database against human opponents or CPU profiles.
 - **Predictive Pre-Snap Layering & Tendency Radar:**
@@ -149,21 +146,6 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 
 ## How to Use Gridiron OC
 
-### Voice-First Workflow (Recommended)
-
-1. **Launch App:** Start Gridiron OC. On fresh launch, the **Matchup & Broadcast Setup** modal appears immediately so you can set your team, opponent, and broadcast presentation style (via clickable pills: Default, TNF, SNF, MNF) before kickoff.
-2. **Select Coordinator Role:** App always opens to **OC** (Offense) by default. Toggle between **OC** and **DC** (Defense) on the top bar as needed.
-3. **Start Game:** Click **New Game** (or **Start Game** from the setup modal) to initialize the scoreboard and drive memory.
-4. **Call the Situation:**
-   - Tap **Tap & Speak Situation** (or use your configured push-to-talk hotkey).
-   - Say the down and field location: *"3rd and 7 on the opponent 35"*.
-5. **Execute & Confirm:**
-   - Review your top 3 recommended plays.
-   - Click the checkmark on the play you ran to log the confirmation.
-   - *(Optional)* If you changed the play at the line, tap **Audible**. If a flag was thrown, tap **Penalty**.
-6. **Log Coverage:** Tap the defense you faced on the **Last Defense Shown** bar.
-7. **End Drive / Game:** When possession ends, select **Game State** to record the drive outcome, or **End Game** at the final whistle to view your report.
-
 ### OCR Screen Capture Workflow
 
 1. On launch, select your broadcast presentation style right from the **Matchup & Broadcast Setup** modal (`Default`, `TNF`, `SNF`, `MNF`), or open **Calibrate capture** in Settings.
@@ -171,7 +153,7 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings (and optionally toggle **Auto Playcaller** on if you want automated, hands-free coordinator execution).
 5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly.
-6. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning identically to spoken input.
+6. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
 
 ---
 
@@ -195,13 +177,10 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        ├── Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
        ├── Python OCR Sidecar Worker (ocr-sidecar/ - OpenCV / Tesseract)
        └── Shared Text & Grammar Parsers (ocr/shared/)
-       │
-[ Audio Engine (vendor/whisper/) ]
-       └── On-device Whisper binary (local STT)
 ```
 
 - **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
-- **Telemetry & Privacy:** Zero cloud telemetry. All playbooks, voice processing, and screen captures are processed strictly on your local hardware.
+- **Telemetry & Privacy:** Zero cloud telemetry. All playbooks and screen captures are processed strictly on your local hardware.
 
 ---
 

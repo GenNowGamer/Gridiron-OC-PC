@@ -27,13 +27,11 @@
         <div class="heroTop">
           <div>
             <div class="eyebrow">Adaptive Playcalling</div>
-            <h1 class="heroTitle">Speak or capture the situation. Get the call.</h1>
-            <p class="heroCopy" id="heroCopy">Use Tap &amp; Speak or OCR Capture for spots like "3rd and 6", "1st and goal on the 4", or "3rd and 5 on my own 30".</p>
+            <h1 class="heroTitle">Capture the situation with OCR. Get the call.</h1>
+            <p class="heroCopy" id="heroCopy">Use OCR Capture for spots like "3rd and 6", "1st and goal on the 4", or "3rd and 5 on my own 30".</p>
           </div>
           <div class="heroActions">
-            <button class="micBtn" id="micBtn" type="button">Tap & Speak Situation</button>
             <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
-            <div class="micFeedback hidden" id="micFeedback" role="status" aria-live="polite"></div>
           </div>
         </div>
 
@@ -54,7 +52,7 @@
           </div>
           <div class="statusRow">
             <span class="statusLabel">Heard</span>
-            <span class="statusValue" id="heardValue">Waiting for voice input</span>
+            <span class="statusValue" id="heardValue">Waiting for OCR input</span>
           </div>
           <div class="statusRow">
             <span class="statusLabel">Situation</span>
@@ -64,12 +62,6 @@
             <span class="statusLabel">Status</span>
             <span class="statusValue" id="statusValue">Ready</span>
           </div>
-        </div>
-
-        <div class="voiceHints">
-          <span class="hintChip">"2nd and 8 on my own 45"</span>
-          <span class="hintChip">"1st and goal on the 5"</span>
-          <span class="hintChip">"3rd and 5 on my own 30 yard line"</span>
         </div>
 
         <div class="gameContextRow">
@@ -111,41 +103,14 @@
           </div>
         </div>
 
-        <div class="modeSection defenseLogSection" id="defenseLogSection">
-          <div class="modeSectionHead">
-            <div>
-              <div class="eyebrow">Last Defense Shown</div>
-              <div class="modeSummary" id="defenseLogSummary">Tap what Madden showed after the snap. That coverage is logged for opponent scouting and does not reshuffle this sheet — the next Tap & Speak or playcalling-mode change clears it so predictive scouting can run again.</div>
-            </div>
-          </div>
-          <div class="defenseLogBody">
-            <div class="defenseLogCurrent">
-              <span class="defenseLogCurrentLabel">Last shown</span>
-              <span class="defenseLogCurrentValue" id="lastDefenseShownValue">—</span>
-            </div>
-            <div class="modeButtonRow defenseLogButtonRow" id="defenseLogButtonGroup">
-              <button class="modeBtn" type="button" data-defense="Blitz">Blitz</button>
-              <button class="modeBtn" type="button" data-defense="Man">Man</button>
-              <button class="modeBtn" type="button" data-defense="Cover 1">C1</button>
-              <button class="modeBtn" type="button" data-defense="Cover 2">C2</button>
-              <button class="modeBtn" type="button" data-defense="Cover 3">C3</button>
-              <button class="modeBtn" type="button" data-defense="Cover 4">C4</button>
-              <button class="modeBtn" type="button" data-defense="Cover 6">C6</button>
-              <button class="modeBtn" type="button" data-defense="Cover 9">C9</button>
-              <button class="modeBtn" type="button" data-defense="Tampa 2">Tampa 2</button>
-            </div>
-          </div>
-        </div>
-        </div>
-
-        <div class="modeSection">
+        <div class="modeSection playcallingModeSection" id="playcallingModeSection">
           <div class="modeSectionHead">
             <div>
               <div class="eyebrow">Playcalling Mode</div>
               <div class="modeSummary" id="playcallingModeSummary">Normal mode keeps the standard adaptive coordinator logic active.</div>
             </div>
           </div>
-          <div class="modeButtonRow" id="playcallingModeGroup">
+          <div class="modeButtonRow playcallingModeRow" id="playcallingModeGroup">
             <button class="modeBtn is-active" type="button" data-mode="normal">Normal</button>
             <button class="modeBtn" type="button" data-mode="two_minute">2 Minute Drill</button>
             <button class="modeBtn" type="button" data-mode="kill_clock">Kill Clock</button>
@@ -153,6 +118,7 @@
             <button class="modeBtn" type="button" data-mode="blitz_beater">Blitz Beater</button>
             <button class="modeBtn" type="button" data-mode="redzone">Redzone</button>
           </div>
+        </div>
         </div>
       </section>
 
@@ -204,11 +170,10 @@
             <div class="eyebrow">Defensive Coordinator</div>
             <h1 class="heroTitle">Defense call sheet</h1>
             <p class="heroCopy" id="dcHeroCopy">
-              Speak down, distance, and field position — or use OCR Exact Calls when capture is ready.
+              Capture down, distance, and field position via OCR to get top defensive calls and package recommendations.
             </p>
           </div>
           <div class="heroActions">
-            <button class="micBtn" id="dcMicBtn" type="button" title="Optional: speak exact down/distance/field">Optional: Tap &amp; Speak Exact Spot</button>
             <button class="secondaryBtn" id="dcGameStateBtn" type="button">New Game</button>
           </div>
         </div>
@@ -226,7 +191,7 @@
           </div>
           <div class="statusRow">
             <span class="statusLabel">Heard</span>
-            <span class="statusValue" id="dcHeardValue">Waiting for voice input</span>
+            <span class="statusValue" id="dcHeardValue">Waiting for OCR input</span>
           </div>
           <div class="statusRow">
             <span class="statusLabel">Situation</span>
@@ -391,16 +356,6 @@
     </div>
   </div>
 
-  <div class="overlay hidden" id="voiceOverlay" aria-hidden="true">
-    <div class="overlayCard">
-      <div class="overlayTitle" id="overlayTitle">Listening...</div>
-      <div class="overlaySub">Say the full situation like you do on mobile.</div>
-      <div class="overlayHeard" id="overlayHeard">...</div>
-      <div class="overlayActions">
-        <button class="ghostBtn" id="stopVoiceBtn" type="button">Stop</button>
-      </div>
-    </div>
-  </div>
 
   <div class="overlay hidden" id="settingsOverlay" aria-hidden="true">
     <div class="settingsCard">
@@ -420,6 +375,12 @@
 
       <label class="settingsLabel" for="themeSelect">Theme</label>
       <select id="themeSelect" class="settingsSelect"></select>
+
+      <label class="settingsLabel" for="layoutSelect">Screen Layout</label>
+      <select id="layoutSelect" class="settingsSelect">
+        <option value="vertical">Vertical Split (Side by Side)</option>
+        <option value="horizontal">Horizontal Split (Top / Bottom)</option>
+      </select>
 
       <div class="settingsDivider"></div>
       <div class="ocrSettingsHead">

@@ -1,6 +1,6 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": true,
   "description": "Electron desktop build of Gridiron Play Advisor",
   "main": "main.js",
@@ -9,7 +9,6 @@
   },
   "scripts": {
     "test": "npm run verify:pc",
-    "check:ffmpeg-license": "node ./scripts/check-ffmpeg-license.mjs",
     "check:ocr-license": "node ./scripts/check-ocr-license.mjs",
     "test:ocr:js": "node --test ./ocr/main/test/*.test.js && node ./scripts/smoke-ocr-domain.mjs",
     "test:ocr:worker": "powershell -NoProfile -ExecutionPolicy Bypass -File ./ocr-sidecar/test-sidecar.ps1",
@@ -23,7 +22,7 @@
     "check:core": "node ./scripts/check-pc-core.mjs",
     "test:regression": "node --test ./scripts/test-app-regressions.cjs",
     "verify:pc": "npm run check:core && npm run test:regression && npm run test:ocr:js && node ./scripts/smoke-defense-situation.mjs",
-    "prepare:dist": "npm run verify:pc && npm run check:ffmpeg-license && npm run build:ocr-worker && npm run build:capture-bridge && npm run check:ocr-license"
+    "prepare:dist": "npm run verify:pc && npm run build:ocr-worker && npm run build:capture-bridge && npm run check:ocr-license"
   },
   "build": {
     "appId": "com.gridiron.playadvisor.pc",
@@ -44,14 +43,9 @@
       "defensive_plays.json",
       "THIRD_PARTY_NOTICES.md",
       "licenses/**",
-      "assets/**",
-      "vendor/whisper/**",
-      "vendor/ffmpeg/**"
+      "assets/**"
     ],
-    "asarUnpack": [
-      "vendor/whisper/**",
-      "vendor/ffmpeg/**"
-    ],
+    "asarUnpack": [],
     "extraFiles": [
       {
         "from": "assets/icon.ico",
