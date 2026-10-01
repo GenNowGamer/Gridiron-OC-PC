@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.11-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.12-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -59,11 +59,16 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Comeback:** Aggressive chunk-play hunting with deep intermediate pass concepts.
   - **Blitz Beater:** Hot throws, screens, draws, and quick perimeter answers that neutralize blitzes.
   - **Redzone:** Short-field spacing concepts (smash, snag, mesh, duo, power, and RPO).
+- **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
+  - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
+  - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, and score/clock context.
+  - Instantly confirms the winning play, updating down/distance settlement, play cooldowns, and session metrics automatically upon OCR or voice capture.
 - **Setup-to-Payoff Engine:** Tracks conceptual sequencing across drives (e.g., establishing inside zone to unlock explosive play-action bootlegs later in the series).
 - **Full-Playbook Exploration Engine:** 
   - **Slot 1 & Slot 2 Temperature Sampling:** Uses softmax exploration across near-tie optimal calls so high-variance primary calls and complementary counters rotate naturally.
   - **Slot 3 Fresh-Play Elasticity:** Periodically draws from unexposed plays across the entire playbook (`_sessionShowCount === 0`) to eliminate stagnant play selection and ensure over 84% of playbook concepts surface throughout full games.
   - **Balanced Scheme Stacking:** Balances under-center and shotgun weights (such as `PA_MOTION_EXPLOSIVE`) so spread concepts and shotgun play-action seamlessly compete with early-down motion runs.
+
 
 ### 2. Defensive Coordinator (DC) Workspace
 
@@ -164,8 +169,9 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 1. On launch, select your broadcast presentation style right from the **Matchup & Broadcast Setup** modal (`Default`, `TNF`, `SNF`, `MNF`), or open **Calibrate capture** in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
-4. Enable **OCR Capture** in Settings.
+4. Enable **OCR Capture** in Settings (and optionally toggle **Auto Playcaller** on if you want automated, hands-free coordinator execution).
 5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly.
+6. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning identically to spoken input.
 
 ---
 

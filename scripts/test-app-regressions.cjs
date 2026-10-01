@@ -198,3 +198,53 @@ test('matchup setup modal updates team, opponent and presentation style', () => 
   assert.equal(a.run('state.selectedOpponent'), 'BUF');
 });
 
+test('auto playcaller toggle persists state and defaults to disabled', () => {
+  const a = app();
+  assert.equal(a.run('state.autoPlaycallerEnabled'), false);
+  a.run('setAutoPlaycallerEnabled(true)');
+  assert.equal(a.run('state.autoPlaycallerEnabled'), true);
+  assert.equal(a.run('buildPreferencesPayload().autoPlaycallerEnabled'), true);
+  a.run('applyPersistedPreferences({ autoPlaycallerEnabled: false })');
+  assert.equal(a.run('state.autoPlaycallerEnabled'), false);
+});
+
+test('auto playcaller evaluates and confirms best play when enabled upon OCR capture', () => {
+  const a = app();
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.run(`
+    state.normalizedPlays = catalog.map(normalizeImportedPlay);
+    state.selectedTeam = 'CHI';
+    state.autoPlaycallerEnabled = true;
+    startCoordinatorSession('normal');
+    applyOcrCaptureSituation({ down: 3, yards: 4, goalToGo: false, fieldPosition: { side: 'OPP', yardLine: 35 } });
+  `);
+  assert.equal(a.run('state.autoPlaycallerEnabled'), true);
+  assert.ok(a.run('state.confirmedRecommendationId'));
+  assert.ok(a.run('state.confirmedBasePlay'));
+  assert.equal(a.run('state.pendingOutcome.down'), 3);
+});
+
+test('sequential OCR captures settle pending snap, log previous defense, and feed opponent scouting report', () => {
+  const a = app();
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.run(`
+    state.normalizedPlays = catalog.map(normalizeImportedPlay);
+    state.selectedTeam = 'CHI';
+    state.selectedOpponent = 'DAL';
+    state.autoPlaycallerEnabled = true;
+    startCoordinatorSession('normal');
+    applyOcrCaptureSituation({ down: 1, yards: 10, goalToGo: false, fieldPosition: { side: 'OWN', yardLine: 25 } });
+    const firstConfirmed = state.confirmedRecommendationId;
+    applyOcrCaptureSituation({ down: 2, yards: 4, goalToGo: false, fieldPosition: { side: 'OWN', yardLine: 31 }, previousDefensePlayName: 'COVER 3' });
+    onPressEndGame();
+  `);
+  assert.equal(a.run('state.gameScoutingLog.length'), 1);
+  assert.equal(a.run('state.gameScoutingLog[0].defense'), 'Cover 3');
+  assert.equal(a.run('state.gameScoutingLog[0].opponent'), 'DAL');
+  assert.equal(a.run('state.coordinatorReport.scouting.empty'), false);
+  assert.equal(a.run('state.coordinatorReport.scouting.items.length > 0'), true);
+  assert.ok(a.run('state.sessionReport.confirms[0].outcome'));
+});
+
+
+

@@ -529,6 +529,14 @@ body {
   padding: 11px 14px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.toggleBtn.is-active {
+  background: rgba(42, 108, 255, 0.22);
+  border-color: var(--secondary, #8fb8ff);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(42, 108, 255, 0.25);
 }
 
 .settingsSelect {
@@ -1955,6 +1963,31 @@ body {
 
 .presentationPillBtn.is-active .pillSub {
   color: var(--secondary, #8fb8ff);
+}
+
+.matchupToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.matchupToggleTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.matchupToggleSub {
+  font-size: 11px;
+  color: var(--hint, #c3cede);
+  line-height: 1.4;
+  margin-top: 3px;
 }
 
 .matchupActions {
