@@ -330,6 +330,26 @@ body {
   overflow: visible;
 }
 
+.ocContextSubRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.ocContextSubRow > .statusCard {
+  margin-top: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ocContextSubRow > .modeSection {
+  margin-top: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .gameContextRow .modeSummary {
   max-width: none;
 }
@@ -2231,6 +2251,18 @@ body[data-layout-mode="horizontal"] .voiceHints {
 body[data-layout-mode="horizontal"] .gameContextRow {
   margin-top: 14px;
   gap: 14px;
+}
+
+body[data-layout-mode="horizontal"] .ocContextSubRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body[data-layout-mode="horizontal"] .ocContextSubRow > .statusCard {
+  margin-top: 0;
+  padding: 16px;
+  grid-template-columns: 1fr;
 }
 
 body[data-layout-mode="horizontal"] .modeSection {

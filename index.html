@@ -37,33 +37,6 @@
 
         <div id="driveResultPanel" class="driveResultPanel hidden"></div>
 
-        <div class="statusCard">
-          <div class="statusRow">
-            <span class="statusLabel">Playbook</span>
-            <span class="statusValue" id="teamValue">Loading...</span>
-          </div>
-          <div class="statusRow">
-            <span class="statusLabel">Opponent</span>
-            <span class="statusValue" id="opponentValue">Loading...</span>
-          </div>
-          <div class="statusRow">
-            <span class="statusLabel">Identity</span>
-            <span class="statusValue" id="identityValue">Loading...</span>
-          </div>
-          <div class="statusRow">
-            <span class="statusLabel">Heard</span>
-            <span class="statusValue" id="heardValue">Waiting for OCR input</span>
-          </div>
-          <div class="statusRow">
-            <span class="statusLabel">Situation</span>
-            <span class="statusValue" id="situationValue">No live situation yet</span>
-          </div>
-          <div class="statusRow">
-            <span class="statusLabel">Status</span>
-            <span class="statusValue" id="statusValue">Ready</span>
-          </div>
-        </div>
-
         <div class="gameContextRow">
         <div class="modeSection scoreboardSection" id="scoreboardSection">
           <div class="modeSectionHead">
@@ -103,20 +76,49 @@
           </div>
         </div>
 
-        <div class="modeSection playcallingModeSection" id="playcallingModeSection">
-          <div class="modeSectionHead">
-            <div>
-              <div class="eyebrow">Playcalling Mode</div>
-              <div class="modeSummary" id="playcallingModeSummary">Normal mode keeps the standard adaptive coordinator logic active.</div>
+        <div class="ocContextSubRow" id="ocContextSubRow">
+          <div class="statusCard" id="ocStatusCard">
+            <div class="statusRow">
+              <span class="statusLabel">Playbook</span>
+              <span class="statusValue" id="teamValue">Loading...</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Opponent</span>
+              <span class="statusValue" id="opponentValue">Loading...</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Identity</span>
+              <span class="statusValue" id="identityValue">Loading...</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Heard</span>
+              <span class="statusValue" id="heardValue">Waiting for OCR input</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Situation</span>
+              <span class="statusValue" id="situationValue">No live situation yet</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Status</span>
+              <span class="statusValue" id="statusValue">Ready</span>
             </div>
           </div>
-          <div class="modeButtonRow playcallingModeRow" id="playcallingModeGroup">
-            <button class="modeBtn is-active" type="button" data-mode="normal">Normal</button>
-            <button class="modeBtn" type="button" data-mode="two_minute">2 Minute Drill</button>
-            <button class="modeBtn" type="button" data-mode="kill_clock">Kill Clock</button>
-            <button class="modeBtn" type="button" data-mode="comeback">Comeback</button>
-            <button class="modeBtn" type="button" data-mode="blitz_beater">Blitz Beater</button>
-            <button class="modeBtn" type="button" data-mode="redzone">Redzone</button>
+
+          <div class="modeSection playcallingModeSection" id="playcallingModeSection">
+            <div class="modeSectionHead">
+              <div>
+                <div class="eyebrow">Playcalling Mode</div>
+                <div class="modeSummary" id="playcallingModeSummary">Normal mode keeps the standard adaptive coordinator logic active.</div>
+              </div>
+            </div>
+            <div class="modeButtonRow playcallingModeRow" id="playcallingModeGroup">
+              <button class="modeBtn is-active" type="button" data-mode="normal">Normal</button>
+              <button class="modeBtn" type="button" data-mode="two_minute">2 Minute Drill</button>
+              <button class="modeBtn" type="button" data-mode="kill_clock">Kill Clock</button>
+              <button class="modeBtn" type="button" data-mode="comeback">Comeback</button>
+              <button class="modeBtn" type="button" data-mode="blitz_beater">Blitz Beater</button>
+              <button class="modeBtn" type="button" data-mode="redzone">Redzone</button>
+            </div>
           </div>
         </div>
         </div>
