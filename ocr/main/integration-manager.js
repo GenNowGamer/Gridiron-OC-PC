@@ -1153,6 +1153,37 @@ class IntegrationOcrManager extends EventEmitter {
               };
             }
           }
+
+          // Disambiguation for identical play names across multiple formations (e.g. Tampa 2, Cover 6, Cover 2 Invert)
+          if (
+            match.match
+            && previousPlay
+            && defensive
+            && Array.isArray(match.alternatives)
+            && match.alternatives.length > 1
+          ) {
+            const matchedPlayName = clean(match.match.play_name || match.match.playName || match.match.name).toUpperCase();
+            const sameNameAlts = match.alternatives.filter(alt => {
+              const name = clean(alt.entry && (alt.entry.play_name || alt.entry.playName || alt.entry.name)).toUpperCase();
+              return name === matchedPlayName;
+            });
+            if (sameNameAlts.length > 1) {
+              const confirmedId = this.pendingSnap?.confirmedPlay?.id || this.lastCapturePriorPending?.confirmedPlay?.id;
+              const priorId = this.lastCapture?.fields?.previous_defense_play?.value?.id;
+              const preferredFormation = clean(context.defenseFormation || this.pendingSnap?.confirmedPlay?.formation).toUpperCase();
+              const preferredSet = clean(context.defenseSet || this.pendingSnap?.confirmedPlay?.set).toUpperCase();
+
+              const bestCandidate = sameNameAlts.find(alt => alt.entry.id === confirmedId)
+                || sameNameAlts.find(alt => alt.entry.id === priorId)
+                || sameNameAlts.find(alt => preferredFormation && clean(alt.entry.formation).toUpperCase() === preferredFormation
+                  && (!preferredSet || clean(alt.entry.set).toUpperCase() === preferredSet))
+                || sameNameAlts.find(alt => preferredFormation && clean(alt.entry.formation).toUpperCase() === preferredFormation);
+
+              if (bestCandidate) {
+                match.match = bestCandidate.entry;
+              }
+            }
+          }
           rejectedForRawDisagreement = Boolean(match.rejectedForRawDisagreement);
           if (match.match) {
             value = key === 'offense_formation'

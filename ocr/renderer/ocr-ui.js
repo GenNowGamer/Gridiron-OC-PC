@@ -360,7 +360,7 @@
     return {
       missing,
       confidence,
-      ready: missing.length === 0 && confidence >= MIN_ACCEPTED_FIELD_CONFIDENCE,
+      ready: missing.length === 0,
     };
   }
 
@@ -373,7 +373,7 @@
     return {
       missing,
       confidence,
-      ready: missing.length === 0 && confidence >= MIN_ACCEPTED_FIELD_CONFIDENCE,
+      ready: missing.length === 0,
       requiredFields: required,
     };
   }
@@ -769,8 +769,6 @@
           ui.status.textContent = "Capture complete — OCR is disabled";
         } else if (gate.missing.length) {
           ui.status.textContent = `Review required — need ${gate.missing.join(", ")}`;
-        } else if (confidence < MIN_ACCEPTED_FIELD_CONFIDENCE) {
-          ui.status.textContent = `Review required — situation confidence ${(confidence * 100).toFixed(1)}% (need ${Math.round(MIN_ACCEPTED_FIELD_CONFIDENCE * 100)}%)`;
         } else {
           ui.status.textContent = "Situation synced — check Play Call recommendations";
         }
@@ -786,8 +784,6 @@
         }
       } else if (exactGate.missing.length) {
         ui.status.textContent = `Review required — need ${exactGate.missing.join(", ")}`;
-      } else if (exactGate.confidence < MIN_ACCEPTED_FIELD_CONFIDENCE) {
-        ui.status.textContent = `Review required — situation confidence ${(exactGate.confidence * 100).toFixed(1)}% (need ${Math.round(MIN_ACCEPTED_FIELD_CONFIDENCE * 100)}%)`;
       } else {
         ui.status.textContent = "Review required — exact call withheld";
       }

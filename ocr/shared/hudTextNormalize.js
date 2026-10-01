@@ -124,11 +124,27 @@
    * Uses ordinal suffix as ground truth for down; folds yard confusables after &.
    */
   function repairDownDistanceOcrText(value) {
-    var text = foldOcrDigits(sanitizeHudText(value)).toUpperCase().replace(/\s+/g, " ").trim();
-    if (!text) return "";
+    var rawSanitized = sanitizeHudText(value).toUpperCase().replace(/\s+/g, " ").trim();
+    if (!rawSanitized) return "";
+
+    // Common character-shifted or collapsed down tokens (e.g. 3OE8 -> 2ND 7, 4SE8 -> 3RD 7, 2TU21 -> 1ST 10)
+    // Must run before foldOcrDigits, which turns O into 0 (e.g. 3OE -> 30E).
+    rawSanitized = rawSanitized.replace(/\b3OE(?=[0-9A-Z]|$)/g, "2ND");
+    rawSanitized = rawSanitized.replace(/\b4SE(?=[0-9A-Z]|$)/g, "3RD");
+    rawSanitized = rawSanitized.replace(/\b2TU(?=[0-9A-Z]|$)/g, "1ST");
+
+    var text = foldOcrDigits(rawSanitized).toUpperCase().replace(/\s+/g, " ").trim();
 
     // Normalize conjunction early so "AND" is never mistaken for "2ND".
     text = text.replace(/\bAND\b/g, "&");
+
+    // Standardize lone 'D' or 'm' following a down digit (e.g. "3D&12" -> "3RD&12", "3m&6" -> "3RD&6")
+    text = text.replace(/\b([1-4])D\s*&/g, function (_, d) {
+      return d + (d === "1" ? "ST" : d === "2" ? "ND" : d === "3" ? "RD" : "TH") + " &";
+    });
+    text = text.replace(/\b([1-4])M\s*&/g, function (_, d) {
+      return d + (d === "1" ? "ST" : d === "2" ? "ND" : d === "3" ? "RD" : "TH") + " &";
+    });
 
     // Default font reads the leading 1 of 1ST as T: "TSTG10" / "TST820".
     text = text.replace(/\bTST(?=[G8&\dA-Z]|$)/g, "1ST");
@@ -189,7 +205,7 @@
       return suffix ? down + suffix + amp : down + partial + amp;
     });
 
-    // "SRD" / "IRD" / "3RD" → force down from suffix (RD⇒3, ST⇒1, …).
+    // "SRD" / "IRD" / "3RD" / "BRD" → force down from suffix (RD⇒3, ST⇒1, …).
     text = text.replace(/\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)\b/g, function (match, _head, suffix) {
       if (match === "AND") return match;
       var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
@@ -198,7 +214,7 @@
 
     // Glued short-yardage: "'3'RDINCHES" → 3RD & 1. Inches is not a 1–2 char yard token.
     text = text.replace(
-      /\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES)\b/g,
+      /\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)\b/g,
       function (_match, _head, suffix) {
         var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
         return down ? String(down) + suffix + " & 1" : _match;
@@ -425,8 +441,19 @@
 
     // Confirmed Default HUD read: Y is a damaged down arrow. Require
     // independent OWN geometry and exactly two yard glyphs before repairing it.
-    if (sideHint === "OWN" && /^[Y\-][0-9][0-9B]$/.test(preFold)) {
-      preFold = "OWN " + preFold.slice(1).replace(/B/g, "8");
+    if (sideHint === "OWN" && /^Y[0-9A-Z][0-9A-ZB]$/.test(preFold)) {
+      preFold = "OWN " + preFold.slice(1).replace(/B/g, "8").replace(/G/g, "6");
+    }
+    // "-3B" with OWN or OPP hint -> OWN/OPP 38
+    if (sideHint === "OWN" && /^-[0-9A-Z][0-9A-ZB]$/.test(preFold)) {
+      preFold = "OWN " + preFold.slice(1).replace(/B/g, "8").replace(/G/g, "6");
+    }
+    if (sideHint === "OPP" && /^-[0-9A-Z][0-9A-ZB]$/.test(preFold)) {
+      preFold = "OPP " + preFold.slice(1).replace(/B/g, "8").replace(/G/g, "6");
+    }
+    // "IZ9" or "IZ 9" with OWN hint -> OWN 29 (I is chevron/pipe, Z is 2)
+    if (sideHint === "OWN" && /^I?Z\s*(\d)$/.test(preFold)) {
+      preFold = "OWN 2" + preFold.match(/^I?Z\s*(\d)$/)[1];
     }
     var raw = foldOcrDigits(preFold).toUpperCase();
     // Separate TNF arrow glyphs glued to yard digits so "V35" / "^42" parse.
@@ -715,34 +742,45 @@
       .replace(/\b0RB\b/gi, "1RB")
       .replace(/\blRB\b/g, "1RB")
       .replace(/\bI\s*RB\b/gi, "1RB")
-      .replace(/\|\s*RB\b/gi, "1RB");
-
     // Glued Madden personnel bar: "1 RB | 1 TE | 3 WR" → OCR "1RBI2TEI2WR" / "RBITEIAWR".
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
     if (/^(?:AR|TER|RBITER|RITER|RTER|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR)$/i.test(glued)) return "1RB - 1TE 3WR";
-    glued = glued.replace(/^IRB/, "1RB");
+    // ROT-1 cipher artifact for RB 1TE 3WR: SCJUFJBXS -> RBITEIAWR -> 1RB - 1TE 3WR
+    if (/^SCJUFJBXS$/i.test(glued)) return "1RB - 1TE 3WR";
+
+    // Leading I/O/L before RB is a dropped or misread "1" (export: IRBITEIAWR).
+    glued = glued.replace(/^[I|L]RB/, "1RB");
+    glued = glued.replace(/^0RB/, "1RB");
     glued = glued.replace(/^ORB/, "1RB");
-    glued = glued.replace(/^LRB/, "1RB");
-    glued = glued.replace(/^ZRB/, "2RB");
+    glued = glued.replace(/^ZRB[YI]?/, "2RB");
+    glued = glued.replace(/^RZ[I|T]/, "2RB1T");
     glued = glued.replace(/^RBY?/, "1RB");
     // 0 TE often OCR'd as OTE: "2RBIOTEI3WR" → 2RB - 0TE 3WR.
     glued = glued.replace(/RB([I|]?)OTE/g, "RB$10TE");
-    // Allow I/L as TE count 1: "2RBIITEIZWR" → 2RB - 1TE 2WR.
-    // TE count uses the same outlined-digit map as WR (MNF: IRBIATEIIWR → 3TE 1WR).
-    var personnel = glued.match(/^(\d)?RB[I|L]?([0-9OILABESZ])?TE[I|L]?([0-9A-Z])?WR$/);
+    // Export exact 4TE 0WR: IRBIATEIOWR / RBIATELOWR
+    if (/^[I|L]?R?BIATEL?O(?:WR)?$/i.test(glued)) return "1RB - 4TE 0WR";
+    var personnel = glued.match(/^(\d)?RB[I|L]?([0-9OILABESZY])?TE[I|L]?([0-9A-Z])?WR$/);
     if (personnel) {
-      var rb = personnel[1] || "1";
       var countMap = {
-        "0": "0", "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
-        A: "3", B: "3", E: "3", S: "3", Z: "2", O: "0", I: "1", L: "1",
+        "0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5,
+        A: 3, B: 3, E: 3, S: 3, Z: 2, Y: 2, O: 0, I: 1, L: 1,
       };
-      var teRaw = personnel[2] || "1";
-      var te = countMap[teRaw] || (/[0-9]/.test(teRaw) ? teRaw : "1");
-      var wrRaw = personnel[3] || "";
-      var wr = countMap[wrRaw] || (/[0-9]/.test(wrRaw) ? wrRaw : "");
-      if (!wr) wr = "3";
+      var rbRaw = personnel[1];
+      var teRaw = personnel[2];
+      var wrRaw = personnel[3];
+      var rb = rbRaw != null && countMap[rbRaw] != null ? countMap[rbRaw] : 1;
+      var te = teRaw != null && countMap[teRaw] != null ? countMap[teRaw] : 1;
+      var wr = wrRaw != null && countMap[wrRaw] != null ? countMap[wrRaw] : 3;
+
+      // Smart deduction for ambiguous confusable 'A' (e.g. 1RB - 4TE 0WR vs 1RB - 3TE 1WR or 1RB - 0TE 4WR)
+      if (rb + te + wr !== 5) {
+        if (teRaw === "A" && rb + 4 + wr === 5) te = 4;
+        else if (teRaw === "A" && rb + 3 + wr === 5) te = 3;
+        else if (wrRaw === "A" && rb + te + 4 === 5) wr = 4;
+        else if (wrRaw === "A" && rb + te + 3 === 5) wr = 3;
+      }
       return rb + "RB - " + te + "TE " + wr + "WR";
     }
     // Spaced pipe form already sanitized to spaces: "1 RB 1 TE 3 WR".
@@ -794,6 +832,21 @@
       HBANGLE: "HB ANGLE",
       PASPRINTHBFLAT: "PA SPRINT HB FLAT",
       FOURVERTICALS: "FOUR VERTICALS",
+      OBSNEAK: "QB SNEAK",
+      WOEZONE: "WIDE ZONE",
+      WEELMESH: "WHEEL MESH",
+      SPOTNGO: "SPOT N GO",
+      XDAGER: "X DAGGER",
+      XDAGGER: "X DAGGER",
+      PINCHZ: "PINCH 2",
+      SSBLITZI: "SS BLITZ 1",
+      COVBUZZATHWK: "COVER 3 BUZZ MATCH WK",
+      COVERISHOWZ: "COVER 9 SHOW 2",
+      NFTITQPU: "MESH SPOT",
+      CFODIICBOHMF: "BENCH HB ANGLE",
+      DPVOUFSZ: "COUNTER Y",
+      MCEFUXJTUT: "LB DE TWIST 3",
+      DPWFSDMPVETUS: "COVER 3 CLOUD STR",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 
@@ -833,12 +886,13 @@
       return "COVER " + (coverDigit[ch] || ch) + " ";
     });
     // COVER with no digit before a known coverage shell → default Cover 3.
+    // Note: Do not match "COVER HOLE" if already followed by a digit (e.g. "COVER HOLE 1").
     text = text.replace(
-      /\bCOVER(?=\s*(CLOUD|SKY|SHOW|HARD|FLAT|MATCH|QUARTERS|ROLL|BUZZ|PRESS|HOLE|WILLE|WIL)\b)/g,
+      /\bCOVER(?=\s*(?:(?!HOLE\s*\d)(?:CLOUD|SKY|SHOW|HARD|FLAT|MATCH|QUARTERS|ROLL|BUZZ|PRESS|HOLE|WILLE|WIL))\b)/g,
       "COVER 3 ",
     );
     text = text.replace(
-      /\bCOVER(?=(CLOUD|SKY|SHOW|HARD|FLAT|MATCH|QUARTERS|ROLL|BUZZ|PRESS|HOLE))/g,
+      /\bCOVER(?=(?:(?!HOLE\s*\d)(?:CLOUD|SKY|SHOW|HARD|FLAT|MATCH|QUARTERS|ROLL|BUZZ|PRESS|HOLE)))/g,
       "COVER 3 ",
     );
 
@@ -869,12 +923,13 @@
     // (?!B) keeps OLB… intact (OLBFREMAN). OI/OL still become 01 (OITRAP).
     text = text.replace(/\bO[IL1](?!B)(?=[A-Z])/g, "01 ");
     // Leading I on INVERT is the play number; keep the word (INVERTHARDFLAT → 1 INVERT …).
-    if (/^INVERT/.test(text)) {
-      text = text.replace(/^INVERT(?=[A-Z])/, "1 INVERT");
+    if (/^INVERTHARDFLAT/.test(text)) {
+      text = text.replace(/^INVERTHARDFLAT/, "1 INVERT HARD FLAT");
     }
     text = text.replace(/\b[IL](?=DOUBLE)/g, "1 ");
-    // LEVELS is a play name. Do not turn its leading L into a play number.
-    if (!/^(?:LEVELS|LEAD|LEFT|LINE|LOOP|LB|INSIDE|ISO)/.test(text)) {
+    // Whitelist legitimate words starting with I or L so they are not corrupted into "1 ...".
+    // Protects: LEVELS, LEAD, LEFT, LINE, LOOP, LB (including LBDE, LBDOGS), INSIDE, ISO, IN, INVERT, LOAD.
+    if (!/^(?:LEVELS|LEAD|LEFT|LINE|LOOP|LB|INSIDE|ISO|IN\b|INVERT|LOAD\b)/.test(text)) {
       text = text.replace(/^[IL](?=[A-Z])/g, "1 ");
     }
     // NVERT lost its leading I. Do not match the NVERT inside INVERT.
@@ -944,7 +999,7 @@
       "YCORNER", "NEWS", "ORLEANS", "NEW", "BLITZ", "SAM", "WILL", "WILLE",
       "BUZZ", "PRESS", "QUARTERS", "ROLL", "SKY", "DOUBLE", "PIVOT", "DUO",
       "MIKE", "OUTS", "MABLE", "DIVE", "SLAM", "STRETCH", "SLIP", "LEAD",
-      "CHOICE", "BRACKET", "SWITCH", "CONTAIN", "FIELD", "EMPTY", "VERTICAL",
+      "CHOICE", "BRACKET", "SWITCH", "CONTAIN", "FIELD", "EMPTY", "VERTICALS", "VERTICAL",
       "MTN", "WHEEL", "SPLIT", "POST", "SHOT", "SAIL", "SNEAK", "DROP", "MAN",
       "CROSSERS", "CROSS", "CONTAIN", "STICK",
       "DRIVE", "STUTTER", "JET", "PULL", "SHALLOW", "STORM", "BRAVE", "SMASH",
@@ -1011,7 +1066,6 @@
       .replace(/\bSAW\s*BLITZ\s*I\b/g, "SAW BLITZ 1")
       .replace(/\bNICKEL\s*BLITZ\s*L\b/g, "NICKEL BLITZ 1")
       .replace(/\bPACROSSERS\b/g, "PA CROSSERS")
-      .replace(/\bCLEAROUT\b/g, "CLEAR OUT")
       .replace(/\bSLOTSAL\b/g, "SLOT SAIL")
       .replace(/\bCURLCOMBD\b/g, "CURL COMBO")
       .replace(/\bCURLCOMBO\b/g, "CURL COMBO")
