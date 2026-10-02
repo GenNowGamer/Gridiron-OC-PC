@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.12-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.13-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -19,7 +19,7 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
   - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
   - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
   - [Computer Vision OCR Capture](#5-computer-vision-ocr-capture)
-  - [Game Management & Flow Controls](#6-game-management--flow-controls)
+  - [Game Management, Scoreboard & Layout Control](#6-game-management-scoreboard--layout-control)
   - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
   - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
 - [Operator's Field Manual (User Guide)](USER_GUIDE.md)
@@ -41,7 +41,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 2. **Context-Aware Strategy:** Understands down, distance, yard line, score differential, clock urgency, and opponent habits.
 3. **Dual-Sided Mastery:** Seamlessly switch between offensive playbook mastery and defensive package counters.
 4. **Adaptive Personal Learning:** Learns which concepts succeed or fail against specific looks across your games.
-5. **Zero Lag & Complete Privacy:** Runs 100% locally on your machine with offline Whisper speech recognition and local computer vision.
+5. **Zero Lag & Complete Privacy:** Runs 100% locally on your machine with on-device computer vision and offline OCR processing.
 
 ---
 
@@ -107,8 +107,17 @@ In competitive football gaming, calling plays under a running play clock can lea
    - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
    - **Auto Playcaller Option:** When enabled, automatically generates and surfaces coordinator play calls upon each successful OCR snap detection.
 
-### 6. Game Management & Flow Controls
+### 6. Game Management, Scoreboard & Layout Control
 
+- **Screen Layout Modes & Freeform Floating Cockpit:**
+  - **Vertical Split (Side by Side):** Compact side-by-side cockpit layout keeping the entire OC/DC interface visible simultaneously on 1080p+ viewports without vertical scrolling.
+  - **Horizontal Split (Top / Bottom):** Stacks coordinator game context above recommendations for narrow or vertical displays.
+  - **Freeform Floating Cockpit (Drag & Resize):**
+    - Individual panels (*Controls/Hero Header*, *Scoreboard*, *Game Context*, *Playcalling Mode*, and *Recommendations*) become fully movable floating modules.
+    - Click and drag any panel by its grip handle (`⠿`) to position it anywhere across the workspace.
+    - Drag the bottom-right corner resize handle to adjust panel dimensions with built-in minimum bounds.
+    - Custom coordinates (`left`, `top`, `width`, `height`, and `z-index`) automatically persist in local storage across app restarts.
+    - Includes a **"Reset Window Positions"** button in Settings to return all modules to clean default coordinates.
 - **Interactive Game Scoreboard & Automatic Scoring:**
   - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
   - Automatically factors score differential and remaining time into coordinator play-calling aggression and defensive shell eligibility.
