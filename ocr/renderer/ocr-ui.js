@@ -1255,10 +1255,10 @@
       if (value.play_name || value.playName) return text(value.play_name || value.playName);
       return text(value.label || [value.formation, value.set].filter(Boolean).join(" - ") || "");
     }
-    // Previous-play fields are optional: never prefill the editor with raw OCR junk
-    // when there is no accepted catalog value (opening-drive "--" / noise crops).
+    // Optional / formation fields: never prefill the editor with raw OCR junk
+    // when there is no accepted catalog/personnel value.
     if (
-      (key === "previous_offense_play" || key === "previous_defense_play")
+      (key === "previous_offense_play" || key === "previous_defense_play" || key === "offense_formation_personnel")
       && (value == null || value === "")
     ) {
       return "";

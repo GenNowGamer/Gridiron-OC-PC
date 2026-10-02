@@ -747,9 +747,19 @@
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
-    if (/^(?:AR|TER|RBITER|RITER|RTER|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR)$/i.test(glued)) return "1RB - 1TE 3WR";
+    if (/^(?:AR|TER|ITER|RBITER|RITER|RTER|RITEIR|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR)$/i.test(glued)) return "1RB - 1TE 3WR";
     // ROT-1 cipher artifact for RB 1TE 3WR: SCJUFJBXS -> RBITEIAWR -> 1RB - 1TE 3WR
     if (/^SCJUFJBXS$/i.test(glued)) return "1RB - 1TE 3WR";
+
+    // Madden HUD personnel structural matcher:
+    // When Madden renders "1 RB | 1 TE | 3 WR", OCR frequently blends vertical pipes '|'
+    // into 'I', drops letters (e.g. 'B' or 'W'), or reads digit '1' as 'I'/'L', or maps
+    // leading ornaments into 'R'/'RY'/'Y' and 'TE' into 'TITE'/'TE'.
+    // Structural pattern: optional leading RB/ornament fragment + TE/TITE fragment + trailing WR fragment.
+    // Examples: "RYTITEIWR", "ITEIR", "RITEIR", "ITER", "1TE3WR", "RBITEIR", "IRBITEIWR", "RBITER".
+    if (/^(?:[1IL0OY]?[RBYZ]{0,3})?I*T+I*T*E*I*(?:[1-53ABE8S]?[WR]+|[1-53ABE8S]?R)$/i.test(glued)) {
+      return "1RB - 1TE 3WR";
+    }
 
     // Leading I/O/L before RB is a dropped or misread "1" (export: IRBITEIAWR).
     // Note: In Madden HUDs, "0RB" is commonly OCR noise for "1RB" unless TE+WR add up to 5 (e.g. 0RB 1TE 4WR or 0RB 2TE 3WR).

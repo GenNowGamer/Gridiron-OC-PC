@@ -44,6 +44,10 @@ test('word repairs preserve intact ZERO, LOOP and LB names and unrelated unknown
   assert.equal(Hud.parseFieldPositionText("A'7'").label, 'OPP 1');
   assert.equal(Hud.parseFieldPositionText("-3B", { sideHint: 'OWN' }).label, 'OWN 38');
   assert.equal(Hud.repairPersonnelOcrConfusions("RBITER"), '1RB - 1TE 3WR');
+  assert.equal(Hud.repairPersonnelOcrConfusions("RYTITEIWR"), '1RB - 1TE 3WR');
+  assert.equal(Hud.repairPersonnelOcrConfusions("ITEIR"), '1RB - 1TE 3WR');
+  assert.equal(Hud.repairPersonnelOcrConfusions("RITEIR"), '1RB - 1TE 3WR');
+  assert.equal(Hud.repairPersonnelOcrConfusions("ITER"), '1RB - 1TE 3WR');
   assert.equal(Hud.repairPersonnelOcrConfusions("aR"), '1RB - 1TE 3WR');
   assert.equal(Hud.parseDownDistanceText("4&1").label, '4th & 1');
   assert.equal(Hud.parseDownDistanceText("2ND&2O").label, '2nd & 20');
