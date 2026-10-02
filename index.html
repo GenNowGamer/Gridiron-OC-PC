@@ -134,10 +134,7 @@
 
         <div id="opponentRadarBanner" class="opponentRadarBanner hidden" aria-live="polite"></div>
 
-        <div id="recommendationCard" class="recommendationCard empty">
-          <div class="recPlaceholderTitle">Speak a situation or capture with OCR</div>
-          <div class="recPlaceholderCopy">Tap &amp; Speak or OCR Capture sets the live spot, then ranks your offensive playbook.</div>
-        </div>
+        <div id="recommendationCard" class="recommendationCard hidden"></div>
 
         <div class="recommendationTools">
           <button class="secondaryBtn recommendationToggle hidden" id="recommendationToggleBtn" type="button">Next Play</button>
@@ -287,12 +284,7 @@
             <h2 class="panelTitle" id="dcRecPanelTitle">Package Call</h2>
           </div>
         </div>
-        <div id="dcRecommendationCard" class="recommendationCard empty">
-          <div class="recPlaceholderTitle">Speak a situation or capture with OCR</div>
-          <div class="recPlaceholderCopy">
-            Top plays appear here for Tap &amp; Speak and OCR — Package Call or Exact Calls.
-          </div>
-        </div>
+        <div id="dcRecommendationCard" class="recommendationCard hidden"></div>
       </section>
     </main>
   </div>
@@ -377,16 +369,6 @@
 
       <label class="settingsLabel" for="themeSelect">Theme</label>
       <select id="themeSelect" class="settingsSelect"></select>
-
-      <label class="settingsLabel" for="layoutSelect">Screen Layout</label>
-      <select id="layoutSelect" class="settingsSelect">
-        <option value="vertical">Vertical Split (Side by Side)</option>
-        <option value="horizontal">Horizontal Split (Top / Bottom)</option>
-        <option value="freeform">Freeform Floating Cockpit (Drag &amp; Resize)</option>
-      </select>
-      <div class="settingsActions" style="margin-top: 8px;">
-        <button class="ghostBtn" id="resetLayoutBtn" type="button" title="Reset all window positions and sizes to default">Reset Window Positions</button>
-      </div>
 
       <div class="settingsDivider"></div>
       <div class="ocrSettingsHead">

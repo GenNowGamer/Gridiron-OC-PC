@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.13-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.14-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -61,7 +61,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
   - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
   - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, and score/clock context.
-  - Instantly confirms the winning play, updating down/distance settlement, play cooldowns, and session metrics automatically upon OCR or voice capture.
+  - Instantly confirms the winning play, updating down/distance settlement, play cooldowns, and session metrics automatically upon OCR capture.
 - **Setup-to-Payoff Engine:** Tracks conceptual sequencing across drives (e.g., establishing inside zone to unlock explosive play-action bootlegs later in the series).
 - **Full-Playbook Exploration Engine:** 
   - **Slot 1 & Slot 2 Temperature Sampling:** Uses softmax exploration across near-tie optimal calls so high-variance primary calls and complementary counters rotate naturally.
@@ -104,20 +104,13 @@ In competitive football gaming, calling plays under a running play clock can lea
    - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
    - Automatically reads the on-screen scoreboard (down, distance, yard line, and upcoming offensive formation) without sending video data to external servers.
    - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
-   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`) and glued Madden play names (`ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
+   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`), corrupted HUD chrome (`CYAALB`, `CYAAALB`), and glued/damaged Madden play names (`SILVERSHOOTNCH`, `SAMMKELOOP`, `DTMKELOOPA`, `LBBLITZO`, `COVERIMBBLITZ`, `LDUBLEWRI`, `ZZZIN`, `MTNYCORNERUNER`, `NCKELSIMZ`, `NCKELZTRAP`, `ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
+   - **Manual Review for formation / personnel:** If the strip says review is required for `offense_formation_personnel`, open **Review**, correct the field, and choose **Accept Corrections**. Skill counts must add to 5 (`RB + TE + WR`). Empty backfield is valid (`0RB - 1TE 4WR`, `0RB - 2TE 3WR`). A typed `0RB` is kept in that case. `0RB` paired with TE + WR totaling 4 (for example `0RB 1TE 3WR`) is still treated as a misread `1RB`. The review row states this when the field is still rejected.
    - **Auto Playcaller Option:** When enabled, automatically generates and surfaces coordinator play calls upon each successful OCR snap detection.
 
-### 6. Game Management, Scoreboard & Layout Control
+### 6. Game Management, Scoreboard & Call Sheet
 
-- **Screen Layout Modes & Freeform Floating Cockpit:**
-  - **Vertical Split (Side by Side):** Compact side-by-side cockpit layout keeping the entire OC/DC interface visible simultaneously on 1080p+ viewports without vertical scrolling.
-  - **Horizontal Split (Top / Bottom):** Stacks coordinator game context above recommendations for narrow or vertical displays.
-  - **Freeform Floating Cockpit (Drag & Resize):**
-    - Individual panels (*Controls/Hero Header*, *Scoreboard*, *Game Context*, *Playcalling Mode*, and *Recommendations*) become fully movable floating modules.
-    - Click and drag any panel by its grip handle (`⠿`) to position it anywhere across the workspace.
-    - Drag the bottom-right corner resize handle to adjust panel dimensions with built-in minimum bounds.
-    - Custom coordinates (`left`, `top`, `width`, `height`, and `z-index`) automatically persist in local storage across app restarts.
-    - Includes a **"Reset Window Positions"** button in Settings to return all modules to clean default coordinates.
+- **Call Sheet Layout:** OC and DC share one fixed layout. Game context (scoreboard, situation, playcalling mode or offense showing) sits in a left rail. The play or package calls fill the rest of the window. There is no screen-layout picker and no draggable window positions.
 - **Interactive Game Scoreboard & Automatic Scoring:**
   - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
   - Automatically factors score differential and remaining time into coordinator play-calling aggression and defensive shell eligibility.
@@ -162,7 +155,8 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings (and optionally toggle **Auto Playcaller** on if you want automated, hands-free coordinator execution).
 5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly.
-6. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
+6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
+7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
 
 ---
 
@@ -255,8 +249,8 @@ node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance check
 Gridiron OC enforces strict local-only execution and repository hygiene practices:
 
 - **100% Local Execution & Zero Telemetry:**
-  - Speech-to-Text runs locally using bundled Whisper models.
   - OCR and computer vision run locally via on-device Tesseract and ONNX runtimes.
+  - Recommendation cores and coordinator logic execute entirely on-device with zero external network calls.
   - No prompt data, game telemetry, audio, or video streams are ever transmitted to external cloud servers.
 - **Repository Hygiene & Secret Isolation:**
   - Sensitive configurations (`.env`, `.env.*`), credentials (`credentials.json`), certificates (`*.jks`, `*.keystore`, `*.p12`), and private Electron `userData/` are strictly excluded via `.gitignore`.

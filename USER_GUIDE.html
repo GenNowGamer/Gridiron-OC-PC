@@ -457,21 +457,44 @@
       position: relative;
       width: 100%;
       background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
+      line-height: 0;
     }
 
     .shot-viewport img {
       width: 100%;
       height: auto;
       display: block;
-      object-fit: contain;
     }
 
-    /* Precision Target Reticle & Pointer System */
-    .pointer-pin {
+    /* Outlines share the screenshot's pixel space. Badges stay 16px. */
+    .shot-callouts {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .shot-callouts rect,
+    .shot-callouts line {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 2;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .shot-callouts .gold rect,
+    .shot-callouts .gold line { stroke: var(--gold); }
+
+    .shot-callouts .green rect,
+    .shot-callouts .green line { stroke: var(--green); }
+
+    .shot-callouts .red rect,
+    .shot-callouts .red line { stroke: var(--red); }
+
+    .callout-badge {
       position: absolute;
       transform: translate(-50%, -50%);
       display: flex;
@@ -485,22 +508,24 @@
       font-family: 'Chakra Petch', sans-serif;
       font-weight: 700;
       font-size: 6.6pt;
+      line-height: 1;
       box-shadow: 0 0 8px rgba(0, 210, 255, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
-      z-index: 10;
+      z-index: 3;
       border: 1px solid #fff;
+      pointer-events: none;
     }
 
-    .pointer-pin.gold {
+    .callout-badge.gold {
       background: var(--gold);
       box-shadow: 0 0 8px rgba(255, 183, 3, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
     }
 
-    .pointer-pin.green {
+    .callout-badge.green {
       background: var(--green);
       box-shadow: 0 0 8px rgba(0, 230, 118, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
     }
 
-    .pointer-pin.red {
+    .callout-badge.red {
       background: var(--red);
       color: #fff;
       box-shadow: 0 0 8px rgba(255, 51, 102, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
@@ -645,7 +670,7 @@
         <div class="pillar-card">
           <div class="pillar-num">PILLAR 01</div>
           <div class="pillar-title">ZERO-CLOUD ENGINE</div>
-          <div class="pillar-text">Runs 100% locally on your PC. Offline Whisper speech recognition and OpenCV frame analysis operate entirely on your hardware with zero telemetry leaks.</div>
+          <div class="pillar-text">Runs 100% locally on your PC. Offline OCR frame analysis and adaptive play-calling logic operate entirely on your hardware with zero telemetry leaks.</div>
         </div>
         <div class="pillar-card">
           <div class="pillar-num">PILLAR 02</div>
@@ -654,8 +679,8 @@
         </div>
         <div class="pillar-card">
           <div class="pillar-num">PILLAR 03</div>
-          <div class="pillar-title">DUAL-INGEST MODES</div>
-          <div class="pillar-text">Command plays hands-free via natural conversational voice or tap your video stream for automated scoreboard HUD parsing.</div>
+          <div class="pillar-title">AUTONOMOUS OCR INGEST</div>
+          <div class="pillar-text">Capture down, distance, field location, and offensive formation directly from the broadcast scoreboard HUD in a single hotkey press.</div>
         </div>
       </div>
     </div>
@@ -672,14 +697,14 @@
   <!-- ===================================================================== -->
   <div class="doc-page">
     <h2>1. HARDWARE & SYSTEM REQUIREMENTS</h2>
-    <p>Gridiron OC is optimized for real-time play-clock execution. All computer vision and speech recognition tasks run locally on your workstation:</p>
+    <p>Gridiron OC is optimized for real-time play-clock execution. All computer vision and recommendation engine tasks run locally on your workstation:</p>
 
     <table>
       <thead>
         <tr>
           <th>Component</th>
           <th>Minimum Spec</th>
-          <th>Recommended Spec (Real-Time Vision & Voice)</th>
+          <th>Recommended Spec (Real-Time Vision & OCR)</th>
         </tr>
       </thead>
       <tbody>
@@ -734,10 +759,16 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/matchup_broadcast_setup.png" alt="Matchup and Broadcast Setup Dialog" />
-        <div class="pointer-pin" style="top: 46.7%; left: 34.1%;">❶</div>
-        <div class="pointer-pin gold" style="top: 46.7%; left: 59.3%;">❷</div>
-        <div class="pointer-pin green" style="top: 68.4%; left: 28.0%;">❸</div>
-        <div class="pointer-pin red" style="top: 84.2%; left: 65.0%;">❹</div>
+        <svg class="shot-callouts" viewBox="0 0 1020 760" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="262" y="338" width="190" height="39" rx="8"/><line x1="262" y1="358" x2="246" y2="358"/></g>
+          <g class="gold"><rect x="539" y="338" width="191" height="39" rx="8"/><line x1="730" y1="358" x2="746" y2="358"/></g>
+          <g class="green"><rect x="235" y="437" width="522" height="59" rx="10"/><line x1="235" y1="466" x2="218" y2="466"/></g>
+          <g class="red"><rect x="628" y="525" width="140" height="62" rx="14"/><line x1="768" y1="556" x2="786" y2="556"/></g>
+        </svg>
+        <span class="callout-badge" style="left:24.12%;top:47.11%">❶</span>
+        <span class="callout-badge gold" style="left:73.14%;top:47.11%">❷</span>
+        <span class="callout-badge green" style="left:21.37%;top:61.32%">❸</span>
+        <span class="callout-badge red" style="left:77.06%;top:73.16%">❹</span>
       </div>
       <div class="callout-arrow-legend cols-4">
         <div class="legend-item">
@@ -787,17 +818,23 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/oc_playcall_ui.png" alt="OC Playcall Workspace Interface" />
-        <div class="pointer-pin" style="top: 12.7%; left: 48.5%;">❶</div>
-        <div class="pointer-pin gold" style="top: 17.9%; left: 43.7%;">❷</div>
-        <div class="pointer-pin green" style="top: 77.6%; left: 37.2%;">❸</div>
-        <div class="pointer-pin red" style="top: 31.0%; left: 63.5%;">❹</div>
+        <svg class="shot-callouts" viewBox="0 0 2470 1050" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="2261" y="128" width="82" height="39" rx="8"/><line x1="2343" y1="167" x2="2343" y2="179"/></g>
+          <g class="gold"><rect x="985" y="168" width="245" height="48" rx="8"/><line x1="985" y1="192" x2="969" y2="192"/></g>
+          <g class="green"><rect x="638" y="766" width="578" height="172" rx="12"/><line x1="1216" y1="794" x2="1232" y2="794"/></g>
+          <g class="red"><rect x="1297" y="292" width="1165" height="111" rx="12"/><line x1="2440" y1="292" x2="2440" y2="278"/></g>
+        </svg>
+        <span class="callout-badge" style="left:94.86%;top:17.05%">❶</span>
+        <span class="callout-badge gold" style="left:39.23%;top:18.29%">❷</span>
+        <span class="callout-badge green" style="left:49.88%;top:75.62%">❸</span>
+        <span class="callout-badge red" style="left:98.79%;top:26.48%">❹</span>
       </div>
       <div class="callout-arrow-legend cols-4">
         <div class="legend-item">
           <span class="legend-badge">❶</span>
           <div>
-            <span class="legend-label">Tap & Speak</span> <span class="arrow-indicator">➔</span>
-            <span>Vocal situation ingest trigger button.</span>
+            <span class="legend-label">OCR Capture</span> <span class="arrow-indicator">➔</span>
+            <span>Triggers live HUD situation ingest and play recommendations.</span>
           </div>
         </div>
         <div class="legend-item">
@@ -832,9 +869,14 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/oc_top_3_recommendations.png" alt="OC Top 3 Recommendations Cards Detail" />
-        <div class="pointer-pin" style="top: 29.5%; left: 93.5%;">❶</div>
-        <div class="pointer-pin gold" style="top: 57.5%; left: 93.5%;">❷</div>
-        <div class="pointer-pin green" style="top: 86.0%; left: 93.5%;">❸</div>
+        <svg class="shot-callouts" viewBox="0 0 870 870" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="6" y="172" width="849" height="224" rx="12"/><line x1="840" y1="172" x2="840" y2="158"/></g>
+          <g class="gold"><rect x="6" y="420" width="849" height="224" rx="12"/><line x1="840" y1="420" x2="840" y2="408"/></g>
+          <g class="green"><rect x="6" y="667" width="849" height="200" rx="12"/><line x1="840" y1="667" x2="840" y2="655"/></g>
+        </svg>
+        <span class="callout-badge" style="left:96.55%;top:18.16%">❶</span>
+        <span class="callout-badge gold" style="left:96.55%;top:46.90%">❷</span>
+        <span class="callout-badge green" style="left:96.55%;top:75.29%">❸</span>
       </div>
       <div class="callout-arrow-legend cols-3">
         <div class="legend-item">
@@ -877,10 +919,16 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/coordinator_style_picker.png" alt="Coordinator Style Picker Modal" />
-        <div class="pointer-pin" style="top: 47.9%; left: 29.6%;">❶</div>
-        <div class="pointer-pin gold" style="top: 47.9%; left: 70.4%;">❷</div>
-        <div class="pointer-pin green" style="top: 65.9%; left: 29.6%;">❸</div>
-        <div class="pointer-pin red" style="top: 84.5%; left: 70.4%;">❹</div>
+        <svg class="shot-callouts" viewBox="0 0 760 580" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="86" y="236" width="283" height="83" rx="8"/><line x1="86" y1="277" x2="72" y2="277"/></g>
+          <g class="gold"><rect x="379" y="236" width="284" height="83" rx="8"/><line x1="663" y1="277" x2="684" y2="277"/></g>
+          <g class="green"><rect x="86" y="329" width="283" height="84" rx="8"/><line x1="86" y1="371" x2="72" y2="371"/></g>
+          <g class="red"><rect x="379" y="423" width="284" height="83" rx="8"/><line x1="663" y1="464" x2="684" y2="464"/></g>
+        </svg>
+        <span class="callout-badge" style="left:9.47%;top:47.76%">❶</span>
+        <span class="callout-badge gold" style="left:90.00%;top:47.76%">❷</span>
+        <span class="callout-badge green" style="left:9.47%;top:63.97%">❸</span>
+        <span class="callout-badge red" style="left:90.00%;top:80.00%">❹</span>
       </div>
       <div class="callout-arrow-legend cols-4">
         <div class="legend-item">
@@ -924,8 +972,12 @@
         </div>
         <div class="shot-viewport">
           <img src="assets/screenshots/audible_picker.png" alt="Audible Picker Overlay" />
-          <div class="pointer-pin" style="top: 48.8%; left: 50.0%;">❶</div>
-          <div class="pointer-pin gold" style="top: 68.6%; left: 50.0%;">❷</div>
+          <svg class="shot-callouts" viewBox="0 0 1066 860" preserveAspectRatio="none" aria-hidden="true">
+            <g><rect x="323" y="324" width="459" height="62" rx="8"/><line x1="782" y1="355" x2="810" y2="355"/></g>
+            <g class="gold"><rect x="323" y="466" width="459" height="62" rx="8"/><line x1="782" y1="497" x2="810" y2="497"/></g>
+          </svg>
+          <span class="callout-badge" style="left:75.98%;top:41.28%">❶</span>
+          <span class="callout-badge gold" style="left:75.98%;top:57.79%">❷</span>
         </div>
         <div class="callout-arrow-legend">
           <div class="legend-item">
@@ -953,8 +1005,12 @@
         </div>
         <div class="shot-viewport">
           <img src="assets/screenshots/penalty_picker.png" alt="Penalty Picker Overlay" />
-          <div class="pointer-pin green" style="top: 52.4%; left: 50.0%;">❶</div>
-          <div class="pointer-pin red" style="top: 66.0%; left: 50.0%;">❷</div>
+          <svg class="shot-callouts" viewBox="0 0 817 735" preserveAspectRatio="none" aria-hidden="true">
+            <g class="green"><rect x="192" y="253" width="459" height="62" rx="8"/><line x1="651" y1="284" x2="678" y2="284"/></g>
+            <g class="red"><rect x="192" y="324" width="459" height="62" rx="8"/><line x1="651" y1="355" x2="678" y2="355"/></g>
+          </svg>
+          <span class="callout-badge green" style="left:82.99%;top:38.64%">❶</span>
+          <span class="callout-badge red" style="left:82.99%;top:48.30%">❷</span>
         </div>
         <div class="callout-arrow-legend">
           <div class="legend-item">
@@ -991,17 +1047,23 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/dc_playcall_ui.png" alt="DC Playcall Interface" />
-        <div class="pointer-pin" style="top: 13.0%; left: 48.6%;">❶</div>
-        <div class="pointer-pin gold" style="top: 18.3%; left: 43.6%;">❷</div>
-        <div class="pointer-pin green" style="top: 62.8%; left: 13.3%;">❸</div>
-        <div class="pointer-pin red" style="top: 31.0%; left: 63.5%;">❹</div>
+        <svg class="shot-callouts" viewBox="0 0 2490 1050" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="2281" y="132" width="82" height="39" rx="8"/><line x1="2363" y1="171" x2="2363" y2="183"/></g>
+          <g class="gold"><rect x="995" y="172" width="243" height="49" rx="8"/><line x1="995" y1="196" x2="979" y2="196"/></g>
+          <g class="green"><rect x="30" y="486" width="1196" height="436" rx="12"/><line x1="1226" y1="530" x2="1250" y2="530"/></g>
+          <g class="red"><rect x="1325" y="296" width="1141" height="111" rx="12"/><line x1="2450" y1="296" x2="2450" y2="282"/></g>
+        </svg>
+        <span class="callout-badge" style="left:94.90%;top:17.43%">❶</span>
+        <span class="callout-badge gold" style="left:39.32%;top:18.67%">❷</span>
+        <span class="callout-badge green" style="left:50.20%;top:50.48%">❸</span>
+        <span class="callout-badge red" style="left:98.39%;top:26.86%">❹</span>
       </div>
       <div class="callout-arrow-legend cols-4">
         <div class="legend-item">
           <span class="legend-badge">❶</span>
           <div>
-            <span class="legend-label">Tap & Speak</span> <span class="arrow-indicator">➔</span>
-            <span>Vocal DC situation ingest (e.g. "3rd & 8 on Opp 45").</span>
+            <span class="legend-label">OCR Capture</span> <span class="arrow-indicator">➔</span>
+            <span>Triggers live HUD situation ingest and defensive calls.</span>
           </div>
         </div>
         <div class="legend-item">
@@ -1054,8 +1116,12 @@
         </div>
         <div class="shot-viewport">
           <img src="assets/screenshots/oc_gamestate_options.png" alt="OC Game State Options Modal" />
-          <div class="pointer-pin" style="top: 44.3%; left: 26.8%;">❶</div>
-          <div class="pointer-pin gold" style="top: 51.9%; left: 73.7%;">❷</div>
+          <svg class="shot-callouts" viewBox="0 0 1272 712" preserveAspectRatio="none" aria-hidden="true">
+            <g><rect x="50" y="295" width="583" height="41" rx="8"/><line x1="80" y1="295" x2="80" y2="286"/></g>
+            <g class="gold"><rect x="646" y="349" width="582" height="41" rx="8"/><line x1="1228" y1="370" x2="1240" y2="370"/></g>
+          </svg>
+          <span class="callout-badge" style="left:6.29%;top:40.17%">❶</span>
+          <span class="callout-badge gold" style="left:97.48%;top:51.97%">❷</span>
         </div>
         <div class="callout-arrow-legend">
           <div class="legend-item">
@@ -1083,8 +1149,12 @@
         </div>
         <div class="shot-viewport">
           <img src="assets/screenshots/dc_gamestate_options.png" alt="DC Game State Options Modal" />
-          <div class="pointer-pin green" style="top: 56.7%; left: 73.0%;">❶</div>
-          <div class="pointer-pin red" style="top: 85.6%; left: 73.0%;">❷</div>
+          <svg class="shot-callouts" viewBox="0 0 1280 560" preserveAspectRatio="none" aria-hidden="true">
+            <g class="green"><rect x="644" y="297" width="582" height="41" rx="8"/><line x1="1226" y1="318" x2="1240" y2="318"/></g>
+            <g class="red"><rect x="643" y="459" width="584" height="41" rx="8"/><line x1="1227" y1="480" x2="1240" y2="480"/></g>
+          </svg>
+          <span class="callout-badge green" style="left:96.88%;top:56.79%">❶</span>
+          <span class="callout-badge red" style="left:96.88%;top:85.71%">❷</span>
         </div>
         <div class="callout-arrow-legend">
           <div class="legend-item">
@@ -1113,9 +1183,14 @@
       </div>
       <div class="shot-viewport">
         <img src="assets/screenshots/cropped/touchdown_overlay_picker.png" alt="Touchdown PAT Overlay Modal" />
-        <div class="pointer-pin" style="top: 54.4%; left: 51.3%;">❶</div>
-        <div class="pointer-pin gold" style="top: 66.0%; left: 51.3%;">❷</div>
-        <div class="pointer-pin red" style="top: 77.6%; left: 51.3%;">❸</div>
+        <svg class="shot-callouts" viewBox="0 0 850 645" preserveAspectRatio="none" aria-hidden="true">
+          <g><rect x="267" y="319" width="337" height="63" rx="8"/><line x1="604" y1="351" x2="640" y2="351"/></g>
+          <g class="gold"><rect x="267" y="393" width="337" height="63" rx="8"/><line x1="604" y1="425" x2="640" y2="425"/></g>
+          <g class="red"><rect x="267" y="467" width="337" height="63" rx="8"/><line x1="604" y1="499" x2="640" y2="499"/></g>
+        </svg>
+        <span class="callout-badge" style="left:75.29%;top:54.42%">❶</span>
+        <span class="callout-badge gold" style="left:75.29%;top:65.89%">❷</span>
+        <span class="callout-badge red" style="left:75.29%;top:77.36%">❸</span>
       </div>
       <div class="callout-arrow-legend cols-3">
         <div class="legend-item">
@@ -1148,44 +1223,17 @@
   <!-- ===================================================================== -->
   <div class="doc-page">
     <h2>7. LIVE INGEST WORKFLOWS: STEP-BY-STEP FIELD GUIDE</h2>
-    <p>Gridiron OC provides two rapid situational input workflows tailored for intense gameplay:</p>
+    <p>Gridiron OC provides rapid situational input workflows tailored for intense gameplay:</p>
 
     <div class="two-col">
       <div>
-        <h3>WORKFLOW ALPHA: Hands-Free Voice (Recommended)</h3>
-        <div class="flow-steps">
-          <div class="flow-step">
-            <div class="step-num">A</div>
-            <div class="step-content">
-              <div class="step-title">Hold Push-to-Talk (<kbd>Space</kbd>)</div>
-              <div class="step-desc">Activate Whisper speech parser right as the tackle whistle blows.</div>
-            </div>
-          </div>
-          <div class="flow-step">
-            <div class="step-num">B</div>
-            <div class="step-content">
-              <div class="step-title">Speak Situation Clearly</div>
-              <div class="step-desc">Natural football syntax: <em>"3rd and 6 on opponent 34"</em> or <em>"1st and 10 on my own 25"</em>.</div>
-            </div>
-          </div>
-          <div class="flow-step">
-            <div class="step-num">C</div>
-            <div class="step-content">
-              <div class="step-title">Confirm Call & Log Coverage</div>
-              <div class="step-desc">Confirm call (<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>), and tap observed defensive shell (<kbd>C3</kbd>, <kbd>C2</kbd>, <kbd>Blitz</kbd>).</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3>WORKFLOW BRAVO: Autonomous Video OCR</h3>
+        <h3>WORKFLOW 1: Autonomous Video OCR</h3>
         <div class="flow-steps">
           <div class="flow-step">
             <div class="step-num">1</div>
             <div class="step-content">
               <div class="step-title">Burst Capture (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>)</div>
-              <div class="step-desc">Trigger frame capture when scoreboard reveals down and formation.</div>
+              <div class="step-desc">Trigger frame capture when scoreboard reveals down, distance, and formation.</div>
             </div>
           </div>
           <div class="flow-step">
@@ -1198,8 +1246,42 @@
           <div class="flow-step">
             <div class="step-num">3</div>
             <div class="step-content">
-              <div class="step-title">Instant Exact Call Execution</div>
-              <div class="step-desc">Top 3 Exact Calls surface immediately in the coordinator slate.</div>
+              <div class="step-title">Review when a field is withheld</div>
+              <div class="step-desc">If the strip says review is required, correct the field and accept. Formation / personnel must be a formation name or five skill players (for example 1RB - 1TE 3WR or empty-backfield 0RB - 1TE 4WR).</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Instant Play / Package Delivery</div>
+              <div class="step-desc">Top 3 recommendations surface in the coordinator call sheet once the required fields are accepted.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>WORKFLOW 2: Execution & Learning</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-num">A</div>
+            <div class="step-content">
+              <div class="step-title">Confirm Play (<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>)</div>
+              <div class="step-desc">Click or hotkey to confirm play call; Auto Playcaller confirms automatically if enabled.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">B</div>
+            <div class="step-content">
+              <div class="step-title">Audible / Flag Protection</div>
+              <div class="step-desc">Log Madden flags (<kbd>Ctrl</kbd>+<kbd>P</kbd>) or line audibles (<kbd>Ctrl</kbd>+<kbd>A</kbd>) to preserve learning integrity.</div>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">C</div>
+            <div class="step-content">
+              <div class="step-title">Log Coverage & Tendencies</div>
+              <div class="step-desc">Tap observed defensive coverage shells to train adaptive counter algorithms.</div>
             </div>
           </div>
         </div>
@@ -1288,11 +1370,6 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td><strong>Push-to-Talk</strong></td>
-          <td><kbd>Space</kbd> (Hold)</td>
-          <td>Records voice telemetry for real-time Whisper parsing.</td>
-        </tr>
         <tr>
           <td><strong>OCR Burst Capture</strong></td>
           <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></td>

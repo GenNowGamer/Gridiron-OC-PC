@@ -1269,12 +1269,17 @@
   function renderReviewFields() {
     if (!ui.reviewFields) return;
     const fields = fieldMapOf(local.latestCapture);
+    const hud = window.GridironOcrHudTextNormalize;
     ui.reviewFields.innerHTML = Object.entries(fields).map(([key, field]) => {
       const matched = fieldDisplayValue(field, key);
       const raw = text(field?.rawText || "");
       const showRaw = raw && matched && raw.toUpperCase() !== matched.toUpperCase();
       const showRawOnly = raw && !matched;
-      return `<label class="ocrReviewRow"><strong>${escapeHtml(key)}</strong><input class="settingsSelect settingsInput" data-review-field="${escapeHtml(key)}" value="${escapeHtml(matched)}" /><span>${field?.accepted ? "Accepted" : "Correction required"}</span>${showRaw ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}${field?.matchedLabel ? ` → matched: ${escapeHtml(field.matchedLabel)}` : ""}</span>` : (showRawOnly ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}</span>` : "")}</label>`;
+      let hint = "";
+      if (!field?.accepted && key === "offense_formation_personnel") {
+        hint = `<span class="settingsNote" style="color:#fca5a5;">Counts must total 5 skill players (e.g. 0RB - 1TE 4WR or 1RB - 1TE 3WR) or enter formation name (e.g. Gun - Empty).</span>`;
+      }
+      return `<label class="ocrReviewRow"><strong>${escapeHtml(key)}</strong><input class="settingsSelect settingsInput" data-review-field="${escapeHtml(key)}" value="${escapeHtml(matched)}" /><span style="${field?.accepted ? "" : "color:#fca5a5;"}">${field?.accepted ? "Accepted" : "Correction required"}</span>${hint}${showRaw ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}${field?.matchedLabel ? ` → matched: ${escapeHtml(field.matchedLabel)}` : ""}</span>` : (showRawOnly ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}</span>` : "")}</label>`;
     }).join("") || "<div class=\"settingsNote\">No capture fields available.</div>";
   }
 

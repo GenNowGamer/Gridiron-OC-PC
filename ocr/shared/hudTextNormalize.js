@@ -655,7 +655,7 @@
     var text = sanitizeHudText(value).replace(/\s+/g, " ").trim();
     if (!text) return true;
     // Verified empty drive-opening crop; leave other unknown names reviewable.
-    if (/^(?:CYAALB|CWB|CYALWBL|CALLW)$/i.test(text)) return true;
+    if (/^(?:CYAALB|CYAAALB|CWB|CYALWBL|CALLW)$/i.test(text)) return true;
     // Pure digit soup from empty-slot chrome ("900", "11") is not a play name.
     if (/^\d{2,}$/.test(text.replace(/\s+/g, ""))) return true;
     var letters = (text.match(/[A-Za-z]/g) || []).length;
@@ -736,12 +736,13 @@
 
   function repairPersonnelOcrConfusions(text) {
     var cleaned = clean(text)
-      // DEN/GB storm: "1RB" OCR'd as "LRB" / "ORB" / "0RB" / "lRB" / "I RB" / "|RB".
+      // Standardize pipe delimiters before other replacements
+      .replace(/[|\/\\]+/g, " ")
+      // Explicit 0RB / 0 TE / 0 WR or O-substitutions: preserve 0RB when written as 0RB or 0 RB
+      // Only fix misread "1RB" when raw OCR is confused (LRB, ORB, lRB, I RB)
       .replace(/\bLRB\b/gi, "1RB")
-      .replace(/\bORB\b/gi, "1RB")
-      .replace(/\b0RB\b/gi, "1RB")
       .replace(/\blRB\b/g, "1RB")
-      .replace(/\bI\s*RB\b/gi, "1RB")
+      .replace(/\bI\s*RB\b/gi, "1RB");
     // Glued Madden personnel bar: "1 RB | 1 TE | 3 WR" → OCR "1RBI2TEI2WR" / "RBITEIAWR".
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
@@ -751,8 +752,8 @@
     if (/^SCJUFJBXS$/i.test(glued)) return "1RB - 1TE 3WR";
 
     // Leading I/O/L before RB is a dropped or misread "1" (export: IRBITEIAWR).
+    // Note: In Madden HUDs, "0RB" is commonly OCR noise for "1RB" unless TE+WR add up to 5 (e.g. 0RB 1TE 4WR or 0RB 2TE 3WR).
     glued = glued.replace(/^[I|L]RB/, "1RB");
-    glued = glued.replace(/^0RB/, "1RB");
     glued = glued.replace(/^ORB/, "1RB");
     glued = glued.replace(/^ZRB[YI]?/, "2RB");
     glued = glued.replace(/^RZ[I|T]/, "2RB1T");
@@ -774,7 +775,11 @@
       var te = teRaw != null && countMap[teRaw] != null ? countMap[teRaw] : 1;
       var wr = wrRaw != null && countMap[wrRaw] != null ? countMap[wrRaw] : 3;
 
-      // Smart deduction for ambiguous confusable 'A' (e.g. 1RB - 4TE 0WR vs 1RB - 3TE 1WR or 1RB - 0TE 4WR)
+      // Smart deduction for ambiguous confusable 'A' or 0RB misreads:
+      // If rb is 0 but te + wr = 4 (e.g. 0RB 1TE 3WR), 0 was a misread for 1!
+      if (rb === 0 && te + wr === 4) {
+        rb = 1;
+      }
       if (rb + te + wr !== 5) {
         if (teRaw === "A" && rb + 4 + wr === 5) te = 4;
         else if (teRaw === "A" && rb + 3 + wr === 5) te = 3;
@@ -783,7 +788,7 @@
       }
       return rb + "RB - " + te + "TE " + wr + "WR";
     }
-    // Spaced pipe form already sanitized to spaces: "1 RB 1 TE 3 WR".
+    // Spaced pipe form already sanitized to spaces: "1 RB 1 TE 3 WR" or "0 RB 1 TE 4 WR".
     var spaced = cleaned.toUpperCase().match(/^(\d)\s*RB\s+(\d)\s*TE\s+(\d)\s*WR$/);
     if (spaced) {
       return spaced[1] + "RB - " + spaced[2] + "TE " + spaced[3] + "WR";
@@ -847,6 +852,16 @@
       DPVOUFSZ: "COUNTER Y",
       MCEFUXJTUT: "LB DE TWIST 3",
       DPWFSDMPVETUS: "COVER 3 CLOUD STR",
+      NCKELSIMZ: "NICKEL SIM 2",
+      NCKELZTRAP: "NICKEL 2 TRAP",
+      SILVERSHOOTNCH: "SILVER SHOOT PINCH",
+      SAMMKELOOP: "SAM MIKE LOOP 3",
+      DTMKELOOPA: "DT MIKE LOOP 3",
+      LBBLITZO: "LB BLITZ 0",
+      COVERIMBBLITZ: "COVER 1 LB BLITZ",
+      LDUBLEWRI: "1 DOUBLE WR2",
+      ZZZIN: "22 Z IN",
+      MTNYCORNERUNER: "MTN Y CORNER UNDER",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 
@@ -1086,7 +1101,33 @@
   }
 
   function parseFormationPersonnelText(value) {
-    var packageOnly = clean(value).replace(/\s+/g, " ");
+    // If the input is solely personnel (e.g. "0RB | 1TE | 4WR" or "1RB - 1TE 3WR" without a formation),
+    // sanitizeHudText turns pipes into spaces. If it's pure personnel, normalize it directly.
+    var trimmed = clean(value);
+    if (!/[-–—]/.test(trimmed) || /^(?:\d+RB|\d+\s*RB)\s*[-–—|]\s*(?:\d+TE|\d+\s*TE)/i.test(trimmed)) {
+      var directPersonnel = repairPersonnelOcrConfusions(trimmed);
+      var directMatch = directPersonnel.match(/^(\d+)\s*RB\s*-\s*(\d+)\s*TE\s+(\d+)\s*WR$/i);
+      if (directMatch) {
+        return {
+          formation: directMatch[1] + "RB",
+          set: directMatch[2] + "TE " + directMatch[3] + "WR",
+          personnel: directPersonnel,
+          label: directPersonnel,
+        };
+      }
+    }
+
+    // Pre-extract trailing personnel (e.g. "Gun - Flex Trey ORB|1TE|4WR" or "... 0RB | 1TE | 3WR")
+    // before delimiter splitting so formation & set remain clean.
+    var prePersonnel = null;
+    var personnelTailMatch = trimmed.match(/\s+([0-9OILA|/\\]*\s*RB[\s\S]*)$/i);
+    var headText = trimmed;
+    if (personnelTailMatch && personnelTailMatch.index > 0) {
+      headText = trimmed.slice(0, personnelTailMatch.index).trim();
+      prePersonnel = repairPersonnelOcrConfusions(personnelTailMatch[1]);
+    }
+
+    var packageOnly = clean(trimmed).replace(/\s+/g, " ");
     // Whole-string special packages — do not split "Field Goal" into Field / Goal.
     if (/^(Field\s*Goal|FieldGoal|Kickoff|Punt)$/i.test(packageOnly)) {
       var packageName = packageOnly.replace(/\s+/g, " ").replace(/FieldGoal/i, "Field Goal");
@@ -1101,9 +1142,9 @@
       };
     }
 
-    var raw = repairPersonnelOcrConfusions(sanitizeHudText(value));
-    if (!raw) return { formation: "", set: "", personnel: "", label: "" };
-    var lines = String(value == null ? "" : value)
+    var raw = repairPersonnelOcrConfusions(sanitizeHudText(headText));
+    if (!raw) return { formation: "", set: "", personnel: prePersonnel || "", label: prePersonnel || "" };
+    var lines = String(headText == null ? "" : headText)
       .split(/\r?\n+/)
       .map(function (line) { return repairPersonnelOcrConfusions(sanitizeHudText(line)); })
       .filter(Boolean);
@@ -1115,11 +1156,19 @@
       return {
         formation: parts[0],
         set: parts[1],
-        personnel: parts.slice(2).join(" - "),
-        label: [parts[0], parts[1], parts.slice(2).join(" - ")].filter(Boolean).join(" - "),
+        personnel: prePersonnel || parts.slice(2).join(" - "),
+        label: [parts[0], parts[1], prePersonnel || parts.slice(2).join(" - ")].filter(Boolean).join(" - "),
       };
     }
     if (parts.length === 2) {
+      if (prePersonnel) {
+        return {
+          formation: parts[0],
+          set: parts[1],
+          personnel: prePersonnel,
+          label: [parts[0], parts[1], prePersonnel].filter(Boolean).join(" - "),
+        };
+      }
       // Madden often prints "Gun - Deuce Close 1 RB 2 TE 2 WR" in one line.
       var personnelTail = parts[1].match(/\b\d+\s*RB\b[\s\S]*$/i);
       if (personnelTail) {
@@ -1156,7 +1205,7 @@
       return {
         formation: repairedLine0,
         set: lines.slice(1, -1).join(" - ") || lines[1],
-        personnel: personnelOnly[0],
+        personnel: prePersonnel || personnelOnly[0],
         label: [repairedLine0].concat(lines.slice(1)).filter(Boolean).join(" - "),
       };
     }
@@ -1166,8 +1215,8 @@
     return {
       formation: formationToken,
       set: setTokens.join(" "),
-      personnel: "",
-      label: [formationToken, setTokens.join(" ")].filter(Boolean).join(" - "),
+      personnel: prePersonnel || "",
+      label: [formationToken, setTokens.join(" "), prePersonnel].filter(Boolean).join(" - "),
     };
   }
 
