@@ -12,24 +12,24 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 
 ## Table of Contents
 
-- [Core Purpose & Value Proposition](#core-purpose-value-proposition)
+- [Core Purpose & Value Proposition](#core-purpose--value-proposition)
 - [Key Features](#key-features)
   - [Offensive Coordinator (OC) Workspace](#1-offensive-coordinator-oc-workspace)
   - [Defensive Coordinator (DC) Workspace](#2-defensive-coordinator-dc-workspace)
-  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing-tactical-tendency-radar)
-  - [Halftime Review & Strategic Adjustments](#4-halftime-review-strategic-adjustments)
+  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
+  - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
   - [Computer Vision OCR Capture](#5-computer-vision-ocr-capture)
-  - [Game Management, Scoreboard & Call Sheet](#6-game-management-scoreboard-call-sheet)
-  - [Opponent Scouting & Tendencies](#7-opponent-scouting-tendencies)
+  - [Game Management, Scoreboard & Call Sheet](#6-game-management-scoreboard--call-sheet)
+  - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
   - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
 - [Operator's Field Manual (User Guide)](USER_GUIDE.html)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
   - [OCR Screen Capture Workflow](#ocr-screen-capture-workflow)
 - [System Architecture](#system-architecture)
-- [Installation & Setup](#installation-setup)
-- [Testing & Quality Verification](#testing-quality-verification)
-- [Security & Privacy Standards](#security-privacy-standards)
-- [License & Trademarks](#license-trademarks)
+- [Installation & Setup](#installation--setup)
+- [Testing & Quality Verification](#testing--quality-verification)
+- [Security & Privacy Standards](#security--privacy-standards)
+- [License & Trademarks](#license--trademarks)
 
 ---
 
