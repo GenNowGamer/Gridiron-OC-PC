@@ -175,8 +175,11 @@ test('audible and next spoken snap retain learning and confirmation flow', async
     if(!alternate)throw Error('no audible fixture'); applyAudiblePlay(alternate.id);`);
   const audible = a.run('state.pendingOutcome.playId');
   await a.run(`processTranscript('2nd and 5 on my own 30')`);
-  assert.equal(a.run('state.pendingOutcome'), null);
+  // The prior snap (audible) was settled and learned
   assert.equal(a.run('Object.keys(state.userLearning.global.plays)[0]'), audible);
+  // Auto Playcaller auto-confirms the top play for the new 2nd & 5 spot
+  assert.ok(a.run('state.pendingOutcome'));
+  assert.equal(a.run('state.pendingOutcome.down'), 2);
   assert.equal(a.run('state.presentedRecommendations.length'), 3);
 });
 
@@ -198,23 +201,12 @@ test('matchup setup modal updates team, opponent and presentation style', () => 
   assert.equal(a.run('state.selectedOpponent'), 'BUF');
 });
 
-test('auto playcaller toggle persists state and defaults to disabled', () => {
-  const a = app();
-  assert.equal(a.run('state.autoPlaycallerEnabled'), false);
-  a.run('setAutoPlaycallerEnabled(true)');
-  assert.equal(a.run('state.autoPlaycallerEnabled'), true);
-  assert.equal(a.run('buildPreferencesPayload().autoPlaycallerEnabled'), true);
-  a.run('applyPersistedPreferences({ autoPlaycallerEnabled: false })');
-  assert.equal(a.run('state.autoPlaycallerEnabled'), false);
-});
-
-test('auto playcaller evaluates and confirms best play when enabled upon OCR capture', () => {
+test('auto playcaller defaults to enabled and confirms best play upon OCR capture', () => {
   const a = app();
   a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
   a.run(`
     state.normalizedPlays = catalog.map(normalizeImportedPlay);
     state.selectedTeam = 'CHI';
-    state.autoPlaycallerEnabled = true;
     startCoordinatorSession('normal');
     applyOcrCaptureSituation({ down: 3, yards: 4, goalToGo: false, fieldPosition: { side: 'OPP', yardLine: 35 } });
   `);
@@ -245,6 +237,44 @@ test('sequential OCR captures settle pending snap, log previous defense, and fee
   assert.equal(a.run('state.coordinatorReport.scouting.items.length > 0'), true);
   assert.ok(a.run('state.sessionReport.confirms[0].outcome'));
 });
+test('pick 6 from OC keeps user on OC after resolving PAT attempt', () => {
+  const a = app();
+  a.run(`
+    state.coordinatorRole = COORDINATOR_ROLE_OC;
+    state.gameStarted = true;
+    applyDriveResultAndReset('pick_6');
+    resolvePatAttempt(1);
+  `);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  assert.equal(a.run('state.oppScore'), 7);
+});
 
+test('scoop and score from OC keeps user on OC after resolving PAT attempt', () => {
+  const a = app();
+  a.run(`
+    state.coordinatorRole = COORDINATOR_ROLE_OC;
+    state.gameStarted = true;
+    applyDriveResultAndReset('scoop_and_score');
+    resolvePatAttempt(0);
+  `);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  assert.equal(a.run('state.oppScore'), 6);
+});
 
+test('halftime adjustment confirmation advances to Q3 and clears recommendations without auto-generating new ones', () => {
+  const a = app();
+  a.run(`
+    state.gameStarted = true;
+    state.quarter = 2;
+    state.coordinatorRole = COORDINATOR_ROLE_OC;
+    state.hasActiveSituation = true;
+    state.presentedRecommendations = [{ play: { id: 'p1' } }, { play: { id: 'p2' } }, { play: { id: 'p3' } }];
+    confirmHalftimeStyle('aggressive');
+  `);
+  assert.equal(a.run('state.quarter'), 3);
+  assert.equal(a.run('state.gameCoordinatorProfile'), 'aggressive');
+  assert.equal(a.run('state.hasActiveSituation'), false);
+  assert.equal(a.run('state.presentedRecommendations.length'), 0);
+  assert.equal(a.run('state.presentedDcRecommendations.length'), 0);
+});
 

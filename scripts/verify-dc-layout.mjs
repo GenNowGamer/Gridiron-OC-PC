@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const html = readFileSync(path.join(root, "index.html"), "utf8");
 const dc = html.slice(
@@ -10,10 +12,8 @@ const dc = html.slice(
 const panelCount = dc.split('<section class="panel').length - 1;
 console.log("dc panels", panelCount);
 console.log(
-  "offense inside left column",
-  dc.includes("dcHeroPanel") &&
-    dc.indexOf("dcOffenseShowingPanel") > dc.indexOf("dcHeroPanel") &&
-    dc.indexOf("dcOffenseShowingPanel") < dc.indexOf("dcRecPanel")
+  "offense panel removed",
+  !dc.includes("dcOffenseShowingPanel")
 );
 console.log("ocRec", html.includes('id="ocRecPanel"'));
 console.log("sharedTrace", html.includes('id="sharedTraceSection"'));

@@ -239,26 +239,6 @@
             <div class="modeSummary halftimeHint">Opens style picker for a second-half lean, then sets the scoreboard to Q3. Does not start a new game. Available after New Game.</div>
           </div>
         </div>
-
-        <div class="modeSection hidden" id="dcOffenseShowingPanel">
-          <div class="modeSectionHead">
-            <div>
-              <div class="eyebrow">Offense Showing</div>
-              <div class="modeSummary" id="dcOffenseShowingHint">
-                Tag the opponent offense formation/set before you speak. Selection stays sticky and does not reshuffle the current top 3.
-              </div>
-            </div>
-          </div>
-          <div class="statusRow" style="margin-bottom:12px;">
-            <span class="statusLabel">Selected</span>
-            <span class="statusValue" id="dcOffenseShowingValue">Unknown</span>
-          </div>
-          <div class="dcOffenseFormationRow" id="dcOffenseFormationRow"></div>
-          <div class="dcOffenseSetPanel hidden" id="dcOffenseSetPanel">
-            <div class="dcOffenseSetTitle" id="dcOffenseSetTitle">Sets</div>
-            <div class="dcOffenseSetRow" id="dcOffenseSetRow"></div>
-          </div>
-        </div>
       </section>
 
       <section class="panel recPanel" id="dcRecPanel">
@@ -281,7 +261,7 @@
         <div class="panelHead">
           <div>
             <div class="eyebrow">Recommendations</div>
-            <h2 class="panelTitle" id="dcRecPanelTitle">Package Call</h2>
+            <h2 class="panelTitle" id="dcRecPanelTitle">Defensive Play Call</h2>
           </div>
         </div>
         <div id="dcRecommendationCard" class="recommendationCard hidden"></div>
@@ -374,32 +354,17 @@
       <div class="ocrSettingsHead">
         <div>
           <div class="eyebrow">Madden OCR</div>
-          <div class="toggleSub">Local capture for OC play calls and DC package / Exact Calls. All switches default off.</div>
+          <div class="toggleSub">Local capture for OC and DC play calls. All switches default off.</div>
         </div>
         <span class="ocrStatusPill" id="ocrWorkerPill">Checking</span>
       </div>
 
       <div class="toggleRow">
         <div>
-          <div class="toggleTitle">Auto Playcaller</div>
-          <div class="toggleSub">Automatically confirms the best recommendation on capture using payoff sequencing and opponent counter-matching.</div>
-        </div>
-        <button class="toggleBtn" id="autoPlaycallerToggleBtn" type="button" aria-pressed="false">Off</button>
-      </div>
-
-      <div class="toggleRow">
-        <div>
           <div class="toggleTitle">Enable OCR Capture</div>
-          <div class="toggleSub">Registers the hotkey. Works on OC (play calls) and DC (packages / Exact Calls).</div>
+          <div class="toggleSub">Registers the hotkey. Ingests live Madden situations to generate top-3 play calls for OC and DC.</div>
         </div>
         <button class="toggleBtn" id="ocrCaptureToggleBtn" type="button" aria-pressed="false">Off</button>
-      </div>
-      <div class="toggleRow">
-        <div>
-          <div class="toggleTitle">Enable Exact Calls</div>
-          <div class="toggleSub">DC only: shows exact defensive plays from accepted OCR context. OC uses the main Play Call sheet.</div>
-        </div>
-        <button class="toggleBtn" id="ocrExactToggleBtn" type="button" aria-pressed="false">Off</button>
       </div>
       <div class="toggleRow">
         <div>
@@ -592,14 +557,6 @@
             <span class="pillSub">Monday Night</span>
           </button>
         </div>
-      </div>
-
-      <div class="matchupToggleRow">
-        <div>
-          <div class="matchupToggleTitle">Auto Playcaller</div>
-          <div class="matchupToggleSub">Automatically selects the optimal play (prioritizing payoffs and opponent counters) on capture.</div>
-        </div>
-        <button class="toggleBtn" id="matchupAutoPlaycallerBtn" type="button" aria-pressed="false">Off</button>
       </div>
 
       <div class="matchupActions">

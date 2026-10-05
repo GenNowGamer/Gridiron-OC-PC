@@ -1052,11 +1052,22 @@ class IntegrationOcrManager extends EventEmitter {
           );
           const matchedSet = clean(setMatch.match && setMatch.match.set) || parsed.set;
           const catalogHit = Boolean(formationMatch.match || setMatch.match);
+          const labelParts = [];
+          if (matchedFormation) labelParts.push(matchedFormation);
+          if (matchedSet && !labelParts.includes(matchedSet)) labelParts.push(matchedSet);
+          if (parsed.personnel && !labelParts.includes(parsed.personnel)) {
+            const joinedCurrent = labelParts.join(' - ');
+            const normalizedJoined = joinedCurrent.replace(/\s+/g, '');
+            const normalizedPersonnel = parsed.personnel.replace(/\s+/g, '');
+            if (!joinedCurrent || (normalizedJoined !== normalizedPersonnel && !normalizedPersonnel.includes(normalizedJoined))) {
+              labelParts.push(parsed.personnel);
+            }
+          }
           value = {
             formation: matchedFormation,
             set: matchedSet,
             personnel: parsed.personnel,
-            label: [matchedFormation, matchedSet, parsed.personnel].filter(Boolean).join(' - ')
+            label: labelParts.filter(Boolean).join(' - ')
               || parsed.label
               || sanitized,
           };

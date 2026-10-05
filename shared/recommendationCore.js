@@ -125,8 +125,8 @@
     PA_MOTION_EXPLOSIVE: {
       label: "Play Action / Motion Explosive",
       type: { PA: 1.55, PASS: 0.85, RUN: 0.45 },
-      families: { boot: 1.15, flood: 0.95, leak: 0.95, shot: 0.8, inside_zone: 0.35, wide_zone: 0.45, duo_power: 0.25 },
-      concepts: { "play action": 0.95, post: 0.55, dagger: 0.55, seam: 0.55, "jet sweep": 0.45 },
+      families: { boot: 1.15, flood: 0.95, leak: 0.95, shot: 0.8, redzone_pass: 0.95, wheel: 0.75, jet: 0.7, inside_zone: 0.35, wide_zone: 0.45, duo_power: 0.25 },
+      concepts: { "play action": 0.95, post: 0.55, dagger: 0.55, seam: 0.55, "jet sweep": 0.55, wheel: 0.5, cross: 0.5 },
       tags: { underCenter: 0.75, motion: 1.05, bunch: 0.55, condensed: 0.55, vertical: 0.55, shotgun: 0.45, spread: 0.35 },
       situational: { earlyRun: 0.05, earlyPa: 1.15, earlyMotion: 0.85, longPass: 0.45 },
     },
@@ -1658,19 +1658,23 @@
       if (traits && traits.slowDeveloping) bonus -= 2.5;
       if (traits && traits.isPA) bonus -= 2.0;
     }
+    if (isTrueRedZoneGeography(params) && (fam === "redzone_pass" || (cleanText(play.play_name).toLowerCase().includes("redzone")))) {
+      bonus += 6.5;
+    }
     if (mode === "redzone") {
       const compressed = isCompressedShortFieldSpot(params);
       let redzoneLean = 0;
+      if (fam === "redzone_pass") redzoneLean += 3.5;
       if (compressed) {
         // Goal-line / high red (≤10): prioritize power, iso, RPO, spot/quick; soft-tax deep intermediates.
-        if (["duo_power", "iso", "snag_spot", "counter", "rpo", "quick_game", "curl_flat"].includes(fam)) redzoneLean += 2.2;
+        if (["duo_power", "iso", "snag_spot", "counter", "rpo", "quick_game", "curl_flat", "redzone_pass"].includes(fam)) redzoneLean += 2.2;
         if (play.type === "RPO" || fam === "rpo") redzoneLean += 1.2;
         if (fam === "man_beat") redzoneLean += 1.0;
         if (fam === "smash" || fam === "levels_dig") redzoneLean -= 0.8;
         if (fam === "shot" || fam === "verticals" || fam === "flood") redzoneLean -= 1.8;
       } else {
         // High red / open red (~11–20+) and unknown field: smash, spot, mesh, levels stay lethal.
-        if (["smash", "snag_spot", "man_beat", "levels_dig", "duo_power", "counter", "rpo"].includes(fam)) redzoneLean += 1.8;
+        if (["smash", "snag_spot", "man_beat", "levels_dig", "duo_power", "counter", "rpo", "redzone_pass"].includes(fam)) redzoneLean += 1.8;
         if (play.type === "RPO" || fam === "rpo") redzoneLean += 1.0;
         if (fam === "iso") redzoneLean += 0.8;
         if (fam === "shot" || fam === "verticals") redzoneLean -= 1.0;
@@ -1687,8 +1691,8 @@
 
     if (params.down === 1) {
       if (play.type === "RUN") bonus += 2.0;
-      if (play.type !== "RUN" && (fam === "boot" || fam === "flood")) bonus += 1.0;
-      if (play.type === "PA" || fam === "boot" || fam === "flood" || fam === "leak") bonus += 0.85;
+      if (play.type !== "RUN" && (fam === "boot" || fam === "flood" || fam === "shot" || fam === "wheel" || fam === "man_beat" || fam === "levels_dig" || fam === "redzone_pass")) bonus += 1.0;
+      if (play.type === "PA" || fam === "boot" || fam === "flood" || fam === "leak") bonus += 1.5;
     }
 
     if (isRiskyPlayActionSpotCore({

@@ -1,6 +1,6 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "private": true,
   "description": "Electron desktop build of Gridiron Play Advisor",
   "main": "main.js",

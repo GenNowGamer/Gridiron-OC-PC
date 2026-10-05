@@ -747,7 +747,7 @@
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
-    if (/^(?:AR|TER|ITER|RBITER|RITER|RTER|RITEIR|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR)$/i.test(glued)) return "1RB - 1TE 3WR";
+    if (/^(?:AR|TER|ITER|RBITER|RITER|RTER|RITEIR|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR|RBATEIWR)$/i.test(glued)) return "1RB - 1TE 3WR";
     // ROT-1 cipher artifact for RB 1TE 3WR: SCJUFJBXS -> RBITEIAWR -> 1RB - 1TE 3WR
     if (/^SCJUFJBXS$/i.test(glued)) return "1RB - 1TE 3WR";
 
@@ -1114,7 +1114,7 @@
     // If the input is solely personnel (e.g. "0RB | 1TE | 4WR" or "1RB - 1TE 3WR" without a formation),
     // sanitizeHudText turns pipes into spaces. If it's pure personnel, normalize it directly.
     var trimmed = clean(value);
-    if (!/[-–—]/.test(trimmed) || /^(?:\d+RB|\d+\s*RB)\s*[-–—|]\s*(?:\d+TE|\d+\s*TE)/i.test(trimmed)) {
+    if (!/[-–—]/.test(trimmed) || /^(?:\d*RB|\d*\s*RB)\s*[-–—|]\s*(?:\d*TE|\d*\s*TE)/i.test(trimmed)) {
       var directPersonnel = repairPersonnelOcrConfusions(trimmed);
       var directMatch = directPersonnel.match(/^(\d+)\s*RB\s*-\s*(\d+)\s*TE\s+(\d+)\s*WR$/i);
       if (directMatch) {

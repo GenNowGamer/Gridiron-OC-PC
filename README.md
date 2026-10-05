@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
-[![Version](https://img.shields.io/badge/Version-0.1.14-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.15-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -65,8 +65,9 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Setup-to-Payoff Engine:** Tracks conceptual sequencing across drives (e.g., establishing inside zone to unlock explosive play-action bootlegs later in the series).
 - **Full-Playbook Exploration Engine:** 
   - **Slot 1 & Slot 2 Temperature Sampling:** Uses softmax exploration across near-tie optimal calls so high-variance primary calls and complementary counters rotate naturally.
-  - **Slot 3 Fresh-Play Elasticity:** Periodically draws from unexposed plays across the entire playbook (`_sessionShowCount === 0`) to eliminate stagnant play selection and ensure over 84% of playbook concepts surface throughout full games.
-  - **Balanced Scheme Stacking:** Balances under-center and shotgun weights (such as `PA_MOTION_EXPLOSIVE`) so spread concepts and shotgun play-action seamlessly compete with early-down motion runs.
+  - **Slot 3 Fresh-Play Elasticity:** Periodically draws from unexposed plays across the entire playbook (`_sessionShowCount === 0`) using bounded softmax probability flooring (`Math.max((score - best) / temp, -4.5)`), guaranteeing that uncalled plays are never mathematically zeroed out and ensuring wide playbook exploration across full games.
+  - **Red Zone & Goal-to-Go Pass Prioritization:** Explicitly classifies specialized red zone passing concepts (`redzone_pass`) with dedicated situation scoring bonuses (+7.5 in red zone geography), elevating calls like `Redzone Scissors` and `Redzone HB Scissors` to top recommendations inside the 20-yard line and in goal-to-go spots.
+  - **Balanced Scheme Stacking & Play-Action Calibration:** Softens early-down schedule penalties on play-action (`gainFitScore` penalty factor softened to 0.45) and removes blanket pressure penalties on standard looks, allowing deep PA concepts, motion bootlegs, wheel concepts, and jet touch passes to surface naturally alongside interior ground schemes.
 
 
 ### 2. Defensive Coordinator (DC) Workspace
@@ -77,11 +78,11 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Strict Situation Gating:**
   - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs.
   - *Prevent Packages:* Restricted to Hail Mary situations or protect-the-lead late-game scenarios.
-- **Exact Calls vs. Package Calls:** Receive high-level package concepts or exact play calls matched directly to your current defensive playbook.
-- **Dynamic Package Member Rotation & Session Exposure:**
-  - **Session Play & Package Exposure Memory:** Retains game-long tracking of surfaced defensive calls and package keys across series, penalizing repetitive calls and ensuring balanced rotation.
-  - **Member Play Rotation:** Within each defensive package, candidate plays are dynamically scored and sorted by fewest session appearances, rotating through the entire playbook (achieving over 91% play surface rate in testing) rather than anchoring to the first static member.
-  - **Selection Engine Diversity Alignment:** Both Exact Calls and Package Calls leverage the shared composite selection engine (`selectDiversitySlate`) with temperature exploration and multi-batch repetition bans while strictly preserving situational sound rules.
+- **Standard Exact Calls:** Receive exact defensive play calls matched directly to your selected team's loaded defensive playbook.
+- **Dynamic Play Rotation & Session Exposure:**
+  - **Session Play Exposure Memory:** Retains game-long tracking of surfaced defensive calls across series, penalizing repetitive calls and ensuring balanced playbook rotation.
+  - **Play Rotation & Surface Depth:** Candidate plays are dynamically scored and sorted by fewest session appearances, rotating through the entire playbook rather than anchoring to repetitive calls.
+  - **Selection Engine Diversity Alignment:** Exact Calls leverage the shared composite selection engine (`selectDiversitySlate`) with temperature exploration and multi-batch repetition bans while strictly preserving situational sound rules.
 
 ### 3. Play Sequencing & Tactical Tendency Radar
 
@@ -111,7 +112,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 6. Game Management, Scoreboard & Call Sheet
 
-- **Call Sheet Layout:** OC and DC share one fixed layout. Game context (scoreboard, situation, playcalling mode or offense showing) sits in a left rail. The play or package calls fill the rest of the window. There is no screen-layout picker and no draggable window positions.
+- **Call Sheet Layout:** OC and DC share one fixed layout. Game context (scoreboard, situation, playcalling mode or offense showing) sits in a left rail. The play calls fill the rest of the window. There is no screen-layout picker and no draggable window positions.
 - **Interactive Game Scoreboard & Automatic Scoring:**
   - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
   - Automatically factors score differential and remaining time into coordinator play-calling aggression and defensive shell eligibility.
@@ -154,8 +155,8 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 1. On launch, select your broadcast presentation style right from the **Matchup & Broadcast Setup** modal (`Default`, `TNF`, `SNF`, `MNF`), or open **Calibrate capture** in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
-4. Enable **OCR Capture** in Settings (and optionally toggle **Auto Playcaller** on if you want automated, hands-free coordinator execution).
-5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly.
+4. Enable **OCR Capture** in Settings.
+5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
 6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
 7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
 

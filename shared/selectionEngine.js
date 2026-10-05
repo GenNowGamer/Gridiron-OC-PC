@@ -705,7 +705,8 @@
     const temp = Math.max(0.35, Number(temperature) || 2.35);
     const best = pool[0]._selectionScore;
     const weights = pool.map(function (item) {
-      return Math.exp((item._selectionScore - best) / temp);
+      const diff = Math.max((item._selectionScore - best) / temp, -4.5);
+      return Math.exp(diff);
     });
     let total = 0;
     for (let i = 0; i < weights.length; i += 1) total += Math.max(0, weights[i]);

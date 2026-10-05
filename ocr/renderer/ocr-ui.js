@@ -28,7 +28,7 @@
   const DC_SITUATION_REQUIRED_FIELDS = EXACT_CALL_REQUIRED_FIELDS;
   const DEFAULT_CONFIG = Object.freeze({
     enabled: false,
-    exactCallsEnabled: false,
+    exactCallsEnabled: true,
     learningEnabled: false,
     hotkey: "CommandOrControl+Shift+D",
     adapter: "capture-bridge",
@@ -61,6 +61,7 @@
     defensivePlays: [],
     latestExactRecommendations: [],
     exactCallState: null,
+    lastStatus: null,
     initialized: false,
   };
 
@@ -188,7 +189,7 @@
     return {
       ...DEFAULT_CONFIG,
       enabled: incoming.enabled === true,
-      exactCallsEnabled: incoming.exactCallsEnabled === true,
+      exactCallsEnabled: incoming.exactCallsEnabled !== false,
       learningEnabled: incoming.learningEnabled === true,
       hotkey: text(incoming.hotkey) || DEFAULT_CONFIG.hotkey,
       adapter: "capture-bridge",
@@ -214,7 +215,7 @@
 
   function renderSettings(status = {}) {
     updateToggle(ui.captureToggle, local.config.enabled);
-    updateToggle(ui.exactToggle, local.config.exactCallsEnabled);
+    if (ui.exactToggle) updateToggle(ui.exactToggle, local.config.exactCallsEnabled);
     updateToggle(ui.learningToggle, local.config.learningEnabled);
     updateToggle(ui.debugToggle, local.config.retainDebugFrames);
     if (ui.hotkeyInput) ui.hotkeyInput.value = local.config.hotkey;
@@ -289,21 +290,28 @@
   }
 
   function renderStrip(status = {}) {
+    if (status && (status.worker || status.engineWarm || status.engineReady != null || status.hotkey)) {
+      local.lastStatus = status;
+    }
+    const currentStatus = (status && (status.worker || status.engineWarm || status.engineReady != null))
+      ? status
+      : (local.lastStatus || status || {});
     const enabled = local.config.enabled;
-    const workerReady = status.worker?.ready || status.workerReady;
-    const engineReady = status.engineReady === true || Boolean(status.engineWarm?.engine);
+    const workerReady = currentStatus.worker?.ready || currentStatus.workerReady;
+    const engineReady = currentStatus.engineReady === true || Boolean(currentStatus.engineWarm?.engine);
     const ready = enabled && local.activeProfile && workerReady && engineReady;
-    const warming = enabled && local.activeProfile && workerReady && !engineReady && !status.engineWarmError;
+    const warming = enabled && local.activeProfile && workerReady && !engineReady && !currentStatus.engineWarmError;
     if (ui.strip) ui.strip.dataset.state = ready ? "ready" : (enabled ? "warning" : "disabled");
-    if (ui.captureBtn) ui.captureBtn.disabled = !ready;
+    // Ensure capture button is clickable whenever OCR capture is enabled and an active profile exists
+    if (ui.captureBtn) ui.captureBtn.disabled = !enabled || !local.activeProfile;
     if (ui.reviewBtn) ui.reviewBtn.disabled = !local.latestCapture;
     if (ui.status) {
       ui.status.textContent = ready
         ? `Ready — press ${local.config.hotkey}`
         : warming
           ? "Warming OCR engine…"
-          : status.engineWarmError
-            ? `OCR engine not ready — ${text(status.engineWarmError)}`
+          : currentStatus.engineWarmError
+            ? `OCR engine not ready — ${text(currentStatus.engineWarmError)}`
             : (enabled ? "Setup incomplete — open Settings" : "Disabled — enable capture in Settings");
     }
     if (!local.latestCapture && ui.context) {
@@ -542,7 +550,6 @@
   }
 
   function rankExactPlays(capture) {
-    if (!local.config.exactCallsEnabled) return [];
     if (isOcHostRole()) return [];
     const fields = fieldMapOf(capture);
     const scoreboard = scoreboardFromCapture(capture);
@@ -725,7 +732,7 @@
     if (!isOcHostRole() && fields.down_distance?.accepted && fields.field_position?.accepted) {
       ocrHost().beginOcrDefensiveSnap?.(situation);
     }
-    const exactAllowed = !isOcHostRole() && local.config.exactCallsEnabled && exactGate.ready;
+    const exactAllowed = !isOcHostRole() && exactGate.ready;
     const recommendations = exactAllowed ? rankExactPlays(capture) : [];
     const offenseShowing = offenseShowingOf(fields);
     const contextParts = [
@@ -774,14 +781,6 @@
         }
       } else if (top) {
         ui.status.textContent = `Exact call ready: ${playPath(top)} — see Recommendations`;
-      } else if (!local.config.exactCallsEnabled) {
-        if (gate.ready) {
-          ui.status.textContent = "Situation synced — check Package Call recommendations";
-        } else if (gate.missing.length) {
-          ui.status.textContent = `Review required — need ${gate.missing.join(", ")}`;
-        } else {
-          ui.status.textContent = "Capture complete — exact calls disabled";
-        }
       } else if (exactGate.missing.length) {
         ui.status.textContent = `Review required — need ${exactGate.missing.join(", ")}`;
       } else {
@@ -825,6 +824,7 @@
         renderPresentationSelect(local.activeProfile?.presentation || DEFAULT_PRESENTATION_STYLE);
       }
       renderSavedProfileSelect();
+      local.lastStatus = result;
       renderSettings(result || {});
       renderStrip(result || {});
     } catch (error) {
@@ -874,7 +874,7 @@
       if (ui.status) ui.status.textContent = `Capture failed: ${text(error?.message || error)}`;
       renderExactCallsCard([]);
     } finally {
-      if (ui.captureBtn) ui.captureBtn.disabled = !local.config.enabled;
+      if (ui.captureBtn) ui.captureBtn.disabled = !local.config.enabled || !local.activeProfile;
     }
   }
 
@@ -1534,6 +1534,21 @@
     }));
     ui.saveHotkeyBtn?.addEventListener("click", () => updateConfig({ hotkey: text(ui.hotkeyInput.value) }));
     ui.captureBtn?.addEventListener("click", triggerCapture);
+    window.addEventListener("keydown", (event) => {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || event.target?.isContentEditable) return;
+      const configuredKey = (local.config?.hotkey || "F8").trim().toUpperCase();
+      const pressedKey = (event.key || "").trim().toUpperCase();
+      const pressedCode = (event.code || "").trim().toUpperCase();
+      if (
+        pressedKey === configuredKey ||
+        pressedCode === configuredKey ||
+        (configuredKey === "F8" && (pressedKey === "F8" || pressedCode === "F8"))
+      ) {
+        event.preventDefault();
+        triggerCapture();
+      }
+    });
     ui.reviewBtn?.addEventListener("click", () => setOverlay(ui.reviewOverlay, true));
     ui.openCalibrationBtn?.addEventListener("click", () => { openCalibration(); });
     ui.presentationSelect?.addEventListener("change", () => {
@@ -1734,7 +1749,7 @@
       // Strip chrome only — do not sync Exact Calls back into the host (re-enters render).
       if (isOcHostRole()) local.latestExactRecommendations = [];
       renderExactCallsCard(local.latestExactRecommendations || [], exactCallState(), { syncHost: false });
-      renderStrip({});
+      renderStrip(local.lastStatus || {});
       syncTeamContext();
     },
     setPresentationStyle: async (style) => {
