@@ -1,6 +1,6 @@
 # Gridiron OC (PC)
 
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#system-requirements)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
 [![Version](https://img.shields.io/badge/Version-0.1.16-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -12,24 +12,24 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 
 ## Table of Contents
 
-- [Core Purpose & Value Proposition](#core-purpose--value-proposition)
+- [Core Purpose & Value Proposition](#core-purpose-value-proposition)
 - [Key Features](#key-features)
   - [Offensive Coordinator (OC) Workspace](#1-offensive-coordinator-oc-workspace)
   - [Defensive Coordinator (DC) Workspace](#2-defensive-coordinator-dc-workspace)
-  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
-  - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
+  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing-tactical-tendency-radar)
+  - [Halftime Review & Strategic Adjustments](#4-halftime-review-strategic-adjustments)
   - [Computer Vision OCR Capture](#5-computer-vision-ocr-capture)
-  - [Game Management, Scoreboard & Layout Control](#6-game-management-scoreboard--layout-control)
-  - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
+  - [Game Management, Scoreboard & Call Sheet](#6-game-management-scoreboard-call-sheet)
+  - [Opponent Scouting & Tendencies](#7-opponent-scouting-tendencies)
   - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
-- [Operator's Field Manual (User Guide)](USER_GUIDE.md)
+- [Operator's Field Manual (User Guide)](USER_GUIDE.html)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
-  - [OCR Screen Ingest Workflow](#ocr-screen-capture-workflow)
+  - [OCR Screen Capture Workflow](#ocr-screen-capture-workflow)
 - [System Architecture](#system-architecture)
-- [Installation & Setup](#installation--setup)
-- [Testing & Quality Verification](#testing--quality-verification)
-- [Security & Privacy Standards](#security--privacy-standards)
-- [License & Trademarks](#license--trademarks)
+- [Installation & Setup](#installation-setup)
+- [Testing & Quality Verification](#testing-quality-verification)
+- [Security & Privacy Standards](#security-privacy-standards)
+- [License & Trademarks](#license-trademarks)
 
 ---
 
@@ -156,7 +156,7 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings.
-5. In game, press the capture hotkey (`Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
+5. In game, press the capture hotkey (`F8` or `Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
 6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
 7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
 
