@@ -431,4 +431,100 @@ test('Zero persistence: resetting or changing teams clears custom script', () =>
   assert.equal(a.run('state.customScriptIndex'), 0);
 });
 
+test('autoFillScript generates a 15-play sequence using NFL setup-to-payoff architecture', () => {
+  const a = app();
+  // Provide a mini-playbook with inside runs, PA shots, screens, quick game, perimeter runs
+  a.run(`
+    state.selectedTeam = 'KC';
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'Inside Zone', family: 'Inside Zone', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'PA Zone Shot', family: 'Play Action', type: 'PA' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Wing', play_name: 'HB Duo', family: 'Duo', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Wing', play_name: 'PA Duo Deep', family: 'Play Action', type: 'PA' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Quick Slants', family: 'Quick Game', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Wide Zone', family: 'Outside Zone', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'HB Screen', family: 'Screen', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Empty', play_name: 'Mesh Rail', family: 'Mesh', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Trips', play_name: 'Counter Tre', family: 'Counter', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Heavy', play_name: 'Power O', family: 'Power', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Heavy', play_name: 'PA Power Pass', family: 'Play Action', type: 'PA' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Four Verticals', family: 'Four Verticals', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Stick Spacing', family: 'Stick', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Trips', play_name: 'Levels Concept', family: 'Levels', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Drive Concept', family: 'Drive', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'HB Stretch', family: 'Stretch', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Bootleg Cross', family: 'Boot', type: 'PA' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'Redzone Fade', family: 'Fade', type: 'PASS' })
+    ];
+    state.recentRunScripts = [];
+    autoFillScript();
+  `);
+  assert.equal(a.run('state.customScriptPlays.length'), 15);
+  assert.equal(a.run('state.customScriptActive'), true);
+
+  // Slot 1 should be a run (interior base)
+  const slot1 = a.run('state.normalizedPlays.find(p => p.id === state.customScriptPlays[0])');
+  assert.equal(slot1.type, 'RUN');
+
+  // Slot 5 should be a PA payoff
+  const slot5 = a.run('state.normalizedPlays.find(p => p.id === state.customScriptPlays[4])');
+  assert.equal(slot5.type, 'PA');
+});
+
+test('Two-game cooldown: excludes plays from the last 2 executed scripts, respects preview re-clicks', () => {
+  const a = app();
+  a.run(`
+    state.selectedTeam = 'SF';
+    // Create 18 distinct plays
+    state.normalizedPlays = [];
+    for (let i = 0; i < 20; i++) {
+      state.normalizedPlays.push(normalizeImportedPlay({
+        team: 'SF',
+        formation: 'Gun',
+        set: 'Set' + i,
+        play_name: 'Play ' + i,
+        family: i % 2 === 0 ? 'Inside Zone' : 'Quick Game',
+        type: i % 2 === 0 ? 'RUN' : 'PASS'
+      }));
+    }
+
+    // 1. Preview autofill does not log into recentRunScripts
+    state.recentRunScripts = [];
+    state.customScriptLoggedToHistory = false;
+    autoFillScript();
+  `);
+  assert.equal(a.run('state.recentRunScripts.length'), 0);
+
+  // 2. Simulate live play confirmation while script is active
+  a.run(`
+    state.confirmedPlayUsage = {
+      play: state.normalizedPlays.find(p => p.id === state.customScriptPlays[0]),
+      scriptMatch: true
+    };
+    commitConfirmedPlayUsage();
+  `);
+  assert.equal(a.run('state.recentRunScripts.length'), 1);
+  const script1Ids = a.run('state.recentRunScripts[0]');
+  assert.equal(script1Ids.length, 15);
+
+  // 3. Confirming another play in the same game does NOT duplicate the script in history
+  a.run(`
+    state.confirmedPlayUsage = {
+      play: state.normalizedPlays.find(p => p.id === state.customScriptPlays[1]),
+      scriptMatch: true
+    };
+    commitConfirmedPlayUsage();
+  `);
+  assert.equal(a.run('state.recentRunScripts.length'), 1);
+
+  // 4. Starting a new game resets the flag so a new script can be logged
+  a.run(`
+    confirmNewGame('normal');
+  `);
+  assert.equal(a.run('state.customScriptLoggedToHistory'), false);
+  // recentRunScripts persists across games
+  assert.equal(a.run('state.recentRunScripts.length'), 1);
+});
+
+
 

@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.16-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.17-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -60,10 +60,15 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Redzone:** Short-field spacing concepts (smash, snag, mesh, duo, power, and RPO).
 - **Opening 15 Script Builder ("Build A Script"):**
   - Assemble a custom 15-play opening script directly from your team's playbook before kickoff or during opening series.
+  - **Authentic NFL Setup-to-Payoff Architecture:** 1-click **Auto-Fill 15** sequences the opening script using true NFL game-planning logic:
+    - *Slots 1–4:* Establishing interior line of scrimmage (Inside Zone, Duo, Power) and rhythm passing (Quick Game) while stressing perimeter leverage.
+    - *Slot 5 & 10 (Play-Action Payoffs):* Automatically pairs high-percentage PA deep shots directly off the primary run family and personnel groupings established in preceding series.
+    - *Slots 6–15:* Methodical progression through misdirection constraints (Counter, Screen, Trap), intermediate chain movers (Mesh, Levels, Dig), perimeter stretching, deep explosive shots, money down answers, and red zone finishers.
+  - **Two-Game Script Cooldown:** Excludes plays from your last 2 live executed game scripts from appearing in Auto-Fill 15 to ensure varied game-to-game scripts, while permitting unlimited re-generation preview clicks without penalizing the pool. Includes automatic soft fallback so all 32 NFL teams always generate full 15-play scripts.
   - **Live Snap Injection:** When the script is active, Slot #1 of your recommendation slate features the next scheduled scripted call (`Script #1` through `Script #15`), while Slots #2 and #3 provide situational counters.
   - **Smart Situational Yield:** On extreme passing downs (e.g. 3rd/4th & 10+), if the scheduled scripted play is a run or RPO, the Auto Playcaller automatically yields priority to Slot #2's situational pass call without burning the scripted play.
   - **Zero Cross-Game Persistence:** Scripts are game-specific and team-tailored—clearing cleanly upon New Game or team changes without lingering across sessions.
-  - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15** for balanced run/pass balance.
+  - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15**.
 - **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
   - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
   - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, opening script priorities, and score/clock context.

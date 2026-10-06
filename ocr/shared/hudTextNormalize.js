@@ -173,8 +173,10 @@
     });
     // "3R087" — D read as 0 and "&" glued on, so there is no word boundary.
     text = text.replace(/\b([1-4])R[O0](?=[G8\d])/g, "3RD");
-    // Digit-soup ordinals: R→8, D→0 so "3RD" becomes "380" / "382".
-    text = text.replace(/\b([1-4])8[0O2]\b(?=\s*[&-]|\s*$)/g, "$1RD");
+    // Digit-soup ordinals: R→8, D→0/2 so "3RD" becomes "380" / "382" / "38D", often with leading crop artifact '1' / 'I' / '|' (e.g. "1380 & 2").
+    text = text.replace(/(?:^|\b|[1I|])([1-4])8[0O2D](?=[&-]|\s*[&-]|\s*$)/g, function (_match, down) {
+      return (ORDINAL_DOWN_BY_SUFFIX[({ "1": "ST", "2": "ND", "3": "RD", "4": "TH" })[down]] ? down + ({ "1": "ST", "2": "ND", "3": "RD", "4": "TH" })[down] : down + "RD");
+    });
     // "4TH"/"1ST" collapsing to "44"/"11" before &: keep only when followed by &.
     text = text.replace(/\b([14])\1\b(?=\s*[&-])/g, function (_match, down) {
       return down === "1" ? "1ST" : "4TH";

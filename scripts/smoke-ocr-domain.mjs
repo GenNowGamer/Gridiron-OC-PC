@@ -353,6 +353,18 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(soup380.down, 3);
   assert.equal(soup380.yardsToGo, 5);
 
+  const soupDef3rd = HudText.parseDownDistanceText("'1''3''8''0''&''2'");
+  assert.equal(soupDef3rd.ok, true);
+  assert.equal(soupDef3rd.down, 3);
+  assert.equal(soupDef3rd.yardsToGo, 2);
+  assert.equal(soupDef3rd.label, "3rd & 2");
+
+  const soupDef3rdTen = HudText.parseDownDistanceText("'1''3''8''0''&''1''0'");
+  assert.equal(soupDef3rdTen.ok, true);
+  assert.equal(soupDef3rdTen.down, 3);
+  assert.equal(soupDef3rdTen.yardsToGo, 10);
+  assert.equal(soupDef3rdTen.label, "3rd & 10");
+
   const soup44 = HudText.parseDownDistanceText("44 &6");
   assert.equal(soup44.ok, true);
   assert.equal(soup44.down, 4);
