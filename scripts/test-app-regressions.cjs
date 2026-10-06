@@ -278,3 +278,157 @@ test('halftime adjustment confirmation advances to Q3 and clears recommendations
   assert.equal(a.run('state.presentedDcRecommendations.length'), 0);
 });
 
+test('DC evaluateAutoPlaycall prioritizes goal line heavy front inside 3-yard line', () => {
+  const a = app();
+  a.run(`
+    state.down = 1;
+    state.yards = 2;
+    state.goalToGo = true;
+    state.fieldPosition = { side: 'OPP', yardLine: 2 };
+    const candidates = [
+      { play: { id: 'nick-1', formation: 'Nickel', play_name: 'Over Storm Brave' }, _score: 16.0 },
+      { play: { id: 'gl-1', formation: 'Goal Line', play_name: 'GL Man' }, _score: 14.5 },
+      { play: { id: 'base-1', formation: '4-3', play_name: 'Cover 4' }, _score: 11.0 }
+    ];
+    var decision = evaluateAutoPlaycall(candidates, {}, 'dc');
+  `);
+  const winnerId = a.run('decision.winner.play.id');
+  const reason = a.run('decision.reason');
+  assert.equal(winnerId, 'gl-1');
+  assert.equal(reason, 'Goal line heavy front package');
+});
+
+test('DC evaluateAutoPlaycall rotates to Dime/Dollar/3-3-5 on passing money downs', () => {
+  const a = app();
+  a.run(`
+    state.down = 3;
+    state.yards = 8;
+    state.goalToGo = false;
+    const candidates = [
+      { play: { id: 'nick-1', formation: 'Nickel', play_name: 'Cover 3 Match' }, _score: 18.0 },
+      { play: { id: 'dime-1', formation: 'Dime', play_name: 'Mug Tex 3' }, _score: 17.0 },
+      { play: { id: 'base-1', formation: '4-3', play_name: 'Cover 2' }, _score: 12.0 }
+    ];
+    var decision = evaluateAutoPlaycall(candidates, {}, 'dc');
+  `);
+  const winnerId = a.run('decision.winner.play.id');
+  assert.equal(winnerId, 'dime-1');
+  assert.match(a.run('decision.reason'), /Money down pass defense/);
+});
+
+test('DC evaluateAutoPlaycall rotates defensive front when candidate 1 repeats last called formation', () => {
+  const a = app();
+  a.run(`
+    state.down = 1;
+    state.yards = 10;
+    state.goalToGo = false;
+    state.dcRecentPlays = ['chi|nickel|over|cov3'];
+    state.normalizedDefensivePlays = [
+      { id: 'chi|nickel|over|cov3', formation: 'Nickel', play_name: 'Cover 3' }
+    ];
+    const candidates = [
+      { play: { id: 'chi|nickel|wide|cov4', formation: 'Nickel', play_name: 'Cover 4 Palms' }, _score: 15.0 },
+      { play: { id: 'chi|3-3-5|penny|cov9', formation: '3-3-5', play_name: 'Cover 9' }, _score: 13.5 },
+      { play: { id: 'chi|4-3|over|cov3', formation: '4-3', play_name: 'Cover 3' }, _score: 10.0 }
+    ];
+    var decision = evaluateAutoPlaycall(candidates, {}, 'dc');
+  `);
+  const winnerId = a.run('decision.winner.play.id');
+  assert.equal(winnerId, 'chi|3-3-5|penny|cov9');
+  assert.match(a.run('decision.reason'), /Defensive front rotation/);
+});
+
+test('Opening Script places scripted play in Slot #1 and situational plays in Slots #2 & #3', () => {
+  const a = app();
+  a.run(`
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Trips', play_name: 'PA Crossers', type: 'PA' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Singleback', set: 'Ace', play_name: 'HB Dive', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Bunch', play_name: 'Mesh', type: 'PASS' })
+    ];
+    state.customScriptPlays = [state.normalizedPlays[1].id]; // HB Dive playId
+    state.customScriptActive = true;
+    state.customScriptIndex = 0;
+    state.down = 1;
+    state.yards = 10;
+    computeRecommendations();
+  `);
+  assert.equal(a.run('state.recommendations.length'), 3);
+  assert.equal(a.run('state.recommendations[0].play.play_name'), 'HB Dive');
+  assert.equal(a.run('state.recommendations[0].scriptMatch'), true);
+  assert.equal(a.run('state.recommendations[0].scriptTag'), 'Script #1');
+  assert.notEqual(a.run('state.recommendations[1].play.play_name'), 'HB Dive');
+  assert.notEqual(a.run('state.recommendations[2].play.play_name'), 'HB Dive');
+});
+
+test('Confirming scripted play advances customScriptIndex, but alternate does not', () => {
+  const a = app();
+  a.run(`
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Trips', play_name: 'PA Crossers', type: 'PA' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Singleback', set: 'Ace', play_name: 'HB Dive', type: 'RUN' })
+    ];
+    state.customScriptPlays = [state.normalizedPlays[1].id, state.normalizedPlays[0].id];
+    state.customScriptActive = true;
+    state.customScriptIndex = 0;
+    
+    // Simulate confirming Slot #1 via state.confirmedPlayUsage
+    state.confirmedPlayUsage = { play: state.normalizedPlays[1], scriptMatch: true };
+    commitConfirmedPlayUsage();
+  `);
+  assert.equal(a.run('state.customScriptIndex'), 1);
+
+  // Simulate an audible or alternate pick (scriptMatch is falsy)
+  a.run(`
+    state.confirmedPlayUsage = { play: state.normalizedPlays[0], scriptMatch: false };
+    commitConfirmedPlayUsage();
+  `);
+  assert.equal(a.run('state.customScriptIndex'), 1);
+});
+
+test('OC evaluateAutoPlaycall confirms Slot #1 on normal downs, yields to Slot #2 on 3rd & 10+ run mismatch', () => {
+  const a = app();
+  a.run(`
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'CHI', formation: 'Singleback', set: 'Ace', play_name: 'HB Dive', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Bunch', play_name: 'Mesh', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Trips', play_name: 'Drive', type: 'PASS' })
+    ];
+    state.customScriptPlays = [state.normalizedPlays[0].id];
+    state.customScriptActive = true;
+    state.customScriptIndex = 0;
+
+    const candidates = [
+      { play: { id: 'run-1', play_name: 'HB Dive', type: 'RUN' }, scriptMatch: true, scriptTag: 'Script #1', score: 999 },
+      { play: { id: 'pass-1', play_name: 'Mesh', type: 'PASS' }, score: 85 },
+      { play: { id: 'pass-2', play_name: 'Drive', type: 'PASS' }, score: 80 }
+    ];
+    state.down = 1;
+    state.yards = 10;
+    var normDecision = evaluateAutoPlaycall(candidates, {}, 'oc');
+
+    state.down = 3;
+    state.yards = 11;
+    var moneyDecision = evaluateAutoPlaycall(candidates, {}, 'oc');
+  `);
+  assert.equal(a.run('normDecision.winner.play.id'), 'run-1');
+  assert.match(a.run('normDecision.reason'), /Opening script/);
+
+  assert.equal(a.run('moneyDecision.winner.play.id'), 'pass-1');
+  assert.match(a.run('moneyDecision.reason'), /Script paused|passing money down/);
+});
+
+test('Zero persistence: resetting or changing teams clears custom script', () => {
+  const a = app();
+  a.run(`
+    state.customScriptPlays = [{ id: 'p1', play_name: 'Test Play' }];
+    state.customScriptActive = true;
+    state.customScriptIndex = 4;
+    backToTeamSelect();
+  `);
+  assert.equal(a.run('state.customScriptPlays.length'), 0);
+  assert.equal(a.run('state.customScriptActive'), false);
+  assert.equal(a.run('state.customScriptIndex'), 0);
+});
+
+

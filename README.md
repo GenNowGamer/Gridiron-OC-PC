@@ -58,9 +58,20 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Comeback:** Aggressive chunk-play hunting with deep intermediate pass concepts.
   - **Blitz Beater:** Hot throws, screens, draws, and quick perimeter answers that neutralize blitzes.
   - **Redzone:** Short-field spacing concepts (smash, snag, mesh, duo, power, and RPO).
+- **Opening 15 Script Builder ("Build A Script"):**
+  - Assemble a custom 15-play opening script directly from your team's playbook before kickoff or during opening series.
+  - **Live Snap Injection:** When the script is active, Slot #1 of your recommendation slate features the next scheduled scripted call (`Script #1` through `Script #15`), while Slots #2 and #3 provide situational counters.
+  - **Smart Situational Yield:** On extreme passing downs (e.g. 3rd/4th & 10+), if the scheduled scripted play is a run or RPO, the Auto Playcaller automatically yields priority to Slot #2's situational pass call without burning the scripted play.
+  - **Zero Cross-Game Persistence:** Scripts are game-specific and team-tailored—clearing cleanly upon New Game or team changes without lingering across sessions.
+  - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15** for balanced run/pass balance.
 - **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
   - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
-  - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, and score/clock context.
+  - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, opening script priorities, and score/clock context.
+  - **Intelligent Defensive Football Logic:** 
+    - *Goal Line Override:* Automatically prioritizes heavy Goal Line packages inside the 3-yard line on goal-to-go spots.
+    - *Money Down Passing Counters:* Rotates Dime, Dollar, and 3-3-5 coverage packages on 3rd & 7+ situations.
+    - *Defensive Front & Shell Rotation:* If candidate #1 repeats the same front as the previous snap, dynamically rotates to a competitive alternate front (within 3.0 points) to avoid repetitive looks.
+    - *3-3-5 Personnel Matching:* Enables 3-3-5 fronts to naturally counter 3-WR/spread formations alongside Nickel.
   - Instantly confirms the winning play, updating down/distance settlement, play cooldowns, and session metrics automatically upon OCR capture.
 - **Setup-to-Payoff Engine:** Tracks conceptual sequencing across drives (e.g., establishing inside zone to unlock explosive play-action bootlegs later in the series).
 - **Full-Playbook Exploration Engine:** 

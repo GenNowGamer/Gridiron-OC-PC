@@ -143,7 +143,7 @@
     if (traits.isGoalLine) return ["GOAL LINE"];
     if (traits.isHailMary || traits.isEmpty || traits.isQuads) return ["DIME", "DOLLAR"];
     if ((traits.wrCount != null && traits.wrCount >= 3) || traits.isSpread || traits.isTrips || traits.isBunch) {
-      return ["NICKEL"];
+      return ["NICKEL", "3-3-5"];
     }
     if ((traits.teCount != null && traits.teCount >= 2) || traits.isTight || traits.isWing) {
       return ["4-3", "46"];

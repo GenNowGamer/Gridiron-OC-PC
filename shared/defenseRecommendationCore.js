@@ -430,7 +430,8 @@
       if (t.isGoalLine) score -= 2.5;
     } else if (o.isTrips || o.isBunch || o.isSpread) {
       if (t.isNickel) score += 4.7;
-      if (t.isDime || t.isDollar) score += 1.35;
+      if (t.isThreeThreeFive) score += 4.5;
+      if (t.isDime || t.isDollar) score += 2.0;
       if (t.isZone || t.isMatch || t.isMan) score += 0.85;
       if (t.isFourThree && !t.isBlitz) score -= 1.8;
       if (t.isGoalLine) score -= 2.2;

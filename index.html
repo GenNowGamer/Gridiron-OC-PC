@@ -31,6 +31,7 @@
             <p class="heroCopy" id="heroCopy">Use OCR Capture for spots like "3rd and 6", "1st and goal on the 4", or "3rd and 5 on my own 30".</p>
           </div>
           <div class="heroActions">
+            <button class="secondaryBtn" id="scriptBuilderBtn" type="button">Game Script</button>
             <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
           </div>
         </div>
@@ -330,6 +331,47 @@
     </div>
   </div>
 
+  <div class="overlay hidden" id="scriptBuilderOverlay" aria-hidden="true">
+    <div class="overlayCard scriptBuilderCard">
+      <div class="overlayTitleRow">
+        <div>
+          <div class="eyebrow">Offensive Game Plan</div>
+          <div class="overlayTitle">Opening 15 Script</div>
+        </div>
+        <button class="overlayCloseBtn" id="closeScriptBuilderBtn" type="button" aria-label="Close script builder">✕</button>
+      </div>
+      <div class="overlaySub" id="scriptBuilderSub">Assemble an opening 15-play script from your offensive playbook for the opening drives of this game. Slot #1 on live snaps will feature your scripted sequence.</div>
+      
+      <div class="scriptBuilderBody">
+        <div class="scriptBuilderPickerCol">
+          <div class="scriptColHead">
+            <span class="scriptColTitle">Playbook Explorer</span>
+            <input class="audibleSearch scriptSearch" id="scriptSearchInput" type="search" placeholder="Search formation, concept, or play" autocomplete="off" />
+          </div>
+          <div class="scriptPlaybookList" id="scriptPlaybookList"></div>
+        </div>
+
+        <div class="scriptBuilderQueueCol">
+          <div class="scriptColHead">
+            <div class="scriptQueueHeaderRow">
+              <span class="scriptColTitle">Opening Sequence</span>
+              <span class="scriptCountBadge" id="scriptCountBadge">0 / 15 Plays</span>
+            </div>
+            <div class="scriptQueueToolbar">
+              <button class="secondaryBtn scriptToolbarBtn" id="scriptAutoFillBtn" type="button">Auto-Fill 15</button>
+              <button class="secondaryBtn scriptToolbarBtn" id="scriptClearBtn" type="button">Clear</button>
+            </div>
+          </div>
+          <div class="scriptQueueList" id="scriptQueueList"></div>
+        </div>
+      </div>
+
+      <div class="scriptModalActions">
+        <button class="scriptToggleBtn" id="scriptToggleActiveBtn" type="button">Script: Inactive</button>
+        <button class="primaryBtn scriptDoneBtn" id="scriptDoneBtn" type="button">Save & Close</button>
+      </div>
+    </div>
+  </div>
 
   <div class="overlay hidden" id="settingsOverlay" aria-hidden="true">
     <div class="settingsCard">

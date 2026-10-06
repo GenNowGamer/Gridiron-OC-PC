@@ -2258,3 +2258,283 @@ body {
 .halftimeTakeawayRow strong {
   color: #38bdf8;
 }
+
+/* --- Opening 15 Script Builder --- */
+.scriptBuilderCard {
+  width: min(880px, 95vw);
+  height: min(680px, 90vh);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Keep internal scrolling strictly inside the playbook and queue columns */
+}
+
+.scriptBuilderBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  margin-top: 14px;
+}
+
+@media (max-width: 768px) {
+  .scriptBuilderCard {
+    height: 92vh;
+  }
+  .scriptBuilderBody {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+}
+
+.scriptBuilderPickerCol,
+.scriptBuilderQueueCol {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px;
+  overflow: hidden;
+}
+
+.scriptColHead {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.scriptColTitle {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+
+.scriptQueueHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.scriptCountBadge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--secondary, #38bdf8);
+}
+
+.scriptQueueToolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.scriptToolbarBtn {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.scriptPlaybookList,
+.scriptQueueList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  padding-right: 4px;
+}
+
+.scriptPlayRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+
+.scriptPlayRow:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.scriptPlayRowLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.scriptPlayRowTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scriptPlayRowMeta {
+  font-size: 11px;
+  color: var(--hint, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scriptAddBtn {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.14s ease;
+}
+
+.scriptAddBtn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.28);
+  color: #ffffff;
+}
+
+.scriptAddBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.scriptQueueRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.scriptQueueRow.is-current {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.scriptQueueIndex {
+  font-size: 11px;
+  font-weight: 900;
+  color: #f59e0b;
+  width: 22px;
+  flex-shrink: 0;
+}
+
+.scriptQueueActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.scriptIconBtn {
+  background: transparent;
+  border: none;
+  color: var(--hint, #94a3b8);
+  padding: 4px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.12s ease;
+}
+
+.scriptIconBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.scriptIconBtn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.scriptModalActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(13, 19, 29, 0.98);
+  position: relative;
+  z-index: 5;
+}
+
+.scriptToggleBtn {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.scriptToggleBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--secondary);
+}
+
+.scriptToggleBtn.is-active {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.25);
+}
+
+.scriptToggleBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.scriptDoneBtn {
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--secondary);
+  color: #0e1722;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.scriptDoneBtn:hover {
+  filter: brightness(1.1);
+}
+
+.scriptActiveBadge {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  font-weight: 800;
+}
+
