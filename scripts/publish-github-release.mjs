@@ -150,7 +150,45 @@ async function main() {
 
   console.log(`Release URL: ${release.html_url}`);
 
-  // Upload installer asset
+  // Purge all previous releases and tags so only the current release remains on GitHub
+  try {
+    console.log(`Cleaning up previous releases for ${repoOwner}/${repoName}...`);
+    const allReleases = await requestGithub(`/repos/${repoOwner}/${repoName}/releases`);
+    if (Array.isArray(allReleases)) {
+      for (const oldRelease of allReleases) {
+        if (oldRelease.id !== release.id && oldRelease.tag_name !== tagName) {
+          console.log(`Deleting previous release ${oldRelease.tag_name} (ID: ${oldRelease.id})...`);
+          try {
+            await requestGithub(`/repos/${repoOwner}/${repoName}/releases/${oldRelease.id}`, 'DELETE');
+          } catch (delErr) {
+            console.warn(`Failed to delete release ${oldRelease.id}: ${delErr.message}`);
+          }
+          try {
+            await requestGithub(`/repos/${repoOwner}/${repoName}/git/refs/tags/${oldRelease.tag_name}`, 'DELETE');
+            console.log(`Deleted remote tag ref ${oldRelease.tag_name}.`);
+          } catch (tagErr) {
+            // tag ref may already be gone or formatted differently
+          }
+        }
+      }
+    }
+  } catch (cleanupErr) {
+    console.warn(`Could not finish prior release cleanup: ${cleanupErr.message}`);
+  }
+
+  // Upload installer asset (delete existing asset with same name if already present)
+  if (Array.isArray(release.assets)) {
+    const existingAsset = release.assets.find(a => a.name === exeName);
+    if (existingAsset) {
+      console.log(`Existing asset ${exeName} found on release. Deleting old asset...`);
+      try {
+        await requestGithub(`/repos/${repoOwner}/${repoName}/releases/assets/${existingAsset.id}`, 'DELETE');
+      } catch (assetDelErr) {
+        console.warn(`Could not delete existing asset: ${assetDelErr.message}`);
+      }
+    }
+  }
+
   await uploadAsset(release.upload_url, exePath, exeName);
   console.log(`Successfully uploaded ${exeName} to GitHub Release ${tagName}!`);
 }
