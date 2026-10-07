@@ -31,8 +31,16 @@ class BandRoiTests(unittest.TestCase):
 
     def test_field_has_usable_structure_for_down(self):
         self.assertTrue(_field_has_usable_structure("down_distance", "2nd & 8"))
+        self.assertTrue(_field_has_usable_structure("down_distance", "'3'RD'&''2'"))
         self.assertFalse(_field_has_usable_structure("down_distance", "1st"))
         self.assertFalse(_field_has_usable_structure("down_distance", ""))
+
+    def test_field_has_usable_structure_for_field_position(self):
+        self.assertTrue(_field_has_usable_structure("field_position", "OPP 29"))
+        self.assertTrue(_field_has_usable_structure("field_position", "'2''9'"))
+        self.assertTrue(_field_has_usable_structure("field_position", "^ 29"))
+        self.assertTrue(_field_has_usable_structure("field_position", "50"))
+        self.assertFalse(_field_has_usable_structure("field_position", ""))
 
     def test_structured_roi_skips_band_search(self):
         frame = np.zeros((120, 320, 3), dtype=np.uint8)

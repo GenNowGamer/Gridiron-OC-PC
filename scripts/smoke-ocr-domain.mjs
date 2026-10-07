@@ -1169,4 +1169,61 @@ test("all domain modules expose browser UMD globals", () => {
   });
 });
 
+test("export OCR corruptions resolve to deterministic play and personnel labels", () => {
+  // Personnel repairs from trace exports
+  assert.equal(HudText.repairPersonnelOcrConfusions("RITELR"), "1RB - 1TE 3WR");
+  assert.equal(HudText.repairPersonnelOcrConfusions("RIYEISWR"), "1RB - 1TE 3WR");
+  assert.equal(HudText.repairPersonnelOcrConfusions("SRBIZTEIOWR"), "1RB - 2TE 2WR");
+  assert.equal(HudText.repairPersonnelOcrConfusions("RBIITEIZWR"), "2RB - 1TE 2WR");
+  assert.equal(HudText.repairPersonnelOcrConfusions("ZRBIITEIZWR"), "2RB - 1TE 2WR");
+  assert.equal(HudText.hasValidPersonnelCounts(HudText.parseFormationPersonnelText("RITELR")), true);
+  assert.equal(HudText.hasValidPersonnelCounts(HudText.parseFormationPersonnelText("SRBIZTEIOWR")), true);
+
+  // Previous play repairs from trace exports
+  assert.equal(HudText.repairPreviousPlayOcrText("BOOMERANGOITRAP"), "BOOMERANG 0 1 TRAP");
+  assert.equal(HudText.repairPreviousPlayOcrText("DVIDEDOUBLEIN"), "DIVIDE DOUBLE IN");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERICONTANSPY"), "COVER 1 CONTAIN SPY");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERICONTAN"), "COVER 1 CONTAIN");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERIQBSPY"), "COVER 1 QB SPY");
+  assert.equal(HudText.repairPreviousPlayOcrText("SMPRESSURES"), "SIM PRESSURE 3");
+  assert.equal(HudText.repairPreviousPlayOcrText("STRGCORNERFRE"), "STRG CORNER 2 FIRE");
+  assert.equal(HudText.repairPreviousPlayOcrText("SHOWSSSIM"), "SHOW SS SIM 2");
+  assert.equal(HudText.repairPreviousPlayOcrText("OLBFIREZ"), "OLB FIRE 2");
+  assert.equal(HudText.repairPreviousPlayOcrText("FIELDSIMS"), "FIELD SIM 3");
+  assert.equal(HudText.repairPreviousPlayOcrText("ZGDUO"), "26 DUO");
+  assert.equal(HudText.repairPreviousPlayOcrText("DEZONE"), "INSIDE ZONE");
+  // Down distance BRD
+  assert.equal(HudText.parseDownDistanceText("BRD'7'").ok, true);
+  assert.equal(HudText.parseDownDistanceText("BRD'7'").down, 3);
+  assert.equal(HudText.parseDownDistanceText("BRD'7'").yardsToGo, 7);
+
+  // New session previous play repairs
+  assert.equal(HudText.repairPreviousPlayOcrText("STORMBRAVEI"), "STORM BRAVE 1");
+  assert.equal(HudText.repairPreviousPlayOcrText("NOKELZTRAP"), "NICKEL 2 TRAP");
+  assert.equal(HudText.repairPreviousPlayOcrText("SAMORASHI"), "SAM CRASH 1");
+  assert.equal(HudText.repairPreviousPlayOcrText("LDOUBLEWRZ"), "1 DOUBLE WR2");
+  assert.equal(HudText.repairPreviousPlayOcrText("SBLITZI"), "SS BLITZ 1");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERCONTAN"), "COVER 1 CONTAIN");
+  assert.equal(HudText.repairPreviousPlayOcrText("FSMEUTZ"), "FS BLITZ 0");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERUARTERS"), "COVER 4 QUARTERS");
+  assert.equal(HudText.repairPreviousPlayOcrText("VERLOADSEAM"), "OVERLOAD 3 SEAM");
+  assert.equal(HudText.repairPreviousPlayOcrText("COVERGIERT"), "COVER 6 INVERT");
+  assert.equal(HudText.repairPreviousPlayOcrText("BENCHBUITZ"), "BENCH BLITZ 3");
+  assert.equal(HudText.repairPreviousPlayOcrText("HAMEROBLAST"), "HAMMER 0 BLAST");
+  assert.equal(HudText.repairPreviousPlayOcrText("NDEZONE"), "WIDE ZONE");
+  assert.equal(HudText.repairPreviousPlayOcrText("NIDEZONE"), "WIDE ZONE");
+  assert.equal(HudText.repairPreviousPlayOcrText("REDZONEISR"), "REDZONE SCISSORS");
+  assert.equal(HudText.repairPreviousPlayOcrText("PADOUBLEOST"), "PA DOUBLE POST");
+  assert.equal(HudText.repairPreviousPlayOcrText("CURLOHO"), "CURL OHIO");
+  assert.equal(HudText.repairPreviousPlayOcrText("ALBREAKSLOTSCREEN"), "JAILBREAK SLOT SCREEN");
+  assert.equal(HudText.repairPreviousPlayOcrText("DUD"), "DUO");
+  assert.equal(HudText.repairPreviousPlayOcrText("FLOODZDRNE"), "FLOOD Z DRIVE");
+  assert.equal(HudText.repairPreviousPlayOcrText("SHALLOWROSS"), "SHALLOW CROSS");
+  assert.equal(HudText.repairPreviousPlayOcrText("SPAINGSWITCH"), "SPACING SWITCH");
+  assert.equal(HudText.repairPreviousPlayOcrText("'2'GDUO"), "26 DUO");
+  assert.equal(HudText.isGarbagePreviousPlayOcr("cYa"), true);
+  assert.equal(HudText.isGarbagePreviousPlayOcr("cYaa"), true);
+});
+
 console.log(`OK OCR domain smoke (${passed} tests)`);
+

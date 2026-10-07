@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.17-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.18-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -52,12 +52,12 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Top-3 Recommendation Slate:** Evaluates your entire 32-team NFL playbook catalog and presents the 3 best calls for the exact down, distance, and field spot.
 - **Why-This-Call Chips:** Every recommendation tile displays live contextual rationales (e.g., *Identity Fit*, *Sets up Play-Action*, *Coverage Beater*, *Third-Down Converter*).
 - **Playcalling Modes:** Instantly reshape your playbook strategy with specialized tactical overlays:
-  - **Normal:** Balanced, situation-driven adaptive play calling.
+  - **Normal:** Balanced, situation-driven adaptive play calling dynamically tailored to your team's assigned tactical identity (e.g., Chicago Bears "PA Motion Explosive", Baltimore Ravens "Option & Power Run", Kansas City Chiefs "Downfield Spread Attack"). Calibrated to achieve 50%+ post-game Identity Fit execution without requiring secondary style toggles.
   - **2 Minute Drill:** Prioritizes sideline access, quick yardage, and hurry-up pass concepts.
   - **Kill Clock:** Favors interior runs, clock-chewing concepts, and conservative pass options.
   - **Comeback:** Aggressive chunk-play hunting with deep intermediate pass concepts.
   - **Blitz Beater:** Hot throws, screens, draws, and quick perimeter answers that neutralize blitzes.
-  - **Redzone:** Short-field spacing concepts (smash, snag, mesh, duo, power, and RPO).
+  - **Redzone:** Short-field spacing concepts (smash, smash-corner, snag, mesh, duo, power, and RPO).
 - **Opening 15 Script Builder ("Build A Script"):**
   - Assemble a custom 15-play opening script directly from your team's playbook before kickoff or during opening series.
   - **Authentic NFL Setup-to-Payoff Architecture:** 1-click **Auto-Fill 15** sequences the opening script using true NFL game-planning logic:

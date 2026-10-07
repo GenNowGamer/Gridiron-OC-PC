@@ -526,5 +526,46 @@ test('Two-game cooldown: excludes plays from the last 2 executed scripts, respec
   assert.equal(a.run('state.recentRunScripts.length'), 1);
 });
 
+test('normal coordinator style aligns with team identity and credits confirms toward identity fit', () => {
+  const a = app();
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.run(`
+    state.normalizedPlays = catalog.map(normalizeImportedPlay);
+    state.selectedTeam = 'CHI';
+    state.hasActiveSituation = true;
+    state.down = 1;
+    state.yards = 10;
+    state.goalToGo = false;
+    state.fieldPosition = { side: 'OWN', yardLine: 25 };
+    state.gameCoordinatorProfile = 'normal';
+    state.playcallingMode = 'normal';
+    startCoordinatorSession('normal');
+  `);
+
+  // Verify session report initializes with identityTypes and identityTags
+  const session = a.run('state.sessionReport');
+  assert.equal(session.identityFamilies.includes('boot'), true);
+  assert.equal(session.identityTypes.includes('PA'), true);
+  assert.equal(session.identityTags.includes('motion'), true);
+
+  // Verify recommendations under Normal profile have identity reinforcement
+  a.run('computeRecommendations()');
+  const recs = a.run('state.recommendations');
+  assert.equal(recs.length, 3);
+  for (const item of recs) {
+    assert.equal(item.parts.identity > 0, true);
+    assert.equal(item.parts.identity <= 8.0, true);
+  }
+
+  // Confirm a PA play with motion and check that matchesIdentity succeeds
+  a.run(`
+    const paPlay = state.normalizedPlays.find(p => p.team === 'CHI' && p.type === 'PA');
+    recordSessionConfirm(paPlay, 1, state.recommendations);
+  `);
+  const report = a.run('CoordinatorReport.buildCoordinatorReport(state.sessionReport, {})');
+  assert.equal(report.identity.empty, false);
+  assert.match(report.identity.items[0].value, /100% identity fit/);
+});
+
 
 

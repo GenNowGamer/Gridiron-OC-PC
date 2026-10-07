@@ -92,6 +92,26 @@
       });
   }
 
+  function identityTypesFromProfile(profile) {
+    return Object.entries((profile && profile.type) || {})
+      .filter(function (entry) {
+        return Number(entry[1]) >= 0.9;
+      })
+      .map(function (entry) {
+        return entry[0].toUpperCase();
+      });
+  }
+
+  function identityTagsFromProfile(profile) {
+    return Object.entries((profile && profile.tags) || {})
+      .filter(function (entry) {
+        return Number(entry[1]) >= 0.7;
+      })
+      .map(function (entry) {
+        return entry[0];
+      });
+  }
+
   function normalizeStyleChange(entry) {
     const safe = entry || {};
     return {
@@ -114,6 +134,8 @@
       opponentLabel: cleanText(safe.opponentLabel) || cleanText(safe.opponent) || "Not set",
       identityLabel: cleanText(safe.identityLabel) || "Adaptive",
       identityFamilies: Array.isArray(safe.identityFamilies) ? safe.identityFamilies.slice() : [],
+      identityTypes: Array.isArray(safe.identityTypes) ? safe.identityTypes.slice() : [],
+      identityTags: Array.isArray(safe.identityTags) ? safe.identityTags.slice() : [],
       coordinatorId: cleanText(safe.coordinatorId) || "normal",
       coordinatorLabel: cleanText(safe.coordinatorLabel) || "Normal",
       personalityFamilies: Array.isArray(safe.personalityFamilies) ? safe.personalityFamilies.slice() : [],
@@ -129,12 +151,15 @@
     return {
       ...safe,
       identityFamilies: Array.isArray(safe.identityFamilies) ? safe.identityFamilies.slice() : [],
+      identityTypes: Array.isArray(safe.identityTypes) ? safe.identityTypes.slice() : [],
+      identityTags: Array.isArray(safe.identityTags) ? safe.identityTags.slice() : [],
       personalityFamilies: Array.isArray(safe.personalityFamilies) ? safe.personalityFamilies.slice() : [],
       personalityTypes: Array.isArray(safe.personalityTypes) ? safe.personalityTypes.slice() : [],
       styleChanges: Array.isArray(safe.styleChanges) ? safe.styleChanges.map(normalizeStyleChange) : [],
       confirms: Array.isArray(safe.confirms) ? safe.confirms.map(function (item) {
         return {
           ...item,
+          tags: item.tags ? { ...item.tags } : {},
           beaterFlags: { ...(item.beaterFlags || {}) },
           penalty: item.penalty ? { ...item.penalty } : null,
           outcome: item.outcome ? { ...item.outcome } : null,
@@ -252,6 +277,7 @@
         cover4Beater: safe.beaterFlags?.cover4Beater === true,
         blitzAnswer: safe.beaterFlags?.blitzAnswer === true,
       },
+      tags: safe.tags && typeof safe.tags === "object" ? { ...safe.tags } : {},
       penalty: penalty,
       outcome: null,
       at: Date.now(),
@@ -321,8 +347,13 @@
   }
 
   function matchesIdentity(confirm, session) {
-    const families = session.identityFamilies || [];
-    return families.includes(confirm.family);
+    const families = session?.identityFamilies || [];
+    if (families.includes(confirm?.family)) return true;
+    const types = session?.identityTypes || [];
+    if (types.length && types.includes(confirm?.type)) return true;
+    const tags = session?.identityTags || [];
+    if (tags.length && confirm?.tags && tags.some(tag => confirm.tags[tag] === true)) return true;
+    return false;
   }
 
   function matchesPersonality(confirm, session) {
@@ -830,6 +861,8 @@
     formatCoordinatorHistoryLabel,
     listCoordinatorStyleSegments,
     identityFamiliesFromProfile,
+    identityTypesFromProfile,
+    identityTagsFromProfile,
     formatFamilyLabel,
     formatSituationBucket,
     formatFormationSet,

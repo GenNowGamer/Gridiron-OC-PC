@@ -208,7 +208,7 @@
     });
 
     // "SRD" / "IRD" / "3RD" / "BRD" → force down from suffix (RD⇒3, ST⇒1, …).
-    text = text.replace(/\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)\b/g, function (match, _head, suffix) {
+    text = text.replace(/\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(?=[0-9A-Z]|\b|$)/g, function (match, _head, suffix) {
       if (match === "AND") return match;
       var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
       return down ? String(down) + suffix : match;
@@ -657,7 +657,7 @@
     var text = sanitizeHudText(value).replace(/\s+/g, " ").trim();
     if (!text) return true;
     // Verified empty drive-opening crop; leave other unknown names reviewable.
-    if (/^(?:CYAALB|CYAAALB|CWB|CYALWBL|CALLW)$/i.test(text)) return true;
+    if (/^(?:CYA|CYAA|CYAB|CYAALB|CYAAALB|CWB|CYALWBL|CALLW)$/i.test(text)) return true;
     // Pure digit soup from empty-slot chrome ("900", "11") is not a play name.
     if (/^\d{2,}$/.test(text.replace(/\s+/g, ""))) return true;
     var letters = (text.match(/[A-Za-z]/g) || []).length;
@@ -749,9 +749,11 @@
     // Pipes become I; digits may drop or become confusable letters (3→A).
     // Leading I before RB is a dropped "1" (export: IRBITEIAWR).
     var glued = cleaned.toUpperCase().replace(/\s+/g, "");
-    if (/^(?:AR|TER|ITER|RBITER|RITER|RTER|RITEIR|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR|RBATEIWR)$/i.test(glued)) return "1RB - 1TE 3WR";
+    if (/^(?:AR|TER|ITER|RBITER|RITER|RTER|RITEIR|RBITEIR|RBITEISR|RITEISR|RIYELWR|IRBIOTELWR|ORBIITELWR|IRBIOTELAWR|RBATEIWR|RITELR|RIYEISWR)$/i.test(glued)) return "1RB - 1TE 3WR";
     // ROT-1 cipher artifact for RB 1TE 3WR: SCJUFJBXS -> RBITEIAWR -> 1RB - 1TE 3WR
     if (/^SCJUFJBXS$/i.test(glued)) return "1RB - 1TE 3WR";
+    if (/^SRBIZTEIOWR$/i.test(glued)) return "1RB - 2TE 2WR";
+    if (/^(?:2|Z)?RBIITEIZWR$/i.test(glued)) return "2RB - 1TE 2WR";
 
     // Madden HUD personnel structural matcher:
     // When Madden renders "1 RB | 1 TE | 3 WR", OCR frequently blends vertical pipes '|'
@@ -874,6 +876,74 @@
       LDUBLEWRI: "1 DOUBLE WR2",
       ZZZIN: "22 Z IN",
       MTNYCORNERUNER: "MTN Y CORNER UNDER",
+      BOOMERANGOITRAP: "BOOMERANG 0 1 TRAP",
+      DVIDEDOUBLEIN: "DIVIDE DOUBLE IN",
+      SMPRESSURES: "SIM PRESSURE 3",
+      STRGCORNERFRE: "STRG CORNER 2 FIRE",
+      SHOWSSSIM: "SHOW SS SIM 2",
+      OLBFIREZ: "OLB FIRE 2",
+      FIELDSIMS: "FIELD SIM 3",
+      FELOSMS: "FIELD SIM 3",
+      FIELOSIMS: "FIELD SIM 3",
+      OVERLOADBLITZ: "OVERLOAD BLITZ",
+      COVERICONTANSPY: "COVER 1 CONTAIN SPY",
+      COVERICONTAN: "COVER 1 CONTAIN",
+      COVERIQBSPY: "COVER 1 QB SPY",
+      COVERIOBSY: "COVER 1 QB SPY",
+      ZGDUO: "26 DUO",
+      WDEZONE: "WIDE ZONE",
+      DEZONE: "INSIDE ZONE",
+      EZONESPIT: "INSIDE ZONE SPLIT",
+      HBMDDRAW: "HB MID DRAW",
+      HBMODRAW: "HB MID DRAW",
+      COVERZERT: "COVER 2 INVERT",
+      LDUBLEWRZ: "1 DOUBLE WR2",
+      SAMISTNG: "SAM 1 STING",
+      STORMBRAVEI: "STORM BRAVE 1",
+      NOKELZTRAP: "NICKEL 2 TRAP",
+      SAMORASHI: "SAM CRASH 1",
+      SAMORASHA: "SAM CRASH 1",
+      LDOUBLEWRZ: "1 DOUBLE WR2",
+      LDULEWRI: "1 DOUBLE WR1",
+      SBLITZI: "SS BLITZ 1",
+      COVERCONTAN: "COVER 1 CONTAIN",
+      FSMEUTZ: "FS BLITZ 0",
+      SAMMKERESS: "SAM MIKE 3 PRESS",
+      COVERUARTERS: "COVER 4 QUARTERS",
+      UGMPRESSURE: "MUG SIM PRESSURE",
+      VERLOADSEAM: "OVERLOAD 3 SEAM",
+      COVERGIERT: "COVER 6 INVERT",
+      COVERGERT: "COVER 6 INVERT",
+      COVERISPY: "COVER 2 SPY",
+      COVERIMLBBLITZ: "COVER 1 MLB BLITZ",
+      COVERADROPELD: "COVER 4 DROP FIELD",
+      BENCHBUITZ: "BENCH BLITZ 3",
+      MUGDTLOOPI: "MUG DT LOOP 1",
+      HAMEROBLAST: "HAMMER 0 BLAST",
+      LBDETWITS: "LB DE TWIST 3",
+      BRACKETSWITCHWILLE: "BRACKET SWITCH WILLIE",
+      GOHALFOUT: "60 HALF OUT",
+      FREFIRE: "FREE FIRE",
+      COVERBUZZMTCH: "COVER 3 BUZZ MATCH",
+      VERSTORMBRAVE: "OVER STORM BRAVE",
+      SHOWSS: "SHOW SS SIM 2",
+      EZONESPLIT: "INSIDE ZONE SPLIT",
+      NDEZONE: "WIDE ZONE",
+      NIDEZONE: "WIDE ZONE",
+      REDZONEISR: "REDZONE SCISSORS",
+      PADOUBLEOST: "PA DOUBLE POST",
+      CURLOHO: "CURL OHIO",
+      ALBREAKSLOTSCREEN: "JAILBREAK SLOT SCREEN",
+      DUD: "DUO",
+      MTNPABDOTLT: "MTN PA BOOT LT",
+      FLOODZDRNE: "FLOOD Z DRIVE",
+      DGCROSS: "DIG Y CROSS",
+      EMPTYMTNWIPFLD: "EMPTY MTN WHIP FLOOD",
+      SHALLOWROSS: "SHALLOW CROSS",
+      SPAINGSWITCH: "SPACING SWITCH",
+      MTNXWHP: "MTN X WHIP",
+      HITCHCORNERS: "HITCH CORNERS",
+      HBSLIPSOREEN: "HB SLIP SCREEN",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 
@@ -900,9 +970,9 @@
     text = text.replace(/WLLE/g, "WILLE");
     text = text.replace(/\bCOVERG(?=WILLE)/g, "COVER 6 ");
     text = text.replace(/\bCOVER(?=WILLE)/g, "COVER 3 ");
-    // COVER 1 LB / COVER 1 DOUBLE — I/L/1 after COVER before LB/DOUBLE.
-    text = text.replace(/\bCOVER[IL1](?=LB|DBL|DOUBLE)/g, "COVER 1 ");
-    text = text.replace(/\bCOVER\s*[IL1]\s*(?=LB|DBL|DOUBLE)/g, "COVER 1 ");
+    // COVER 1 LB / COVER 1 DOUBLE / COVER 1 CONTAIN / COVER 1 QB / COVER 1 ROBBER
+    text = text.replace(/\bCOVER[IL1](?=LB|DBL|DOUBLE|CONTAIN|CONTAN|QB|ROBBER|ROBER)/g, "COVER 1 ");
+    text = text.replace(/\bCOVER\s*[IL1]\s*(?=LB|DBL|DOUBLE|CONTAIN|CONTAN|QB|ROBBER|ROBER)/g, "COVER 1 ");
 
     // Cover family: remaining digit confusables after COVER.
     var coverDigit = { B: "3", E: "3", S: "3", A: "4", H: "4", G: "6", Z: "2", I: "1", L: "1" };
@@ -961,8 +1031,9 @@
     }
     // NVERT lost its leading I. Do not match the NVERT inside INVERT.
     text = text.replace(/(?<!I)NVERT/g, "INVERT");
-    // ZE/Z6 → 26 for duo/power style play numbers.
+    // ZE/Z6/ZG/2G → 26 for duo/power style play numbers.
     text = text.replace(/\bZE(?!RO)(?=[A-Z])/g, "26 ");
+    text = text.replace(/\b[Z2]G(?=[A-Z])/g, "26 ");
     text = text.replace(/\bZ([0-9])(?=[A-Z])/g, "2$1 ");
     // Leading D→O for OUTS / OUT.
     text = text.replace(/\bDUT(S?)\b/g, "OUT$1");
@@ -980,7 +1051,7 @@
     text = text.replace(/SITCHLLE/g, "SWITCH WILLIE");
     text = text.replace(/SITCH(?=[A-Z]|$)/g, "SWITCH");
     text = text.replace(/WLLIE/g, "WILLIE");
-    text = text.replace(/CONTAN(?=PRESS)/g, "CONTAIN");
+    text = text.replace(/CONTAN(?=PRESS|SPY|\b|[A-Z])/g, "CONTAIN");
     text = text.replace(/IROBBER(?!RESS)/g, "1 ROBBER");
     text = text.replace(/NCKEL/g, "NICKEL");
     text = text.replace(/BUTZ(?=L|$)/g, "BLITZ");
@@ -1099,8 +1170,8 @@
       .replace(/\bCLOSEPA\s*SAIL\b/g, "CLOSE PA SAIL")
       .replace(/\bCLOSEPASAL\b/g, "CLOSE PA SAIL")
       .replace(/\bPOST\s*YDIG\b/g, "POST Y DIG")
-      .replace(/COVER\s*I?ROB+ER\s*RESS/g, "COVER 1 ROBBER PRESS")
-      .replace(/COVER\s*I?ROB+ER\s*PRESS/g, "COVER 1 ROBBER PRESS")
+      .replace(/COVER\s*[I1]?\s*ROB+ER\s*RESS/g, "COVER 1 ROBBER PRESS")
+      .replace(/COVER\s*[I1]?\s*ROB+ER\s*PRESS/g, "COVER 1 ROBBER PRESS")
       .replace(/\bCOVER\s*UZZ\s*RESS\b/g, "COVER 3 BUZZ PRESS");
 
     return text.replace(/\s+/g, " ").trim();

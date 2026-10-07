@@ -107,10 +107,11 @@ def down_distance_structure_score(text):
     normalized = normalize_text(text).upper()
     if not normalized:
         return 0
-    compact = re.sub(r"\s+", "", normalized)
-    if "&" in normalized or re.search(r"\bAND\b", normalized):
+    clean_text = re.sub(r"['\"]", "", normalized)
+    compact = re.sub(r"\s+", "", clean_text)
+    if "&" in clean_text or re.search(r"\bAND\b", clean_text):
         return 2
-    if re.search(r"\b[1-4](?:ST|ND|RD|TH)\b", normalized):
+    if re.search(r"\b[1-4](?:ST|ND|RD|TH)\b", clean_text):
         return 2
     if re.search(r"[1-4](?:ST|ND|RD|TH)(?:\d{1,2}|GOAL)\b", compact):
         return 2
@@ -120,8 +121,9 @@ def down_distance_structure_score(text):
 def _field_position_yard_candidates(text):
     normalized = normalize_text(text).upper()
     # Ignore digits that sit before an arrow glyph (left bleed).
-    normalized = re.sub(r"\d+([V↑↓∨∧Λ^])", r"\1", normalized)
-    return [int(match) for match in re.findall(r"\b(\d{1,2})\b", normalized) if 1 <= int(match) <= 50]
+    normalized = re.sub(r"\d+([V↑↓∨∧Λ^▲△▴▼▽▾])", r"\1", normalized)
+    clean_text = re.sub(r"['\"]", "", normalized)
+    return [int(match) for match in re.findall(r"\b(\d{1,2})\b", clean_text) if 1 <= int(match) <= 50]
 
 
 def filter_field_position_leading_digit_bleed(samples):
@@ -235,13 +237,17 @@ def _field_has_usable_structure(field_id, text):
         return False
     if field_id == "down_distance":
         # Require ordinal + yards/goal — bare "1st" is usually the quarter label.
+        # Strip internal quotes ('3'rd'&''2' -> 3rd&2) before testing.
+        clean_dd = re.sub(r"['\"]", "", normalized)
+        compact_dd = re.sub(r"\s+", "", clean_dd)
         return bool(
             re.search(
                 r"\b[1-4](?:st|nd|rd|th)?\s*(?:&|and)\s*(?:\d{1,2}|goal)\b",
-                normalized,
+                clean_dd,
                 re.I,
             )
-            or re.search(r"[1-4](?:st|nd|rd|th)(?:\d{1,2}|goal)\b", normalized.replace(" ", ""), re.I)
+            or re.search(r"[1-4](?:st|nd|rd|th)(?:\d{1,2}|goal)\b", compact_dd, re.I)
+            or re.search(r"[1-4](?:st|nd|rd|th)?&(?:[0-9]{1,2}|goal)\b", compact_dd, re.I)
         )
     if field_id == "field_position":
         yards = _field_position_yard_candidates(text)
@@ -249,10 +255,14 @@ def _field_has_usable_structure(field_id, text):
             return False
         if re.search(r"\b(own|opp|opponent)\b", normalized, re.I):
             return True
-        if re.search(r"[v^↑↓∨∧Λ]", text or ""):
+        if re.search(r"[v^↑↓∨∧Λ▲△▴▼▽▾]", text or ""):
             return True
         # Bare midfield 50 is usable without OWN/OPP.
-        return len(yards) == 1 and yards[0] == 50
+        if len(yards) == 1 and yards[0] == 50:
+            return True
+        # Clear 1-2 digit yard read (1-50) is usable without forced band expansion
+        if len(yards) == 1 and 1 <= yards[0] <= 50:
+            return True
     return False
 
 
@@ -264,20 +274,25 @@ def _field_read_score(field_id, text, confidence):
     score = float(confidence or 0) * 0.35
     if field_id == "down_distance":
         score += down_distance_structure_score(text) * 1.5
-        if re.search(r"\b[1-4](?:st|nd|rd|th)?\s*(?:&|and)\s*(?:\d{1,2}|goal)\b", normalized, re.I):
+        clean_dd = re.sub(r"['\"]", "", normalized)
+        compact_dd = re.sub(r"\s+", "", clean_dd)
+        if (
+            re.search(r"\b[1-4](?:st|nd|rd|th)?\s*(?:&|and)\s*(?:\d{1,2}|goal)\b", clean_dd, re.I)
+            or re.search(r"[1-4](?:st|nd|rd|th)?&(?:[0-9]{1,2}|goal)\b", compact_dd, re.I)
+        ):
             score += 2.5
-        elif re.search(r"[1-4](?:st|nd|rd|th)", normalized, re.I):
+        elif re.search(r"[1-4](?:st|nd|rd|th)", clean_dd, re.I):
             score += 1.2
         # Penalize bare digit soup / scoreboard bleed that usually means a bad crop.
-        if re.fullmatch(r"\d{1,4}", normalized.replace(" ", "")):
+        if re.fullmatch(r"\d{1,4}", clean_dd.replace(" ", "")):
             score -= 1.5
         # Quarter labels ("1st") without yards-to-go are not down/distance.
-        if re.fullmatch(r"[1-4](?:st|nd|rd|th)", normalized.replace(" ", ""), re.I):
+        if re.fullmatch(r"[1-4](?:st|nd|rd|th)", clean_dd.replace(" ", ""), re.I):
             score -= 2.0
     elif field_id == "field_position":
         if re.search(r"\b(own|opp|opponent)\b", normalized, re.I):
             score += 1.8
-        if re.search(r"[v^↑↓∨∧Λ]", text or ""):
+        if re.search(r"[v^↑↓∨∧Λ▲△▴▼▽▾]", text or ""):
             score += 1.2
         yards = _field_position_yard_candidates(text)
         if yards:
