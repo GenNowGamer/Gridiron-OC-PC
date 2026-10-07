@@ -163,6 +163,9 @@ test("HUD down/distance uses grammar + catalog, fails closed on digit soup", () 
   assert.equal(HudText.parseDownDistanceText("'2'ND'8''1''0'").label, "2nd & 10");
   assert.equal(HudText.parseDownDistanceText("'4'TH'8''1'O").label, "4th & 10");
   assert.equal(HudText.parseDownDistanceText("'2'NDGS").label, "2nd & 5");
+  assert.equal(HudText.parseDownDistanceText("'1'STS'1''0'").label, "1st & 10");
+  assert.equal(HudText.parseDownDistanceText("'1'STS'1''0'").ok, true);
+  assert.equal(HudText.parseDownDistanceText("1STS10").label, "1st & 10");
   assert.equal(HudText.parseDownDistanceText("ATHA'7'").label, "4th & 7");
   assert.equal(HudText.parseFieldPositionText("A'3'B").label, "OPP 38");
   assert.equal(HudText.parseFieldPositionText("A'1'S").label, "OPP 15");

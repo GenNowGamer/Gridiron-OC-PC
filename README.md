@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.19-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.20-green.svg)](#testing--quality-verification)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
@@ -121,7 +121,7 @@ In competitive football gaming, calling plays under a running play clock can lea
    - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
    - Automatically reads the on-screen scoreboard (down, distance, yard line, and upcoming offensive formation) without sending video data to external servers.
    - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
-   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`), corrupted HUD chrome (`CYAALB`, `CYAAALB`), and glued/damaged Madden play names (`SILVERSHOOTNCH`, `SAMMKELOOP`, `DTMKELOOPA`, `LBBLITZO`, `COVERIMBBLITZ`, `LDUBLEWRI`, `ZZZIN`, `MTNYCORNERUNER`, `NCKELSIMZ`, `NCKELZTRAP`, `ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
+   - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`), corrupted HUD chrome (`CYAALB`, `CYAAALB`), glued situation lookalikes (`1STS10` / `'1'STS'1''0'` → `1st & 10`, `'2'NDG'3'` → `2nd & 3`, `38] &5` → `3rd & 5`), and glued/damaged Madden play names (`SILVERSHOOTNCH`, `SAMMKELOOP`, `DTMKELOOPA`, `LBBLITZO`, `COVERIMBBLITZ`, `LDUBLEWRI`, `ZZZIN`, `MTNYCORNERUNER`, `NCKELSIMZ`, `NCKELZTRAP`, `ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
    - **Structural Broadcast Personnel Recognition:** Utilizes generalized structural sequence and archetype matching across all presentation styles (Default, TNF, MNF, SNF). Fused broadcast pipes and ornament artifacts (such as TNF badge compressions `RYTITEIWR`, `ITEIR`, `RITEIR`, `ITER`, `1TE3WR`, `RBITEIR`, `IRBITEIWR`) are automatically resolved to legal NFL personnel packages (`1RB - 1TE 3WR`) without requiring manual review.
    - **Manual Review for formation / personnel:** If the strip says review is required for `offense_formation_personnel`, open **Review**, correct the field, and choose **Accept Corrections**. Unaccepted raw OCR noise is never pre-filled into the review input. Skill counts must add to 5 (`RB + TE + WR`). Empty backfield is valid (`0RB - 1TE 4WR`, `0RB - 2TE 3WR`). A typed `0RB` is kept in that case. `0RB` paired with TE + WR totaling 4 (for example `0RB 1TE 3WR`) is still treated as a misread `1RB`. The review row states this when the field is still rejected.
    - **Auto Playcaller Option:** When enabled, automatically generates and surfaces coordinator play calls upon each successful OCR snap detection.

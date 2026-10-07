@@ -233,11 +233,11 @@
       "$1GOAL",
     );
 
-    // Default presentation reads "&" as G, A, or 8 glued to the ordinal:
-    // "'2'NDG'3'" → 2ND & 3, "2ND810" → 2ND & 10, "4THA7" → 4TH & 7.
+    // Default presentation reads "&" as G, A, 8, or S glued to the ordinal:
+    // "'2'NDG'3'" → 2ND & 3, "2ND810" → 2ND & 10, "4THA7" → 4TH & 7, "'1'STS'1''0'" → 1ST & 10.
     // Do not split GOAL ("2NDGOAL" — the G is followed by OAL).
     // A bare yard 8 ("3RD8") has nothing after it, so it stays the yard.
-    text = text.replace(/\b([1-4](?:ST|ND|RD|TH))[GA8](?!OAL)(?=[0-9A-Z])/g, "$1 & ");
+    text = text.replace(/\b([1-4](?:ST|ND|RD|TH))[GA8S](?!OAL)(?=[0-9A-Z])/g, "$1 & ");
 
     // "3RD & A" / "3 & S" / "3RD & IO" → fold yard token confusables to digits.
     text = text.replace(/((?:&|-)\s*)([0-9A-Z|]+)\b/g, function (_match, sep, yards) {

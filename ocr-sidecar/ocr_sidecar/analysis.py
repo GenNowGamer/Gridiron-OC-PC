@@ -113,7 +113,7 @@ def down_distance_structure_score(text):
         return 2
     if re.search(r"\b[1-4](?:ST|ND|RD|TH)\b", clean_text):
         return 2
-    if re.search(r"[1-4](?:ST|ND|RD|TH)(?:\d{1,2}|GOAL)\b", compact):
+    if re.search(r"[1-4](?:ST|ND|RD|TH)[SGA8]?(?:\d{1,2}|GOAL)\b", compact):
         return 2
     return 0
 
@@ -246,7 +246,7 @@ def _field_has_usable_structure(field_id, text):
                 clean_dd,
                 re.I,
             )
-            or re.search(r"[1-4](?:st|nd|rd|th)(?:\d{1,2}|goal)\b", compact_dd, re.I)
+            or re.search(r"[1-4](?:st|nd|rd|th)[sga8]?(?:\d{1,2}|goal)\b", compact_dd, re.I)
             or re.search(r"[1-4](?:st|nd|rd|th)?&(?:[0-9]{1,2}|goal)\b", compact_dd, re.I)
         )
     if field_id == "field_position":
@@ -278,6 +278,7 @@ def _field_read_score(field_id, text, confidence):
         compact_dd = re.sub(r"\s+", "", clean_dd)
         if (
             re.search(r"\b[1-4](?:st|nd|rd|th)?\s*(?:&|and)\s*(?:\d{1,2}|goal)\b", clean_dd, re.I)
+            or re.search(r"[1-4](?:st|nd|rd|th)[sga8]?(?:\d{1,2}|goal)\b", compact_dd, re.I)
             or re.search(r"[1-4](?:st|nd|rd|th)?&(?:[0-9]{1,2}|goal)\b", compact_dd, re.I)
         ):
             score += 2.5
