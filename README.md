@@ -2,11 +2,16 @@
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
 [![Version](https://img.shields.io/badge/Version-0.1.20-green.svg)](#testing--quality-verification)
+[![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
 
 Gridiron OC operates completely on-device with zero cloud dependencies, utilizing low-latency video capture and computer vision OCR to deliver seamless coordinator intelligence.
+
+<p align="center">
+  <img src="docs/screenshots/hero-recommendations-radar.png" alt="Gridiron OC Live Play Call & Opponent Radar" width="100%">
+</p>
 
 ---
 
@@ -49,6 +54,10 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 1. Offensive Coordinator (OC) Workspace
 
+<p align="center">
+  <img src="docs/screenshots/oc-workspace-overview.png" alt="Offensive Coordinator Workspace" width="100%">
+</p>
+
 - **Top-3 Recommendation Slate:** Evaluates your entire 32-team NFL playbook catalog and presents the 3 best calls for the exact down, distance, and field spot.
 - **Why-This-Call Chips:** Every recommendation tile displays live contextual rationales (e.g., *Identity Fit*, *Sets up Play-Action*, *Coverage Beater*, *Third-Down Converter*).
 - **Playcalling Modes:** Instantly reshape your playbook strategy with specialized tactical overlays:
@@ -69,6 +78,11 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Smart Situational Yield:** On extreme passing downs (e.g. 3rd/4th & 10+), if the scheduled scripted play is a run or RPO, the Auto Playcaller automatically yields priority to Slot #2's situational pass call without burning the scripted play.
   - **Zero Cross-Game Persistence:** Scripts are game-specific and team-tailored—clearing cleanly upon New Game or team changes without lingering across sessions.
   - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15**.
+
+<p align="center">
+  <img src="docs/screenshots/opening-15-script.png" alt="Opening 15 Script Game Planning" width="80%">
+</p>
+
 - **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
   - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
   - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, opening script priorities, and score/clock context.
@@ -87,6 +101,10 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 
 ### 2. Defensive Coordinator (DC) Workspace
+
+<p align="center">
+  <img src="docs/screenshots/dc-workspace-overview.png" alt="Defensive Coordinator Workspace" width="100%">
+</p>
 
 - **Comprehensive Defensive Catalog:** Includes all 32 NFL teams and over 8,200 unique defensive plays across 3-4, 4-3, Nickel, Dime, Dollar, and Goal Line fronts.
 - **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
@@ -116,6 +134,10 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Coaching Takeaways & Adjustments:** Offers coordinator recommendations on whether to balance the attack, exploit coverage weaknesses, or maintain pressure.
 
 ### 5. Computer Vision OCR Capture
+
+<p align="center">
+  <img src="docs/screenshots/ocr-calibration-hud.png" alt="Madden HUD Computer Vision Calibration" width="90%">
+</p>
  
  - **Local Computer Vision (Madden OCR DC & OC):**
    - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
@@ -146,6 +168,10 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Drive Result Tracking & Coordinator Handoff:**
   - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack*) to reinforce situational learning and automatically hand off between OC and DC workspaces.
 
+<p align="center">
+  <img src="docs/screenshots/drive-result-modal.png" alt="Drive Result & Scoring Modal" width="60%">
+</p>
+
 ### 7. Opponent Scouting & Tendencies
 
 - **Last Defense Shown Bar (DC side):**
@@ -168,6 +194,10 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 
 ### OCR Screen Capture Workflow
 
+<p align="center">
+  <img src="docs/screenshots/matchup-broadcast-setup.png" alt="Matchup & Broadcast Setup Modal" width="75%">
+</p>
+
 1. On launch, select your broadcast presentation style right from the **Matchup & Broadcast Setup** modal (`Default`, `TNF`, `SNF`, `MNF`), or open **Calibrate capture** in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
@@ -175,6 +205,17 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 5. In game, press the capture hotkey (`F8` or `Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
 6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
 7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
+
+<details>
+<summary><b>📸 Click to explore additional Coordinator & Preferences UI Screens</b></summary>
+<br>
+
+| Coordinator Style Picker | Desktop Preferences & Calibration |
+| :---: | :---: |
+| <img src="docs/screenshots/coordinator-style-picker.png" alt="Coordinator Tactical Styles" width="100%"> | <img src="docs/screenshots/desktop-preferences.png" alt="Desktop Preferences & Hotkeys" width="100%"> |
+| *Tailor team offensive scheme (West Coast, Run First, Tempo/Spread, Aggressive)* | *Fine-tune local OCR engine, hotkeys, and diagnostic exports* |
+
+</details>
 
 ---
 

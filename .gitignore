@@ -48,6 +48,7 @@ scripts/sync-recommendation-core.mjs
 *.md
 !README.md
 !readme.md
-docs/
+docs/*
+!docs/screenshots/
 *.pdf
 *.docx
