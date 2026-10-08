@@ -161,12 +161,14 @@
       }
     }
 
-    // OCR often reads ordinal trailing D as 0/O: "2N0"→"2ND", "SRO"/"SR0"→"3RD".
-    text = text.replace(/\b([1-4])N[O0]\b/g, "$1ND");
+    // OCR often reads ordinal trailing D as 0/O: "2N0"→"2ND", "SRO"/"SR0"→"3RD", "2NO&6"→"2ND&6".
+    text = text.replace(/\b([1-4])N[O0](?=[&0-9A-Z\s-]|$)/g, "$1ND");
     // "2M0" / "2MO" — ND collapsed to M0 (export: "'2'M'0''&''4'").
-    text = text.replace(/\b([1-4])M[O0]\b/g, "$1ND");
-    // "38D" — R misread as 8 before D (export: "38D & GOAL").
-    text = text.replace(/\b([1-4])8D\b/g, "$1RD");
+    text = text.replace(/\b([1-4])M[O0](?=[&0-9A-Z\s-]|$)/g, "$1ND");
+    // "38D" / "3BD" — R misread as 8/B before D (export: "38D & GOAL", "3BD").
+    text = text.replace(/\b([1-4])[8B]D(?=[&0-9A-Z\s-]|$)/g, "$1RD");
+    // "SRO" / "SRD" / "BRD" / "BRO" — S/B misread as down 3 before R
+    text = text.replace(/\b[SB]R[O0D](?=[&0-9A-Z\s-]|$)/g, "3RD");
     text = text.replace(/\b([0-9A-Z|]{0,2})R[O0]\b/g, function (match) {
       if (match === "AND" || match === "OR" || match === "FOR") return match;
       return "3RD";
@@ -944,6 +946,62 @@
       MTNXWHP: "MTN X WHIP",
       HITCHCORNERS: "HITCH CORNERS",
       HBSLIPSOREEN: "HB SLIP SCREEN",
+      BOOMERANGSLOTSWING: "BOOMERANG SLOT SWING",
+      REDZONEHBSCISSRS: "REDZONE HB SCISSORS",
+      SDEZONESPLIT: "INSIDE ZONE SPLIT",
+      NOKELBLITZI: "NICKEL BLITZ 0",
+      MESHBSNEAK: "MESH HB SNEAK",
+      COVNVERTHARDFLT: "COVER 2 INVERT HARD FLAT",
+      HBMSDRECTIN: "HB MISDIRECTION",
+      PAPDWERO: "PA POWER O",
+      PAPWERO: "PA POWER O",
+      MTNHBCRSSSREN: "MTN HB CROSS SCREEN",
+      ZMESHGOALLNE: "Z MESH GOALLINE",
+      DAGGERHSWNG: "DAGGER H-SWING",
+      COVERDROPELD: "COVER 4 DROP FIELD",
+      CROSSMZ: "CROSS SIM 2",
+      GUOUTACKS: "60 OUT JACKS",
+      DEEPOSTOUT: "DEEP POST OUT",
+      EMPTYFLODTCH: "EMPTY FLOOD SWITCH",
+      RBITCROSSSCREEN: "ORBIT CROSS SCREEN",
+      OBDRAW: "HB DRAW",
+      PIOTDIG: "PIVOT DIG",
+      DGZSPOT: "DIG Z SPOT",
+      LBDETWISTA: "LB DE TWIST 3",
+      SSZTRAP: "SS 2 TRAP",
+      PACROSCOUNTRY: "PA CROSS COUNTRY",
+      POSTRAL: "POST RAIL",
+      DAGERDEEPCURL: "DAGGER DEEP CURL",
+      DAGEREEPCURL: "DAGGER DEEP CURL",
+      PAJALBREAKSREEN: "PA JAILBREAK SCREEN",
+      DTMKELOOPI: "DT MIKE LOOP 0",
+      BOOMERANGROSSOST: "BOOMERANG CROSS POST",
+      LBDOGSA: "LB DOGS 3",
+      FSFIREL: "FS FIRE 1",
+      FSFIRES: "FS FIRE 1",
+      PINCHO: "PINCH 0",
+      HBZOEWK: "HB ZONE WK",
+      ATNPAFKSCRENSCISSORS: "MTN PA FK SCREEN SCISSORS",
+      DRAGONSANG: "DRAGON SPACING",
+      SSBLITZ: "SS BLITZ 1",
+      PABDOT: "PA BOOT",
+      PABDOTFLOW: "PA BOOT FLOW",
+      PADEEROSS: "PA DEEP CROSS",
+      PADEEPROSSGO: "PA DEEP CROSS GO",
+      SHOWSSSMZ: "SHOW SS SIM 2",
+      GAPPRES: "GAP PRESS",
+      PAMSRECTION: "PA MISDIRECTION",
+      LBBLITZ: "1 LB BLITZ",
+      RPOPEEKSLANTBUBLE: "RPO PEEK SLANT BUBBLE",
+      SPACNGSTCH: "SPACING SWITCH",
+      LBDETWISTS: "LB DE TWIST 3",
+      UNERZCURL: "UNDER Z CURL",
+      DEPOUT: "DEEP OUT",
+      DBFIREZ: "DB FIRE 2",
+      BLTZLOOP: "BLITZ LOOP 3",
+      FSSLANTS: "FS SLANT 3",
+      TESGREEN: "TE SCREEN",
+      SAWOBLAST: "SAM 0 BLAST",
     };
     if (confirmedRepairs[text]) return confirmedRepairs[text];
 

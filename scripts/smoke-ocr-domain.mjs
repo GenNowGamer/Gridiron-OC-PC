@@ -1223,7 +1223,26 @@ test("export OCR corruptions resolve to deterministic play and personnel labels"
   assert.equal(HudText.repairPreviousPlayOcrText("FLOODZDRNE"), "FLOOD Z DRIVE");
   assert.equal(HudText.repairPreviousPlayOcrText("SHALLOWROSS"), "SHALLOW CROSS");
   assert.equal(HudText.repairPreviousPlayOcrText("SPAINGSWITCH"), "SPACING SWITCH");
-  assert.equal(HudText.repairPreviousPlayOcrText("'2'GDUO"), "26 DUO");
+  assert.equal(HudText.repairPreviousPlayOcrText("BOOMERANGSLOTSWING"), "BOOMERANG SLOT SWING");
+  assert.equal(HudText.repairPreviousPlayOcrText("REDZONEHBSCISSRS"), "REDZONE HB SCISSORS");
+  assert.equal(HudText.repairPreviousPlayOcrText("SDEZONESPLIT"), "INSIDE ZONE SPLIT");
+  assert.equal(HudText.repairPreviousPlayOcrText("PIOTDIG"), "PIVOT DIG");
+  assert.equal(HudText.repairPreviousPlayOcrText("DGZSPOT"), "DIG Z SPOT");
+  assert.equal(HudText.repairPreviousPlayOcrText("PACROSCOUNTRY"), "PA CROSS COUNTRY");
+  assert.equal(HudText.repairPreviousPlayOcrText("LBDETWISTA"), "LB DE TWIST 3");
+  assert.equal(HudText.repairPreviousPlayOcrText("SSZTRAP"), "SS 2 TRAP");
+  assert.equal(HudText.repairPreviousPlayOcrText("DAGERDEEPCURL"), "DAGGER DEEP CURL");
+  assert.equal(HudText.repairPreviousPlayOcrText("PAJALBREAKSREEN"), "PA JAILBREAK SCREEN");
+
+  // Autonomous agreement & down confusables
+  assert.equal(HudText.parseDownDistanceText("2NO&6").ok, true);
+  assert.equal(HudText.parseDownDistanceText("2NO&6").label, "2nd & 6");
+  assert.equal(HudText.parseDownDistanceText("3BD&GOAL").ok, true);
+  assert.equal(HudText.parseDownDistanceText("3BD&GOAL").label, "3rd & Goal");
+  assert.equal(HudText.parseDownDistanceText("BRO&14").ok, true);
+  assert.equal(HudText.parseDownDistanceText("BRO&14").label, "3rd & 14");
+  assert.equal(Matcher.rawAgreesWithMatch("REDZONEHBSCISSRS", "REDZONE HB SCISSORS"), true);
+  assert.equal(Matcher.rawAgreesWithMatch("BOOMERANGSLOTSWING", "BOOMERANG SLOT SWING"), true);
   assert.equal(HudText.isGarbagePreviousPlayOcr("cYa"), true);
   assert.equal(HudText.isGarbagePreviousPlayOcr("cYaa"), true);
 });

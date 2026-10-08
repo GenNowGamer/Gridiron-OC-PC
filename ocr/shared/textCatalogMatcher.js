@@ -136,15 +136,20 @@
     if (!cleanish(rawText) || !cleanish(label)) return false;
     var sim = similarity(rawText, label);
     if (sim >= minSimilarity) return true;
-    // Compacted OCR vs spaced catalog labels (READOPTION / READ OPTION).
+    // Compacted OCR vs spaced catalog labels (e.g. READOPTION vs READ OPTION,
+    // REDZONEHBSCISSRS vs REDZONE HB SCISSORS, BOOMERANGSLOTSWING vs BOOMERANG SLOT SWING).
     var compactRaw = normalizeOcrText(rawText).replace(/\s+/g, "");
     var compactLabel = normalizeOcrText(label).replace(/\s+/g, "");
     if (compactRaw && compactLabel) {
-      var compactSim = compactRaw === compactLabel
-        ? 1
-        : (1 - levenshtein(compactRaw, compactLabel)
-          / Math.max(compactRaw.length, compactLabel.length, 1));
+      if (compactRaw === compactLabel) return true;
+      var maxCompLen = Math.max(compactRaw.length, compactLabel.length, 1);
+      var compDist = levenshtein(compactRaw, compactLabel);
+      var compactSim = 1 - compDist / maxCompLen;
+      // High threshold for direct compact string match: allows 1-2 char typos/drops
+      // in long glued play names without needing hardcoded confirmedRepairs entries.
       if (compactSim >= minSimilarity) return true;
+      if (maxCompLen >= 8 && compDist <= 2) return true;
+      if (maxCompLen >= 14 && compDist <= 3) return true;
     }
     var rawTokens = significantTokens(rawText, { foldDigits: false });
     var matchTokens = significantTokens(label, { foldDigits: false });
