@@ -1,4 +1,4 @@
-﻿# Dependencies and local build caches
+# Dependencies and local build caches
 node_modules/
 build/out/
 .cache/
@@ -52,3 +52,24 @@ docs/*
 !docs/screenshots/
 *.pdf
 *.docx
+
+# Transient scratch images and text dumps
+*.png
+!assets/
+!assets/**
+!docs/screenshots/**
+*.txt
+# Local workspace and transient scratch / pipeline test scripts
+*.code-workspace
+audit_defense_cards.py
+build_full_defense.py
+check_header_counts.py
+collect_raw_defense_keys.py
+diag_defense*.py
+dump_dime_nickel.py
+fix_defense_canonical.py
+run_chicago_complete.py
+run_chicago_extract*.py
+scan_all_defense_pills.py
+scan_nickel_pills.py
+test_fb.py
