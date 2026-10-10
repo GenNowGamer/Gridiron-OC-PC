@@ -73,3 +73,4 @@ run_chicago_extract*.py
 scan_all_defense_pills.py
 scan_nickel_pills.py
 test_fb.py
+pyrefly.toml
