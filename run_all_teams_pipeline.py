@@ -4,6 +4,7 @@ import re
 import glob
 import asyncio
 import difflib
+import unicodedata
 import cv2
 import numpy as np
 from collections import Counter
@@ -108,11 +109,26 @@ DEF_REP_EXTRA = {
     "60BASE": ("60 Base", "BLITZ"),
     "GOHALFOUT": ("60 Half Out", "BLITZ"),
     "60HALFOUT": ("60 Half Out", "BLITZ"),
+    "GOHA1FUJT": ("60 Half Out", "BLITZ"),
+    "GOH1FUJT": ("60 Half Out", "BLITZ"),
+    "GOH1FLT": ("60 Half Out", "BLITZ"),
+    "GOH1FLUT": ("60 Half Out", "BLITZ"),
+    "GOH1FUT": ("60 Half Out", "BLITZ"),
+    "GOHAIFWT": ("60 Half Out", "BLITZ"),
+    "GOHALFWT": ("60 Half Out", "BLITZ"),
     "GOOUT": ("60 Out", "BLITZ"),
     "60OUT": ("60 Out", "BLITZ"),
+    "EOMN": ("60 Out", "BLITZ"),
+    "EOMUT": ("60 Out", "BLITZ"),
+    "EOMT": ("60 Out", "BLITZ"),
     "GOOUTJACKS": ("60 Out Jacks", "BLITZ"),
     "60OUTJACKS": ("60 Out Jacks", "BLITZ"),
+    "GOMJTJACKS": ("60 Out Jacks", "BLITZ"),
     "GUTS": ("Guts", "BLITZ"),
+    "NJTS": ("Guts", "BLITZ"),
+    "MNS": ("Guts", "BLITZ"),
+    "WTS": ("Guts", "BLITZ"),
+    "GWTS": ("Guts", "BLITZ"),
     "GLMAN": ("GL Man", "BLITZ"),
     "MLBGAPA": ("MLB Gap A", "BLITZ"),
     "GAPSAU": ("Gaps All", "BLITZ"),
@@ -280,9 +296,229 @@ DEF_REP_EXTRA = {
     "ROLL28CLOUD": ("Roll 2 Cloud", "ZONE"),
     "ROLLCOVER8CLOUD": ("Roll Cover 3 Cloud", "ZONE"),
     "2-4LODDALMUG": ("2-4 Load Dbl Mug", "ZONE"),
+
+    # Atlanta & general new corrections
+    "COMAWARTERS": ("Cover 4 Quarters", "MATCH"),
+    "CWERIURTERS": ("Cover 4 Quarters", "MATCH"),
+    "CWER4URTERS": ("Cover 4 Quarters", "MATCH"),
+    "CWER4QTURTERS": ("Cover 4 Quarters", "MATCH"),
+    "COVERIWARTERS": ("Cover 4 Quarters", "MATCH"),
+    "COME": ("Cover 6", "MATCH"),
+    "COMS": ("Cover 6", "MATCH"),
+    "COVNG": ("Cover 6", "MATCH"),
+    "COVNS": ("Cover 6", "MATCH"),
+    "IUVERT2SLM": ("Invert 2 Sim", "BLITZ"),
+    "INVERT2SLM": ("Invert 2 Sim", "BLITZ"),
+    "INVERT2SIM": ("Invert 2 Sim", "BLITZ"),
+    "WILLBUTZ8": ("Will Blitz 3", "BLITZ"),
+    "WIUBUTZ8": ("Will Blitz 3", "BLITZ"),
+    "WULBUTZ8": ("Will Blitz 3", "BLITZ"),
+    "UIKEBUTZI": ("Mike Blitz 1", "BLITZ"),
+    "UIIEBUTZI": ("Mike Blitz 1", "BLITZ"),
+    "STORUBUVEI": ("Storm Brave 1", "BLITZ"),
+    "CMQ8SKY": ("Cover 3 Sky", "ZONE"),
+    "C8SKY": ("Cover 3 Sky", "ZONE"),
+    "CSLM2": ("Nickel Sim 2", "BLITZ"),
+    "CSIM2": ("Nickel Sim 2", "BLITZ"),
+    "C8BLZ": ("Cover 3 Buzz", "ZONE"),
+    "CIPALMS": ("Cover 4 Palms", "MATCH"),
+    "COVNAPALMS": ("Cover 4 Palms", "MATCH"),
+    "COVN3SKY": ("Cover 3 Sky", "ZONE"),
+    "COVN3MATCH": ("Cover 3 Match", "MATCH"),
+    "CN3BUZZ": ("Cover 3 Buzz", "ZONE"),
+    "SANUIKE8PRES": ("Sam Mike 3 Press", "BLITZ"),
+    "CORNERBUTZ8": ("Corner Blitz 3", "BLITZ"),
+    "DOIIEBRACKET": ("Double Bracket", "MAN"),
+    "CN21NVERT": ("Cover 2 Invert", "ZONE"),
+    "CM21NVERT": ("Cover 2 Invert", "ZONE"),
+    "CNGSHOW2": ("Cover 9 Show 2", "MATCH"),
+    "COVER8SHN2": ("Cover 9 Show 2", "MATCH"),
+    "IDWLETE": ("1 Double TE", "MAN"),
+    "1DOJBLETE": ("1 Double TE", "MAN"),
+    "IDLEWRI": ("1 Double WR1", "MAN"),
+    "IDULEWRI": ("1 Double WR1", "MAN"),
+    "IDMJBLEWRL": ("1 Double WR1", "MAN"),
+    "MLLCOVER8CLMJD": ("Roll Cover 3 Cloud", "ZONE"),
+    "NLCOVER3CLMJD": ("Roll Cover 3 Cloud", "ZONE"),
+    "ROILCOVER8CLMLD": ("Roll Cover 3 Cloud", "ZONE"),
+    "MTL28C1DTN": ("Roll 2 Cloud", "ZONE"),
+    "ROIL28CL": ("Roll 2 Cloud", "ZONE"),
+    "DU28CLMJD": ("Roll 2 Cloud", "ZONE"),
+    "GWJTJACKS": ("60 Out Jacks", "BLITZ"),
+    "21NVERTUJRK": ("Cover 2 Invert Lurk", "ZONE"),
+    "BUTZTEX8SLM8": ("Blitz Tex 3 Sim 3", "BLITZ"),
+    "BUTZTEX8SIM8": ("Blitz Tex 3 Sim 3", "BLITZ"),
+    "COVER9SAUMLE": ("Cover 3 Seam", "MATCH"),
+    "EDCEBUTZ8": ("Edge Blitz 3", "BLITZ"),
+    "IBBUTZ8": ("LB Blitz 3", "BLITZ"),
+    "8DBIMABLECLOUD": ("3 Double Cloud", "ZONE"),
+    "8DBIUIBLECTOUD": ("3 Double Cloud", "ZONE"),
+    "8DMJBLEMABIE": ("3 Buzz Mable", "MATCH"),
+    "C8MABLE": ("3 Buzz Mable", "MATCH"),
+    "COVER8UBLE": ("3 Buzz Mable", "MATCH"),
+    "C8SPY": ("Cover 3 Spy", "ZONE"),
+    "COVER8SPY": ("Cover 3 Spy", "ZONE"),
+    "COVERIDO": ("Cover 4 Drop", "ZONE"),
+    "COVERIDROP": ("Cover 4 Drop", "ZONE"),
+    "INDERSMOKE": ("Under Smoke", "BLITZ"),
+    "INDERSUOXE": ("Under Smoke", "BLITZ"),
+    "8DOUBLEWZZ": ("3 Double Buzz", "ZONE"),
+    "UANUP8DEEP": ("Man Up 3 Deep", "MAN"),
+    "FZ8SKY": ("FZ 3 Sky", "BLITZ"),
+    "COVER2MANSPY": ("Cover 2 Man Spy", "MAN"),
+    "COVERITHIEF": ("Cover 1 Thief", "MAN"),
+    "OVERLOAD8": ("Overload 3", "BLITZ"),
+    "OVERLOADA": ("Overload 3", "BLITZ"),
+    "MIKESAMC8": ("Mike Sam Crash Press", "BLITZ"),
+    "DOUBLECBBUTZ": ("Double CB Blitz", "BLITZ"),
+    "DOUBLECBBLITZ": ("Double CB Blitz", "BLITZ"),
+    "UNPA2": ("Tampa 2", "ZONE"),
+    "CAWARTERS": ("Cover 4 Quarters", "MATCH"),
+    "CAURTERS": ("Cover 4 Quarters", "MATCH"),
+    "CN3CLOUDSHOW2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "CN3CIOUDSHOW2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "CN8CLOUDSHOW2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "CN8CIOUDSHOW2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "COVER8CIOUDSHM": ("Cover 3 Cloud Str", "ZONE"),
+    "GOWTJACKS": ("60 Out Jacks", "BLITZ"),
+    "CA8BLUZ": ("Cover 3 Buzz", "ZONE"),
+    "CAIPALMS": ("Cover 4 Palms", "MATCH"),
+    "CA8SKY": ("Cover 3 Sky", "ZONE"),
+    "CASLM2": ("Nickel Sim 2", "BLITZ"),
+    "ROIL28CLU": ("Roll 2 Cloud", "ZONE"),
+    "CA8SPY": ("Cover 3 Spy", "ZONE"),
+
+    # Dallas additions
+    "CAIURTERS": ("Cover 4 Quarters", "MATCH"),
+    "DULECBBUTZ": ("Double CB Blitz", "BLITZ"),
+    "NIKESAMCA8": ("Mike Sam Crash Press", "BLITZ"),
+    "CA8BUZZ": ("Cover 3 Buzz", "ZONE"),
+    "CA8MATCH": ("Cover 3 Match", "MATCH"),
+    "COVNGSXY": ("Cover 3 Sky", "ZONE"),
+    "COVNGSKY": ("Cover 3 Sky", "ZONE"),
+    "COMLSTLNG": ("Cover 1 Sting", "MAN"),
+    "COVNAD0": ("Cover 4 Drop", "ZONE"),
+    "COVNAD8": ("Cover 4 Drop", "ZONE"),
+    "BUCKETBSWITCH": ("Bracket 9 Switch", "MAN"),
+    "COVN21MVERT": ("Cover 2 Invert", "ZONE"),
+    "COVNGSHM": ("Cover 9 Show 2", "MATCH"),
+    "POUNDER": ("Pounder", "MATCH"),
+    "RING": ("Ring", "MATCH"),
+    "ROUKING": ("Roll King", "MATCH"),
+    "DUKING": ("Roll King", "MATCH"),
+    "ROILRING": ("Roll King", "MATCH"),
+    "ROURING": ("Roll King", "MATCH"),
+    "ROLLKING": ("Roll King", "MATCH"),
+    "CA2MAN": ("Cover 2 Man", "MAN"),
+    "GOJJT": ("60 Out", "BLITZ"),
+    "BUCKET8SWLTCH": ("Bracket 9 Switch", "MAN"),
+    "BUTZTEX8SLU8": ("Blitz Tex 3 Sim 3", "BLITZ"),
+    "COFFEEHMJSE3SEAM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COFFEEHOUSE8SEAM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COFFEEHOUSE8SUU": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COFFEEHWSE3SUM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COFFEEHWSE8SUM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COFFEEHOUSE3SEAM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COVER8ZDNE": ("Cover 3 Match", "MATCH"),
+    "COVN3HUTCH": ("Cover 3 Match", "MATCH"),
+    "COVNAWARTERS": ("Cover 4 Quarters", "MATCH"),
+    "IBBUTZO": ("LB Blitz 0", "BLITZ"),
+    "IDCIBLEWRI": ("1 Double WR1", "MAN"),
+    "IDCIBLEWR1": ("1 Double WR1", "MAN"),
+    "ROU28CLMN": ("Roll 2 Cloud", "ZONE"),
+    "ROU28CLMN": ("Roll 2 Cloud", "ZONE"),
+    "SSLM2": ("Nickel Sim 2", "BLITZ"),
+    "UMPA2CONULN": ("Tampa 2 Contain", "ZONE"),
+    "SSBUTZO": ("SS Blitz 0", "BLITZ"),
+    "UIKEBUTZO": ("Mike Blitz 0", "BLITZ"),
+    "8SEAMSHCW2": ("Overload 3 Show 2", "BLITZ"),
+    "8SUMSHCW2": ("Overload 3 Show 2", "BLITZ"),
+    "COVNGWLLLE": ("Cover 6 Willie", "MATCH"),
+    "COVNGWLLLLE": ("Cover 6 Willie", "MATCH"),
+    "COVNGWLLLLLE": ("Cover 6 Willie", "MATCH"),
+    "CNGWLLLE": ("Cover 6 Willie", "MATCH"),
+    "CNGWLLLLE": ("Cover 6 Willie", "MATCH"),
+    "CNGWLLLLLE": ("Cover 6 Willie", "MATCH"),
+    "IBBUTZG": ("LB Blitz 3", "BLITZ"),
+    "IBBIITZG": ("LB Blitz 3", "BLITZ"),
+    "UAU8DEEP": ("Man Up 3 Deep", "MAN"),
+
+    # Miami, Philadelphia, SF, Washington additions
+    "CAIWARTERS": ("Cover 4 Quarters", "MATCH"),
+    "ULKESAMCLOSS8": ("Mike Sam Crash Press", "BLITZ"),
+    "CA8BLUZMATCH": ("Cover 3 Buzz Match", "MATCH"),
+    "OMJBLECBBUTZ": ("Double CB Blitz", "BLITZ"),
+    "DWBLECBBUTZ": ("Double CB Blitz", "BLITZ"),
+    "SSBUIZ8": ("SS Blitz 3", "BLITZ"),
+    "WSBUTZI": ("WS Blitz 3", "BLITZ"),
+    "WSBLITZI": ("WS Blitz 3", "BLITZ"),
+    "CA8BLRZ": ("Cover 3 Buzz", "ZONE"),
+    "CA8LOCK": ("Cover 3 Lock", "MATCH"),
+    "CABWILLIE": ("Cover 6 Willie", "MATCH"),
+    "GOHAIFOUT": ("60 Half Out", "BLITZ"),
+    "COVELUSHN2": ("Cover 6 Show 2", "MATCH"),
+    "SSBUIZO": ("SS Blitz 0", "BLITZ"),
+    "21NVERTLURK": ("Cover 2 Invert Lurk", "ZONE"),
+    "CA9SAUULE": ("Cover 3 Seam", "MATCH"),
+    "ROU28CWJD": ("Roll 2 Cloud", "ZONE"),
+    "ROU28CLWJD": ("Roll 2 Cloud", "ZONE"),
+    "CAGZONE": ("Cover 6", "MATCH"),
+    "CA21NVERT": ("Cover 2 Invert", "ZONE"),
+    "CA21MVERT": ("Cover 2 Invert", "ZONE"),
+    "IDMJBLETE": ("1 Double TE", "MAN"),
+    "IDDJBLETE": ("1 Double TE", "MAN"),
+    "IDWBLEWRI": ("1 Double WR1", "MAN"),
+    "MLL28CLOUD": ("Roll 2 Cloud", "ZONE"),
+    "MUMNC": ("Mug Mac", "BLITZ"),
+    "COVNGSW": ("Cover 9 Show 2", "MATCH"),
+    "GOUSE": ("60 Base", "BLITZ"),
+    "GOWT": ("60 Out", "BLITZ"),
+    "USE": ("60 Base", "BLITZ"),
+    "8SUMSHOW2": ("Overload 3 Show 2", "BLITZ"),
+    "CA3SKY": ("Cover 3 Sky", "ZONE"),
+    "COVEUZONE": ("Cover 3 Match", "MATCH"),
+    "COVN3C1011D": ("Cover 3 Cloud", "ZONE"),
+    "IBBUTZI": ("LB Blitz 1", "BLITZ"),
+    "LBB11TZ8": ("LB Blitz 3", "BLITZ"),
+    "CA8SEAM": ("Cover 3 Seam", "MATCH"),
+    "COFFEEHMSE3SEAM": ("Coffeehouse 3 Seam", "BLITZ"),
+    "COVER8CLOLJDSHMN2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "SAMCUSII": ("Sam Crash 1", "BLITZ"),
+    "SAMCRASH1": ("Sam Crash 1", "BLITZ"),
+    "OLBCAGAMS": ("OLB Fire Man", "BLITZ"),
+    "OVERLOAD8NICKEL": ("Nickel Overload 3", "BLITZ"),
+    "IBBILTZ8": ("LB Blitz 3", "BLITZ"),
+    "CA3CIOUDSHCW2": ("Cover 3 Cloud Show 2", "ZONE"),
+    "8DOLJBLEWZZ": ("3 Double Buzz", "ZONE"),
+    "COVERGIUVNT": ("Cover 6 Invert", "MATCH"),
+    "CAIHOLE": ("Cover 1 Hole", "MAN"),
+    "FSSUNT8": ("FS Slant 3", "BLITZ"),
+    "8DOUBLESKY": ("Cover 3 Sky", "ZONE"),
+    "BUTZDTPOP": ("Blitz DT Pop", "BLITZ"),
+    "CA3FLRE": ("FS Fire 3", "BLITZ"),
+    "CBTEXSLU2": ("CB Tex Sim 2", "BLITZ"),
+    "SSMLDBUTZ8": ("SS Middle Blitz 3", "BLITZ"),
+    "SSTEXSLU2": ("SS Tex Sim 2", "BLITZ"),
+    "CAGSHOW2": ("Cover 9 Show 2", "MATCH"),
+    "IDDJBLEWRI": ("1 Double WR1", "MAN"),
+    "NTLCOVER8CLMJD": ("Roll Cover 3 Cloud", "ZONE"),
+    "SSDDG8": ("SS Dog 3", "BLITZ"),
+    "COVN9SAMULE": ("Cover 3 Seam", "MATCH"),
+    "COVNAZ0NE": ("Cover 3 Match", "MATCH"),
+    "ROLLCOVERSCLU": ("Roll Cover 3 Cloud", "ZONE"),
+    "ROU28CLMJD": ("Roll 2 Cloud", "ZONE"),
+    "COMAURTERS": ("Cover 4 Quarters", "MATCH"),
+    "HOLE": ("Cover 1 Hole", "MAN"),
+    "0T4LLSI": ("60 Pinch", "BLITZ"),
+    "LBPOP0": ("LB Pop 0", "BLITZ"),
+    "UNS": ("Guts", "BLITZ"),
+    "GUTS": ("Guts", "BLITZ"),
+    "GJIS": ("Guts", "BLITZ"),
+    "GOH1FWT": ("60 Half Out", "BLITZ"),
 }
 
 OFF_REP_EXTRA = {
+    'BOUNCEPAPOSTCURLS': 'BOUNCE PA POST CURLS',
     '14B': 'HB',
     'HBCOUUTERWK': 'HB COUNTER WK',
     'HBCOIJUTERWK': 'HB COUNTER WK',
@@ -351,14 +587,29 @@ OFF_REP_EXTRA = {
 
 TEAM_MAP = {
     'Arizona': {'off_file': 'Cardinals_playbook-template.xlsx', 'def_file': 'Cardinals_defensive_playbook.xlsx', 'off_team': 'Cardinals', 'def_team': 'ARI'},
+    'Atlanta': {'off_file': 'Falcons_playbook-template.xlsx', 'def_file': 'Falcons_defensive_playbook.xlsx', 'off_team': 'Falcons', 'def_team': 'ATL'},
     'Buffalo': {'off_file': 'Bills_playbook-template.xlsx', 'def_file': 'Bills_defensive_playbook.xlsx', 'off_team': 'Bills', 'def_team': 'BUF'},
+    'Carolina': {'off_file': 'Panthers_playbook-template.xlsx', 'def_file': 'Panthers_defensive_playbook.xlsx', 'off_team': 'Panthers', 'def_team': 'CAR'},
+    'Chicago': {'off_file': 'Bears_playbook-template.xlsx', 'def_file': 'Bears_defensive_playbook.xlsx', 'off_team': 'Bears', 'def_team': 'CHI'},
     'Cincinnati': {'off_file': 'Bengals_playbook-template.xlsx', 'def_file': 'Bengals_defensive_playbook.xlsx', 'off_team': 'Bengals', 'def_team': 'CIN'},
     'Cleveland': {'off_file': 'Browns_playbook-template.xlsx', 'def_file': 'Browns_defensive_playbook.xlsx', 'off_team': 'Browns', 'def_team': 'CLE'},
+    'Dallas': {'off_file': 'Cowboys_playbook-template.xlsx', 'def_file': 'Cowboys_defensive_playbook.xlsx', 'off_team': 'Cowboys', 'def_team': 'DAL'},
     'Denver': {'off_file': 'Broncos_playbook-template.xlsx', 'def_file': 'Broncos_defensive_playbook.xlsx', 'off_team': 'Broncos', 'def_team': 'DEN'},
+    'Detroit': {'off_file': 'Lions_playbook-template.xlsx', 'def_file': 'Lions_defensive_playbook.xlsx', 'off_team': 'Lions', 'def_team': 'DET'},
+    'Green Bay': {'off_file': 'Packers_playbook-template.xlsx', 'def_file': 'Packers_defensive_playbook.xlsx', 'off_team': 'Packers', 'def_team': 'GB'},
     'Indianapolis': {'off_file': 'Colts_playbook-template.xlsx', 'def_file': 'Colts_defensive_playbook.xlsx', 'off_team': 'Colts', 'def_team': 'IND'},
+    'Jacksonville': {'off_file': 'Jaguars_playbook-template.xlsx', 'def_file': 'Jaguars_defensive_playbook.xlsx', 'off_team': 'Jaguars', 'def_team': 'JAX'},
     'Kansas City': {'off_file': 'Chiefs_playbook-template.xlsx', 'def_file': 'Chiefs_defensive_playbook.xlsx', 'off_team': 'Chiefs', 'def_team': 'KC'},
     'LAC': {'off_file': 'Chargers_playbook-template.xlsx', 'def_file': 'Chargers_defensive_playbook.xlsx', 'off_team': 'Chargers', 'def_team': 'LAC'},
+    'Las Vegas': {'off_file': 'Raiders_playbook-template.xlsx', 'def_file': 'Raiders_defensive_playbook.xlsx', 'off_team': 'Raiders', 'def_team': 'LV'},
+    'Miami': {'off_file': 'Dolphins_playbook-template.xlsx', 'def_file': 'Dolphins_defensive_playbook.xlsx', 'off_team': 'Dolphins', 'def_team': 'MIA'},
+    'New England': {'off_file': 'Patriots_playbook-template.xlsx', 'def_file': 'Patriots_defensive_playbook.xlsx', 'off_team': 'Patriots', 'def_team': 'NE'},
+    'NYG': {'off_file': 'Giants_playbook-template.xlsx', 'def_file': 'Giants_defensive_playbook.xlsx', 'off_team': 'Giants', 'def_team': 'NYG'},
+    'NYJ': {'off_file': 'Jets_playbook-template.xlsx', 'def_file': 'Jets_defensive_playbook.xlsx', 'off_team': 'Jets', 'def_team': 'NYJ'},
+    'Philadelphia': {'off_file': 'Eagles_playbook-template.xlsx', 'def_file': 'Eagles_defensive_playbook.xlsx', 'off_team': 'Eagles', 'def_team': 'PHI'},
+    'San Francisco': {'off_file': '49ers_playbook-template.xlsx', 'def_file': '49ers_defensive_playbook.xlsx', 'off_team': '49ers', 'def_team': 'SF'},
     'Tampa Bay': {'off_file': 'Buccaneers_playbook-template.xlsx', 'def_file': 'Buccaneers_defensive_playbook.xlsx', 'off_team': 'Buccaneers', 'def_team': 'TB'},
+    'Washington': {'off_file': 'Commanders_playbook-template.xlsx', 'def_file': 'Commanders_defensive_playbook.xlsx', 'off_team': 'Commanders', 'def_team': 'WAS'},
 }
 
 async def run_ocr_on_image(img, engine, scale=2.5):
@@ -415,21 +666,44 @@ def classify_card_badge(im_full, card_idx, is_defense=False):
             return "Run"
         return "Pass"
 
-def resolve_defense_set(formation, raw_text):
+def resolve_defense_set(formation, raw_text, fallback_set="Normal"):
+    s = str(raw_text or "").upper()
     if formation == "Goal Line":
-        s = str(raw_text).upper()
         if "5-3" in s or "53" in s or "6-3" in s or "63" in s:
             return "5-3"
         return "6-2"
     if formation == "4-3":
-        s = str(raw_text).upper()
+        if "EVEN" in s or "6-1" in s or "61" in s: return "Even 6-1"
         if "SOLID" in s: return "Over Solid"
-        if "LEO" in s: return "Odd Leo"
+        if "TITE LEO" in s or "TITE" in s: return "Tite Leo"
+        if "LEO" in s or "IEO" in s: return "Odd Leo"
         if "UNDER" in s: return "Under"
         if "WIDE" in s: return "Over Wide"
+        if "WALK" in s: return "Over Walk"
         return "Over"
+    if formation == "Nickel":
+        if "WIDE" in s or "2-4 WIDE" in s or "24 WIDE" in s: return "Wide"
+        if "2-4 DBL MUG" in s or "24 DBL MUG" in s: return "2-4 Dbl Mug"
+        if "2-4 LOAD DBL" in s or "24 LOAD DBL" in s: return "2-4 Load Dbl Mug"
+        if "2-4 LOAD MUG" in s or "24 LOAD MUG" in s: return "2-4 Load Mug"
+        if "2-4 SINGLE MUG" in s or "24 SINGLE MUG" in s: return "2-4 Single Mug"
+        if "2-4 ODD MUG" in s or "24 ODD MUG" in s: return "2-4 Odd Mug"
+        if "2-4 CUB" in s or "24 CUB" in s: return "2-4 Cub"
+        if "2-4 OVER" in s or "24 OVER" in s: return "2-4 Over"
+        if "3-3 DBL MUG" in s or "33 DBL MUG" in s: return "3-3 Dbl Mug"
+        if "3-3 LOAD DBL" in s or "33 LOAD DBL" in s: return "3-3 Load Dbl Mug"
+        if "3-3 LOAD MUG" in s or "33 LOAD MUG" in s: return "3-3 Load Mug"
+        if "3-3 SINGLE MUG" in s or "33 SINGLE MUG" in s: return "3-3 Single Mug"
+        if "3-3 ODD" in s or "33 ODD" in s: return "3-3 Odd"
+        if "3-3 CUB" in s or "33 CUB" in s: return "3-3 Cub"
+        if "3-3 OVER" in s or "33 OVER" in s: return "3-3 Over"
+        if "DOUBLE MUG" in s: return "Double Mug"
+        if "SINGLE MUG" in s: return "Single Mug"
+        if "TRIPLE" in s: return "Triple"
+        if "LOAD DBL MUG" in s: return "Load Dbl Mug"
+        if "LOAD MUG" in s: return "Load Mug"
+        if "LOAD" in s: return "Load"
     if formation == "4-2-5":
-        s = str(raw_text).upper()
         if "WIDE" in s: return "Over Wide"
         if "UNDER" in s: return "Under"
         return "Over G"
@@ -439,11 +713,17 @@ def resolve_defense_set(formation, raw_text):
         return "Split"
     if formation == "5-2":
         return "Normal"
+    if formation == "Quarter":
+        if "OVER" in s or "LOAD" in s: return "Over Load"
+        return "Normal"
         
     allowed = catalog_sets.DEFENSE_SETS.get(formation, ["Normal"])
-    clean = re.sub(r"[^A-Z0-9]", "", str(raw_text or "").upper())
-    for fw in ("335", "43", "46", "DIME", "DOLLAR", "GOALLINE", "GOAL", "LINE", "NICKEL", "PREVENT", "BEAR", "34"):
+    clean = re.sub(r"[^A-Z0-9]", "", s)
+    for fw in ("335", "43", "46", "DIME", "DOLLAR", "GOALLINE", "GOAL", "LINE", "NICKEL", "PREVENT", "BEAR", "34", "QUARTER"):
         clean = clean.replace(fw, "")
+        
+    if not clean:
+        return fallback_set if fallback_set in allowed else allowed[0]
         
     for cand in allowed:
         if re.sub(r"[^A-Z0-9]", "", cand.upper()) == clean:
@@ -456,9 +736,9 @@ def resolve_defense_set(formation, raw_text):
     m = difflib.get_close_matches(clean, list(cand_map.keys()), n=1, cutoff=0.55)
     if m:
         return cand_map[m[0]]
-    return allowed[0]
+    return fallback_set if fallback_set in allowed else allowed[0]
 
-def resolve_offense_set(formation, raw_text):
+def resolve_offense_set(formation, raw_text, fallback_set="Normal"):
     if formation == "H Wing": return "Wing"
     if formation == "Hail Mary": return "Hail Mary"
     if formation == "Goal Line": return "Normal"
@@ -509,8 +789,11 @@ def resolve_offense_set(formation, raw_text):
     if "DOUBLES HB WK" in s_upper: return "Doubles Hb Wk"
     
     clean = re.sub(r"[^A-Z0-9]", "", s_upper)
-    for fw in ("SINGLEBACK", "SINGLEBCK", "SINGIEBACK", "GUN", "SHOTGUN", "PISTOL", "IFORM", "WEAK", "FORM", "HAIL", "MARY"):
+    for fw in ("SINGLEBACK", "SINGLEBCK", "SINGIEBACK", "SINGLERACK", "GUN", "SHOTGUN", "PISTOL", "IFORM", "WEAK", "FORM", "HAIL", "MARY"):
         clean = clean.replace(fw, "")
+        
+    if not clean:
+        return fallback_set if fallback_set in allowed else allowed[0]
         
     for cand in allowed:
         if re.sub(r"[^A-Z0-9]", "", cand.upper()) == clean:
@@ -520,11 +803,12 @@ def resolve_offense_set(formation, raw_text):
     m = difflib.get_close_matches(clean, list(cand_map.keys()), n=1, cutoff=0.50)
     if m:
         return cand_map[m[0]]
-    return allowed[0] if allowed else "Normal"
+    return fallback_set if fallback_set in allowed else allowed[0]
 
 def clean_defense_play(raw_title, badge_type):
-    t = re.sub(r"\s+", " ", str(raw_title or "").strip()).upper()
-    t = re.sub(r"^[Oo0]\s+", "", t)
+    t = unicodedata.normalize('NFKD', str(raw_title or "")).encode('ascii', 'ignore').decode('ascii')
+    t = re.sub(r"\s+", " ", t.strip()).upper()
+    t = re.sub(r"^[Oo0Ee]\s+", "", t)
     t = re.sub(r"^[-–—]\s*", "", t)
     
     k = re.sub(r"[^A-Z0-9]", "", t)
@@ -538,8 +822,9 @@ def clean_defense_play(raw_title, badge_type):
     return (t.title(), badge_type)
 
 def clean_offense_play(raw_title, badge_type):
-    t = re.sub(r"\s+", " ", str(raw_title or "").strip()).upper()
-    t = re.sub(r"^[Oo0]\s+", "", t)
+    t = unicodedata.normalize('NFKD', str(raw_title or "")).encode('ascii', 'ignore').decode('ascii')
+    t = re.sub(r"\s+", " ", t.strip()).upper()
+    t = re.sub(r"^[Oo0Ee]\s+", "", t)
     t = re.sub(r"^[-–—]\s*", "", t)
     
     k = re.sub(r"[^A-Z0-9]", "", t)
@@ -563,14 +848,79 @@ def clean_offense_play(raw_title, badge_type):
         p_type = "Pass"
     return (t, p_type)
 
-async def extract_formation_plays(formation_dir, team_code, formation_name, is_defense=False):
+def detect_formation(text_candidate, is_defense=False, fallback="Gun"):
+    if not text_candidate:
+        return fallback
+    clean = re.sub(r"[^A-Z0-9]", "", str(text_candidate).upper())
+    
+    if is_defense:
+        if any(k in clean for k in ("GOALLINE", "GOAL", "62", "53")):
+            return "Goal Line"
+        if any(k in clean for k in ("335", "335PENNY", "PENNY")):
+            return "3-3-5"
+        if any(k in clean for k in ("245", "25", "OVERWIDE")):
+            return "2-4-5"
+        if "425" in clean:
+            return "4-2-5"
+        if "44" in clean:
+            return "4-4"
+        if "52" in clean:
+            return "5-2"
+        if "43" in clean or "EVEN61" in clean or "61" in clean:
+            return "4-3"
+        if "34" in clean:
+            return "3-4"
+        if "46" in clean or "BEAR" in clean:
+            return "46"
+        if "NICKEL" in clean:
+            return "Nickel"
+        if "DOLLAR" in clean:
+            return "Dollar"
+        if "DIME" in clean:
+            return "Dime"
+        if "PREVENT" in clean or "3DEEP" in clean:
+            return "Prevent"
+        if "QUARTER" in clean:
+            return "Quarter"
+        return fallback or "Nickel"
+    else:
+        if any(k in clean for k in ("GOALLINE", "GOAL")):
+            return "Goal Line"
+        if any(k in clean for k in ("HAILMARY", "HAIL")):
+            return "Hail Mary"
+        if "SINGLEBACK" in clean or "SINGIEBACK" in clean or "SINGLEBCK" in clean:
+            return "Singleback"
+        if "PISTOL" in clean:
+            return "Pistol"
+        if "GUN" in clean or "SHOTGUN" in clean:
+            return "Gun"
+        if "HWING" in clean:
+            return "H Wing"
+        if "IFORM" in clean or "IFORM" in clean:
+            return "I Form"
+        if "STRONGI" in clean or "STRONG" in clean:
+            return "Strong I"
+        if "WEAK" in clean:
+            return "Weak"
+        if "WILDCAT" in clean:
+            return "Wildcat"
+        if "SPLITBACKS" in clean or "SPLITBACK" in clean:
+            return "Split Backs"
+        if "SPLITT" in clean:
+            return "Split T"
+        if "FULLHOUSE" in clean:
+            return "Full House"
+        return fallback or "Gun"
+
+async def extract_formation_plays(target_dir, team_code, formation_name=None, is_defense=False):
     engine = ocr.OcrEngine.try_create_from_user_profile_languages()
-    files = sorted([f for f in os.listdir(formation_dir) if f.lower().endswith(('.png', '.jpg'))])
+    files = sorted([f for f in os.listdir(target_dir) if f.lower().endswith(('.png', '.jpg'))])
     current_set = "Normal"
+    current_formation = formation_name or ("Nickel" if is_defense else "Gun")
     rows = []
     
     for f in files:
-        im = cv2.imread(os.path.join(formation_dir, f))
+        im = cv2.imread(os.path.join(target_dir, f))
         if im is None:
             continue
         h, w = im.shape[:2]
@@ -589,12 +939,19 @@ async def extract_formation_plays(formation_dir, team_code, formation_name, is_d
             words_pill, lines_pill = await run_ocr_on_image(padded_pill, engine, 2.0)
             if lines_pill and len(lines_pill[0].strip()) >= 3:
                 current_set = lines_pill[0].strip()
+                if formation_name is None:
+                    current_formation = detect_formation(current_set, is_defense=is_defense, fallback=current_formation)
         
-        # 2. Bottom pass
-        bottom = im[int(h * 0.60):h, :]
+        # 2. Bottom pass (bottom-relative to support all screenshot heights/widths)
+        bottom = im[-95:, :]
         words, _ = await run_ocr_on_image(bottom, engine, 2.5)
         
-        card_ranges = [(40, 340), (360, 670), (690, 990)]
+        w_scale = w / 972.0
+        card_ranges = [
+            (int(40 * w_scale), int(340 * w_scale)),
+            (int(360 * w_scale), int(670 * w_scale)),
+            (int(690 * w_scale), int(990 * w_scale))
+        ]
         for c_idx, (x_min, x_max) in enumerate(card_ranges, start=1):
             if c_idx == 1:
                 x0_f, x1_f = 0.06, 0.33
@@ -615,67 +972,129 @@ async def extract_formation_plays(formation_dir, team_code, formation_name, is_d
             sub_words = [t for y, x, width, t in sorted(words) if 67 <= y <= 80 and x_min <= x <= x_max and t not in ("o", "O")]
             sub_text = " ".join(sub_words).strip()
             
-            card_crop = im[140:225, max(0, x_min-10):min(w, x_max+10)]
+            card_crop = im[max(0, h-90):h-5, max(0, x_min-10):min(w, x_max+10)]
             
-            needs_recovery = (not raw_title or len(raw_title) < 2 or 
-                              raw_title in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "I FORM", "I FORM WING", "I WING") or
-                              "CALLS" in raw_title or "AVG" in raw_title)
-                              
+            is_coach_garbage = lambda s: bool(re.search(r'(CALL|AVG|OC[0-9A-Z]{0,4}LIS|100|AM[OD]S|OA[IM]DS|YDS)', re.sub(r"[^A-Z0-9]", "", unicodedata.normalize('NFKD', str(s or "")).encode('ascii', 'ignore').decode('ascii').upper())))
+            
+            is_invalid_title = lambda lt: (
+                lt in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER", "I FORM", "I FORM WING", "I WING") or
+                is_coach_garbage(lt) or
+                len(lt) < 3 or
+                (sub_text and re.sub(r"[^A-Z0-9]", "", lt) == re.sub(r"[^A-Z0-9]", "", sub_text.upper())) or
+                any(x in re.sub(r"[^A-Z0-9]", "", lt) for x in (
+                    "GOAL62", "GOALLINE62", "LINE62", "LINE53", "GOAL53",
+                    "IINE62", "GOAI62", "GOU62", "GOUIINE62", "GONIINE62",
+                    "IINE", "UNE62", "GOUINE", "GOAIINE", "IINF", "IINF62",
+                    "GOU6", "GOAI6", "GOUIINF"
+                ))
+            )
+            
+            needs_recovery = (not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title))
+            
             if needs_recovery:
                 # Pass 1: raw 1.5x on card
                 _, lines_15 = await run_ocr_on_image(card_crop, engine, 1.5)
                 for l in lines_15:
                     lt = re.sub(r"\s+", " ", l.strip()).upper()
-                    if (lt not in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER") and 
-                        "CALLS" not in lt and "AVG" not in lt and len(lt) >= 3):
+                    if not is_invalid_title(lt):
                         raw_title = lt
                         break
                         
-                # Pass 2: wiped coach suggestion at 1.5x
-                if not raw_title or len(raw_title) < 2 or "CALLS" in raw_title:
+                # Pass 2: wiped coach suggestion at 1.5x (wipe top 44px)
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
                     wiped = card_crop.copy()
-                    wiped[:34, :] = 0
+                    wiped[:44, :] = 0
                     _, lines_wiped = await run_ocr_on_image(wiped, engine, 1.5)
                     for l in lines_wiped:
                         lt = re.sub(r"\s+", " ", l.strip()).upper()
-                        if (lt not in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER") and 
-                            "CALLS" not in lt and "AVG" not in lt and len(lt) >= 3):
+                        if not is_invalid_title(lt):
                             raw_title = lt
                             break
                             
                 # Pass 3: wiped coach suggestion + threshold 140 at 2.0x
-                if not raw_title or len(raw_title) < 2 or "CALLS" in raw_title:
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
                     gray = cv2.cvtColor(card_crop, cv2.COLOR_BGR2GRAY)
                     _, th = cv2.threshold(gray, 140, 255, cv2.THRESH_BINARY)
-                    th[:34, :] = 0
+                    th[:44, :] = 0
                     _, lines_th = await run_ocr_on_image(th, engine, 2.0)
                     for l in lines_th:
                         lt = re.sub(r"\s+", " ", l.strip()).upper()
-                        if (lt not in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER") and 
-                            "CALLS" not in lt and "AVG" not in lt and len(lt) >= 3):
+                        if not is_invalid_title(lt):
                             raw_title = lt
                             break
+                            
+                # Pass 4: lower card band at 1.5x (captures plays like 60 OUT, DIVE, etc.)
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
+                    lower_band = im[max(0, h-65):h, max(0, x_min-10):min(w, x_max+10)]
+                    words_l, lines_l = await run_ocr_on_image(lower_band, engine, 1.5)
+                    cand_words = [t for y, x, width, t in sorted(words_l) if 20 <= y <= 45 and t not in ("o", "O", "e", "E") and not any(x in re.sub(r"[^A-Z0-9]", "", t.upper()) for x in ("62", "53", "LINE", "IINE", "GOAL", "GOAI", "GOU"))]
+                    cand_str = " ".join(cand_words).strip().upper()
+                    if cand_str and not is_invalid_title(cand_str):
+                        raw_title = cand_str
+                        
+                # Pass 5: anchor recovery for short title words (e.g. SPOT, DUO, OUT)
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
+                    title_box = im[max(0, h-40):max(0, h-18), max(0, x_min+24):min(w, x_min+80)]
+                    if title_box.size > 0:
+                        pad_anchor = cv2.copyMakeBorder(title_box, 40, 40, 40, 100, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+                        cv2.putText(pad_anchor, 'PLAY', (title_box.shape[1] + 25, 52), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                        _, lines_anchor = await run_ocr_on_image(pad_anchor, engine, 2.5)
+                        for la in lines_anchor:
+                            cleaned_la = re.sub(r'\s*PLAY\s*$', '', la, flags=re.IGNORECASE).strip().upper()
+                            if cleaned_la and not is_invalid_title(cleaned_la):
+                                raw_title = cleaned_la
+                                break
+                                
+                # Pass 6: inverted threshold on title crop (recovers high-contrast plays like GUTS, 60 OUT, 60 HALF OUT)
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
+                    c_title = im[max(0, h-42):max(0, h-15), max(0, x_min):min(w, x_min+140)]
+                    if c_title.size > 0:
+                        gray_c = cv2.cvtColor(c_title, cv2.COLOR_BGR2GRAY)
+                        for th_v in (140, 150):
+                            _, th_c = cv2.threshold(gray_c, th_v, 255, cv2.THRESH_BINARY)
+                            inv_c = 255 - th_c
+                            pad_inv = cv2.copyMakeBorder(inv_c, 30, 30, 30, 80, cv2.BORDER_CONSTANT, value=255)
+                            cv2.putText(pad_inv, 'PLAY', (c_title.shape[1] + 15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.45, 0, 1)
+                            _, lines_inv = await run_ocr_on_image(pad_inv, engine, 1.5)
+                            for li in lines_inv:
+                                cleaned_li = re.sub(r'\s*PLAY\s*$', '', li, flags=re.IGNORECASE).strip().upper()
+                                cleaned_li = re.sub(r'^PLAY\s*', '', cleaned_li).strip()
+                                if cleaned_li and not is_invalid_title(cleaned_li) and len(cleaned_li) >= 3:
+                                    raw_title = cleaned_li
+                                    break
+                            if raw_title and not is_invalid_title(raw_title):
+                                break
             
-            if not raw_title or len(raw_title) < 2 or raw_title in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH"):
+            if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
                 continue
-            if "CALLS" in raw_title or "AVG" in raw_title:
+                
+            # Determine card formation
+            if formation_name:
+                active_formation = formation_name
+            else:
+                active_formation = detect_formation(sub_text or current_set, is_defense=is_defense, fallback=current_formation)
+                current_formation = active_formation
+                
+            if active_formation == "I Form" and raw_title in ("I FORM", "I FORM WING", "I WING", "IFORMWING", "I Y OFF CLOSE", "I CLOSE", "I OFF CLOSE"):
                 continue
-            if formation_name == "I Form" and raw_title in ("I FORM", "I FORM WING", "I WING", "IFORMWING", "I Y OFF CLOSE", "I CLOSE", "I OFF CLOSE"):
+            if active_formation == "Goal Line" and any(x in re.sub(r"[^A-Z0-9]", "", raw_title.upper()) for x in ("62", "GOAL62", "GOALLINE62", "LINE62", "IINE62", "GOAI62", "GOU62", "GOUIINE62", "GONIINE62")):
+                continue
+            if active_formation in ("3-3-5", "335") and re.sub(r"[^A-Z0-9]", "", raw_title.upper()) in ("985", "335", "335PENNY"):
                 continue
                 
             set_candidate = sub_text if sub_text and len(sub_text) >= 3 else current_set
             
             if is_defense:
-                card_set = resolve_defense_set(formation_name, set_candidate)
+                card_set = resolve_defense_set(active_formation, set_candidate, fallback_set=current_set)
                 play_name, play_type = clean_defense_play(raw_title, badge_type)
             else:
-                card_set = resolve_offense_set(formation_name, set_candidate)
+                card_set = resolve_offense_set(active_formation, set_candidate, fallback_set=current_set)
                 play_name, play_type = clean_offense_play(raw_title, badge_type)
                 
             rows.append(
                 PlayRow(
                     team=team_code,
-                    formation=formation_name,
+                    formation=active_formation,
                     set_name=card_set,
                     play_name=play_name,
                     play_type=play_type,
@@ -703,18 +1122,33 @@ async def process_team(team_name, out_dir):
     print(f"=== Processing Team: {team_name} ===")
     print(f"========================================================")
     
+    # Helper to resolve folder case-insensitively
+    def find_sub_dir(base, candidates):
+        for c in candidates:
+            p = os.path.join(base, c)
+            if os.path.exists(p):
+                return p
+        return None
+
     # 1. Defense
-    def_dir = os.path.join(base_team, "Defense")
+    def_dir = find_sub_dir(base_team, ["Defense", "defense"])
     def_rows = []
-    if os.path.exists(def_dir):
-        for form in sorted(os.listdir(def_dir)):
-            fp = os.path.join(def_dir, form)
-            if os.path.isdir(fp):
-                clean_form = "Goal Line" if form.lower().replace(" ", "") == "goalline" else form
-                print(f"[{team_name}] Scanning Defense formation: {clean_form}...")
-                f_rows = await extract_formation_plays(fp, cfg['def_team'], clean_form, is_defense=True)
-                print(f"   -> Extracted {len(f_rows)} plays")
-                def_rows.extend(f_rows)
+    if def_dir and os.path.exists(def_dir):
+        direct_images = [f for f in os.listdir(def_dir) if f.lower().endswith(('.png', '.jpg')) and os.path.isfile(os.path.join(def_dir, f))]
+        if direct_images:
+            print(f"[{team_name}] Scanning Defense (Flat Mode, {len(direct_images)} screenshots found)...")
+            f_rows = await extract_formation_plays(def_dir, cfg['def_team'], formation_name=None, is_defense=True)
+            print(f"   -> Extracted {len(f_rows)} plays")
+            def_rows.extend(f_rows)
+        else:
+            for form in sorted(os.listdir(def_dir)):
+                fp = os.path.join(def_dir, form)
+                if os.path.isdir(fp):
+                    clean_form = "Goal Line" if form.lower().replace(" ", "") == "goalline" else form
+                    print(f"[{team_name}] Scanning Defense formation: {clean_form}...")
+                    f_rows = await extract_formation_plays(fp, cfg['def_team'], clean_form, is_defense=True)
+                    print(f"   -> Extracted {len(f_rows)} plays")
+                    def_rows.extend(f_rows)
                 
     unique_def = dedupe(def_rows)
     print(f"[{team_name}] Defense: {len(def_rows)} raw slots -> {len(unique_def)} unique plays")
@@ -746,17 +1180,24 @@ async def process_team(team_name, out_dir):
     print(f"Saved: {def_path}")
     
     # 2. Offense
-    off_dir = os.path.join(base_team, "Offense")
+    off_dir = find_sub_dir(base_team, ["Offense", "offense"])
     off_rows = []
-    if os.path.exists(off_dir):
-        for form in sorted(os.listdir(off_dir)):
-            fp = os.path.join(off_dir, form)
-            if os.path.isdir(fp):
-                clean_form = "Goal Line" if form.lower().replace(" ", "") == "goalline" else form
-                print(f"[{team_name}] Scanning Offense formation: {clean_form}...")
-                f_rows = await extract_formation_plays(fp, cfg['off_team'], clean_form, is_defense=False)
-                print(f"   -> Extracted {len(f_rows)} plays")
-                off_rows.extend(f_rows)
+    if off_dir and os.path.exists(off_dir):
+        direct_images = [f for f in os.listdir(off_dir) if f.lower().endswith(('.png', '.jpg')) and os.path.isfile(os.path.join(off_dir, f))]
+        if direct_images:
+            print(f"[{team_name}] Scanning Offense (Flat Mode, {len(direct_images)} screenshots found)...")
+            f_rows = await extract_formation_plays(off_dir, cfg['off_team'], formation_name=None, is_defense=False)
+            print(f"   -> Extracted {len(f_rows)} plays")
+            off_rows.extend(f_rows)
+        else:
+            for form in sorted(os.listdir(off_dir)):
+                fp = os.path.join(off_dir, form)
+                if os.path.isdir(fp):
+                    clean_form = "Goal Line" if form.lower().replace(" ", "") == "goalline" else form
+                    print(f"[{team_name}] Scanning Offense formation: {clean_form}...")
+                    f_rows = await extract_formation_plays(fp, cfg['off_team'], clean_form, is_defense=False)
+                    print(f"   -> Extracted {len(f_rows)} plays")
+                    off_rows.extend(f_rows)
                 
     unique_off = dedupe(off_rows)
     print(f"[{team_name}] Offense: {len(off_rows)} raw slots -> {len(unique_off)} unique plays")
@@ -776,7 +1217,7 @@ async def process_team(team_name, out_dir):
 async def run_remaining_teams(target_teams=None):
     out_dir = r"D:\Robert\Desktop\App Project Builds\Gridiron_OC\Gridiron_OC\imports\Madden 27 Team Playbook (Excel Workbooks)"
     os.makedirs(out_dir, exist_ok=True)
-    teams = target_teams or ['Arizona', 'Buffalo', 'Cincinnati', 'Cleveland', 'Denver', 'Indianapolis', 'Kansas City', 'LAC', 'Tampa Bay']
+    teams = target_teams or ['Carolina', 'Detroit', 'Green Bay', 'Jacksonville', 'Las Vegas', 'New England', 'NYG', 'NYJ']
     for t in teams:
         await process_team(t, out_dir)
     print("\n========================================================")
@@ -786,3 +1227,5 @@ async def run_remaining_teams(target_teams=None):
 if __name__ == "__main__":
     target = sys.argv[1:] if len(sys.argv) > 1 else None
     asyncio.run(run_remaining_teams(target))
+
+
