@@ -1855,7 +1855,7 @@ body {
 }
 
 .matchupCard {
-  width: min(580px, 94vw);
+  width: min(620px, 94vw);
   background: linear-gradient(175deg, rgba(17, 24, 38, 0.94) 0%, rgba(10, 15, 25, 0.96) 100%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 24px;
@@ -1986,6 +1986,12 @@ body {
 .presentationPillGroup {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.maddenVersionPillGroup {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 

@@ -125,10 +125,13 @@ DEF_REP_EXTRA = {
     "60OUTJACKS": ("60 Out Jacks", "BLITZ"),
     "GOMJTJACKS": ("60 Out Jacks", "BLITZ"),
     "GUTS": ("Guts", "BLITZ"),
+    "UTS": ("Guts", "BLITZ"),
+    "UIS": ("Guts", "BLITZ"),
     "NJTS": ("Guts", "BLITZ"),
     "MNS": ("Guts", "BLITZ"),
     "WTS": ("Guts", "BLITZ"),
     "GWTS": ("Guts", "BLITZ"),
+    "OHUFDUT": ("60 Half Out", "BLITZ"),
     "GLMAN": ("GL Man", "BLITZ"),
     "MLBGAPA": ("MLB Gap A", "BLITZ"),
     "GAPSAU": ("Gaps All", "BLITZ"),
@@ -609,6 +612,14 @@ TEAM_MAP = {
     'Philadelphia': {'off_file': 'Eagles_playbook-template.xlsx', 'def_file': 'Eagles_defensive_playbook.xlsx', 'off_team': 'Eagles', 'def_team': 'PHI'},
     'San Francisco': {'off_file': '49ers_playbook-template.xlsx', 'def_file': '49ers_defensive_playbook.xlsx', 'off_team': '49ers', 'def_team': 'SF'},
     'Tampa Bay': {'off_file': 'Buccaneers_playbook-template.xlsx', 'def_file': 'Buccaneers_defensive_playbook.xlsx', 'off_team': 'Buccaneers', 'def_team': 'TB'},
+    'Baltimore': {'off_file': 'Ravens_playbook-template.xlsx', 'def_file': 'Ravens_defensive_playbook.xlsx', 'off_team': 'Ravens', 'def_team': 'BAL'},
+    'Houston': {'off_file': 'Texans_playbook-template.xlsx', 'def_file': 'Texans_defensive_playbook.xlsx', 'off_team': 'Texans', 'def_team': 'HOU'},
+    'LAR': {'off_file': 'Rams_playbook-template.xlsx', 'def_file': 'Rams_defensive_playbook.xlsx', 'off_team': 'Rams', 'def_team': 'LAR'},
+    'Minnesota': {'off_file': 'Vikings_playbook-template.xlsx', 'def_file': 'Vikings_defensive_playbook.xlsx', 'off_team': 'Vikings', 'def_team': 'MIN'},
+    'New Orleans': {'off_file': 'Saints_playbook-template.xlsx', 'def_file': 'Saints_defensive_playbook.xlsx', 'off_team': 'Saints', 'def_team': 'NO'},
+    'Pittsburgh': {'off_file': 'Steelers_playbook-template.xlsx', 'def_file': 'Steelers_defensive_playbook.xlsx', 'off_team': 'Steelers', 'def_team': 'PIT'},
+    'Seattle': {'off_file': 'Seahawks_playbook-template.xlsx', 'def_file': 'Seahawks_defensive_playbook.xlsx', 'off_team': 'Seahawks', 'def_team': 'SEA'},
+    'Tennessee': {'off_file': 'Titans_playbook-template.xlsx', 'def_file': 'Titans_defensive_playbook.xlsx', 'off_team': 'Titans', 'def_team': 'TEN'},
     'Washington': {'off_file': 'Commanders_playbook-template.xlsx', 'def_file': 'Commanders_defensive_playbook.xlsx', 'off_team': 'Commanders', 'def_team': 'WAS'},
 }
 
@@ -977,7 +988,7 @@ async def extract_formation_plays(target_dir, team_code, formation_name=None, is
             is_coach_garbage = lambda s: bool(re.search(r'(CALL|AVG|OC[0-9A-Z]{0,4}LIS|100|AM[OD]S|OA[IM]DS|YDS)', re.sub(r"[^A-Z0-9]", "", unicodedata.normalize('NFKD', str(s or "")).encode('ascii', 'ignore').decode('ascii').upper())))
             
             is_invalid_title = lambda lt: (
-                lt in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER", "I FORM", "I FORM WING", "I WING") or
+                lt in ("PASS", "RUN", "ZONE", "MAN", "BLITZ", "MATCH", "WEAK CLOSE", "BEAR UNDER", "I FORM", "I FORM WING", "I WING", "6-2", "5-3") or
                 is_coach_garbage(lt) or
                 len(lt) < 3 or
                 (sub_text and re.sub(r"[^A-Z0-9]", "", lt) == re.sub(r"[^A-Z0-9]", "", sub_text.upper())) or
@@ -985,7 +996,7 @@ async def extract_formation_plays(target_dir, team_code, formation_name=None, is
                     "GOAL62", "GOALLINE62", "LINE62", "LINE53", "GOAL53",
                     "IINE62", "GOAI62", "GOU62", "GOUIINE62", "GONIINE62",
                     "IINE", "UNE62", "GOUINE", "GOAIINE", "IINF", "IINF62",
-                    "GOU6", "GOAI6", "GOUIINF"
+                    "GOU6", "GOAI6", "GOUIINF", "62", "53"
                 ))
             )
             
@@ -1063,6 +1074,22 @@ async def extract_formation_plays(target_dir, team_code, formation_name=None, is
                                     raw_title = cleaned_li
                                     break
                             if raw_title and not is_invalid_title(raw_title):
+                                break
+                                
+                # Pass 7: binary threshold on title crop (recovers high-contrast compact cards like GUTS and 60 HALF OUT)
+                if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
+                    title_box7 = im[max(0, h-42):max(0, h-18), max(0, x_min+20):min(w, x_min+100)]
+                    if title_box7.size > 0:
+                        gray7 = cv2.cvtColor(title_box7, cv2.COLOR_BGR2GRAY)
+                        _, th7 = cv2.threshold(gray7, 140, 255, cv2.THRESH_BINARY)
+                        pad7 = cv2.copyMakeBorder(th7, 30, 30, 30, 80, cv2.BORDER_CONSTANT, value=0)
+                        cv2.putText(pad7, 'PLAY', (title_box7.shape[1] + 15, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.45, 255, 1)
+                        _, lines7 = await run_ocr_on_image(pad7, engine, 2.0)
+                        for l7 in lines7:
+                            cl7 = re.sub(r'\s*PLAY\s*$', '', l7, flags=re.IGNORECASE).strip().upper()
+                            cl7 = re.sub(r'^PLAY\s*', '', cl7).strip()
+                            if cl7 and not is_invalid_title(cl7) and len(cl7) >= 3:
+                                raw_title = cl7
                                 break
             
             if not raw_title or len(raw_title) < 2 or is_invalid_title(raw_title):
@@ -1217,7 +1244,7 @@ async def process_team(team_name, out_dir):
 async def run_remaining_teams(target_teams=None):
     out_dir = r"D:\Robert\Desktop\App Project Builds\Gridiron_OC\Gridiron_OC\imports\Madden 27 Team Playbook (Excel Workbooks)"
     os.makedirs(out_dir, exist_ok=True)
-    teams = target_teams or ['Carolina', 'Detroit', 'Green Bay', 'Jacksonville', 'Las Vegas', 'New England', 'NYG', 'NYJ']
+    teams = target_teams or ['Baltimore', 'Houston', 'LAR', 'Minnesota', 'New Orleans', 'Pittsburgh', 'Seattle', 'Tennessee']
     for t in teams:
         await process_team(t, out_dir)
     print("\n========================================================")

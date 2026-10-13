@@ -41,6 +41,7 @@
       "ocr-sidecar/README.md",
       "plays.json",
       "defensive_plays.json",
+      "data/**",
       "THIRD_PARTY_NOTICES.md",
       "licenses/**",
       "assets/**"

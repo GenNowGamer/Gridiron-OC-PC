@@ -389,6 +389,12 @@
       <label class="settingsLabel" for="opponentSelect">Opponent</label>
       <select id="opponentSelect" class="settingsSelect"></select>
 
+      <label class="settingsLabel" for="maddenVersionSelect">Madden Version</label>
+      <select id="maddenVersionSelect" class="settingsSelect">
+        <option value="M27">Madden 27 (Authentic 32-Team Playbooks)</option>
+        <option value="M26">Madden 26 (Original Catalog)</option>
+      </select>
+
       <label class="settingsLabel" for="themeSelect">Theme</label>
       <select id="themeSelect" class="settingsSelect"></select>
 
@@ -576,6 +582,20 @@
         <div class="matchupTeamCol">
           <label class="matchupLabel" for="matchupOpponentSelect">OPPONENT</label>
           <select class="matchupSelect" id="matchupOpponentSelect"></select>
+        </div>
+      </div>
+
+      <div class="matchupPresentationSection">
+        <label class="matchupLabel">MADDEN GAME VERSION (PLAYBOOK CATALOG)</label>
+        <div class="maddenVersionPillGroup" id="matchupMaddenVersionGroup" role="group" aria-label="Madden version">
+          <button type="button" class="presentationPillBtn" data-madden-version="M26">
+            <span class="pillTitle">Madden 26</span>
+            <span class="pillSub">M26 Official Playbooks</span>
+          </button>
+          <button type="button" class="presentationPillBtn is-active" data-madden-version="M27">
+            <span class="pillTitle">Madden 27</span>
+            <span class="pillSub">M27 Authentic 32-Team</span>
+          </button>
         </div>
       </div>
 

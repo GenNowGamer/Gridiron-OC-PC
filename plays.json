@@ -869,7 +869,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -6340,7 +6340,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -9590,7 +9590,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -12400,7 +12400,7 @@
     "formation": "Gun",
     "set": "Spread Dbl Flex",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -20531,7 +20531,7 @@
     "formation": "Singleback",
     "set": "Bunch TE",
     "play_name": "ZONE FAKE JET",
-    "type": "RPO",
+    "type": "RUN",
     "concepts": [
       "RPO",
       "Jet Sweep"
@@ -21316,7 +21316,7 @@
     "formation": "Strong",
     "set": "Z Close",
     "play_name": "FAKE END AROUND",
-    "type": "RUN",
+    "type": "PLAY ACTION",
     "concepts": [
       "Run"
     ],
@@ -33815,7 +33815,7 @@
     "formation": "I Form",
     "set": "Wing",
     "play_name": "STRETCH ALERT LOOKIE",
-    "type": "RUN",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -34403,7 +34403,7 @@
     "formation": "Singleback",
     "set": "Wing Pair",
     "play_name": "STRETCH ALERT LOOKIE",
-    "type": "RUN",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -35094,7 +35094,7 @@
     "formation": "Gun",
     "set": "Bunch",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -43895,7 +43895,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -45352,7 +45352,7 @@
     "formation": "Strong",
     "set": "Close",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -45521,7 +45521,7 @@
     "formation": "Strong",
     "set": "Z Close",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -45533,7 +45533,7 @@
     "formation": "Strong",
     "set": "Z Close",
     "play_name": "FAKE END AROUND",
-    "type": "PASS",
+    "type": "PLAY ACTION",
     "concepts": [
       "Pass"
     ],
@@ -47521,7 +47521,7 @@
     "formation": "Gun",
     "set": "Spread Dbl Flex",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -61967,7 +61967,7 @@
     "formation": "Strong",
     "set": "Close",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -65851,7 +65851,7 @@
     "formation": "I Form",
     "set": "Wing",
     "play_name": "STRETCH ALERT LOOKIE",
-    "type": "PASS",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -66563,7 +66563,7 @@
     "formation": "Singleback",
     "set": "Deuce Close",
     "play_name": "CNTR WK",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -68328,7 +68328,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -76383,7 +76383,7 @@
     "formation": "Gun",
     "set": "Trips Te",
     "play_name": "SHUFFLE MTN HB SWING",
-    "type": "RUN",
+    "type": "PASS",
     "concepts": [
       "Run"
     ],
@@ -82689,7 +82689,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -86673,7 +86673,7 @@
     "formation": "Gun",
     "set": "Trips Te",
     "play_name": "SHUFFLE MTN HB SWING",
-    "type": "RUN",
+    "type": "PASS",
     "concepts": [
       "Run"
     ],
@@ -89103,7 +89103,7 @@
     "formation": "Split",
     "set": "T Tight",
     "play_name": "FK FB TOSS ROLLOUT LT",
-    "type": "PA",
+    "type": "PLAY ACTION",
     "concepts": [
       "Toss"
     ],
@@ -92366,7 +92366,7 @@
     "formation": "Gun",
     "set": "Trips Te",
     "play_name": "SHUFFLE MTN HB SWING",
-    "type": "RUN",
+    "type": "PASS",
     "concepts": [
       "Run"
     ],
@@ -93253,7 +93253,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -95997,7 +95997,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -98590,7 +98590,7 @@
     "formation": "Gun",
     "set": "Wing Slot Wk",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -99104,7 +99104,7 @@
     "formation": "Pistol",
     "set": "Doubles",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -99926,7 +99926,7 @@
     "formation": "Singleback",
     "set": "Wing Pair",
     "play_name": "STRETCH ALERT LOOKIE",
-    "type": "PASS",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -104068,7 +104068,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -106802,7 +106802,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -115448,7 +115448,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "PASS",
+    "type": "Pass",
     "concepts": [
       "Jet Sweep"
     ],
@@ -127988,7 +127988,7 @@
     "formation": "Gun",
     "set": "Bunch Te",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -130584,7 +130584,7 @@
     "formation": "Gun",
     "set": "Wing Slot Wk",
     "play_name": "QB WRAP",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -132512,7 +132512,7 @@
     "formation": "Strong",
     "set": "Close",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -137880,7 +137880,7 @@
     "formation": "Singleback",
     "set": "Wing",
     "play_name": "HB STRETCH ALERT SMOKE",
-    "type": "RUN",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -138001,7 +138001,7 @@
     "formation": "Singleback",
     "set": "Wing",
     "play_name": "ZONE SPLIT ALERT LOOKIE",
-    "type": "RUN",
+    "type": "RPO",
     "concepts": [
       "Run"
     ],
@@ -143283,7 +143283,7 @@
     "formation": "Strong",
     "set": "Close",
     "play_name": "END AROUND",
-    "type": "PASS",
+    "type": "RUN",
     "concepts": [
       "Pass"
     ],
@@ -149798,7 +149798,7 @@
     "formation": "I Form",
     "set": "Wing",
     "play_name": "STRETCH ALERT LOOKIE",
-    "type": "RUN",
+    "type": "RPO",
     "concepts": [
       "Stretch"
     ],
@@ -154653,7 +154653,7 @@
     "formation": "Gun",
     "set": "Trips Te",
     "play_name": "SHUFFLE MTN HB SWING",
-    "type": "RUN",
+    "type": "PASS",
     "concepts": [
       "Run"
     ],
@@ -165936,7 +165936,7 @@
     "formation": "Gun",
     "set": "Trips Te",
     "play_name": "SHUFFLE MTN HB SWING",
-    "type": "RUN",
+    "type": "PASS",
     "concepts": [
       "Run"
     ],

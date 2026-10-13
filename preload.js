@@ -3,19 +3,35 @@ const path = require("path");
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("desktopApi", {
-  loadPlays: async () => {
-    const filePath = path.join(__dirname, "plays.json");
-    const raw = await fs.readFile(filePath, "utf8");
-    return JSON.parse(raw);
-  },
-  loadDefensivePlays: async () => {
-    const filePath = path.join(__dirname, "defensive_plays.json");
+  loadPlays: async (version = "M26") => {
+    const isM27 = String(version || "").toUpperCase() === "M27";
+    const subPath = isM27 ? path.join("data", "madden27", "plays.json") : path.join("data", "madden26", "plays.json");
+    let filePath = path.join(__dirname, subPath);
     try {
       const raw = await fs.readFile(filePath, "utf8");
       return JSON.parse(raw);
-    } catch (error) {
-      if (error && error.code === "ENOENT") return [];
-      throw error;
+    } catch (_err) {
+      filePath = path.join(__dirname, "plays.json");
+      const raw = await fs.readFile(filePath, "utf8");
+      return JSON.parse(raw);
+    }
+  },
+  loadDefensivePlays: async (version = "M26") => {
+    const isM27 = String(version || "").toUpperCase() === "M27";
+    const subPath = isM27 ? path.join("data", "madden27", "defensive_plays.json") : path.join("data", "madden26", "defensive_plays.json");
+    let filePath = path.join(__dirname, subPath);
+    try {
+      const raw = await fs.readFile(filePath, "utf8");
+      return JSON.parse(raw);
+    } catch (_err) {
+      filePath = path.join(__dirname, "defensive_plays.json");
+      try {
+        const raw = await fs.readFile(filePath, "utf8");
+        return JSON.parse(raw);
+      } catch (error) {
+        if (error && error.code === "ENOENT") return [];
+        throw error;
+      }
     }
   },
   readTraceLog: () => ipcRenderer.invoke("desktop:trace-read"),

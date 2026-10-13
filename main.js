@@ -105,10 +105,25 @@ async function loadOcrCatalogs() {
       return [];
     }
   };
-  const [offensive, defensive] = await Promise.all([
-    readJson("plays.json"),
-    readJson("defensive_plays.json"),
+  let version = "M26";
+  try {
+    const prefs = await readPreferencesFile();
+    if (String(prefs?.maddenVersion || "").toUpperCase() === "M27") {
+      version = "M27";
+    }
+  } catch (_err) {}
+
+  const isM27 = version === "M27";
+  const offPath = isM27 ? path.join("data", "madden27", "plays.json") : path.join("data", "madden26", "plays.json");
+  const defPath = isM27 ? path.join("data", "madden27", "defensive_plays.json") : path.join("data", "madden26", "defensive_plays.json");
+
+  let [offensive, defensive] = await Promise.all([
+    readJson(offPath),
+    readJson(defPath),
   ]);
+  if (!offensive.length) offensive = await readJson("plays.json");
+  if (!defensive.length) defensive = await readJson("defensive_plays.json");
+
   const withIds = (items) => (Array.isArray(items) ? items : []).map((item) => ({
     ...item,
     id: item.id || [item.team, item.formation, item.set, item.play_name || item.playName]

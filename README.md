@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.21-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.23-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -106,7 +106,7 @@ In competitive football gaming, calling plays under a running play clock can lea
   <img src="docs/screenshots/dc-workspace-overview.png" alt="Defensive Coordinator Workspace" width="100%">
 </p>
 
-- **Comprehensive Defensive Catalog:** Includes all 32 NFL teams and over 8,200 unique defensive plays across 3-4, 4-3, Nickel, Dime, Dollar, and Goal Line fronts.
+- **Comprehensive Defensive Catalog (Madden 26 & Madden 27):** Includes authentic playbooks for all 32 NFL teams across both game versions (over 8,200 plays in M26 and over 10,200 plays in M27) spanning 3-4, 4-3, 46, Nickel, Dime, Dollar, and Goal Line fronts.
 - **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
 - **Sticky "Offense Showing" Biasing:** Quickly tap the opponent's offensive formation (e.g., *Gun Bunch*, *Singleback Wing*, *I-Form*) to bias defensive recommendations toward optimal personnel groupings.
 - **Strict Situation Gating:**
@@ -199,7 +199,7 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
   <img src="docs/screenshots/matchup-broadcast-setup.png" alt="Matchup & Broadcast Setup Modal" width="75%">
 </p>
 
-1. On launch, select your broadcast presentation style right from the **Matchup & Broadcast Setup** modal (`Default`, `TNF`, `SNF`, `MNF`), or open **Calibrate capture** in Settings.
+1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team and opponent across sessions. You can freely switch teams, toggle between **Madden 26** and **Madden 27** playbook catalogs, and select your broadcast presentation style (`Default`, `TNF`, `SNF`, `MNF`), or calibrate capture profiles in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings.
