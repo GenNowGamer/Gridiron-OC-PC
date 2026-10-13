@@ -3,7 +3,7 @@ const path = require("path");
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("desktopApi", {
-  loadPlays: async (version = "M26") => {
+  loadPlays: async (version = "M27") => {
     const isM27 = String(version || "").toUpperCase() === "M27";
     const subPath = isM27 ? path.join("data", "madden27", "plays.json") : path.join("data", "madden26", "plays.json");
     let filePath = path.join(__dirname, subPath);
@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld("desktopApi", {
       return JSON.parse(raw);
     }
   },
-  loadDefensivePlays: async (version = "M26") => {
+  loadDefensivePlays: async (version = "M27") => {
     const isM27 = String(version || "").toUpperCase() === "M27";
     const subPath = isM27 ? path.join("data", "madden27", "defensive_plays.json") : path.join("data", "madden26", "defensive_plays.json");
     let filePath = path.join(__dirname, subPath);

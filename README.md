@@ -199,13 +199,13 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
   <img src="docs/screenshots/matchup-broadcast-setup.png" alt="Matchup & Broadcast Setup Modal" width="75%">
 </p>
 
-1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team and opponent across sessions. You can freely switch teams, toggle between **Madden 26** and **Madden 27** playbook catalogs, and select your broadcast presentation style (`Default`, `TNF`, `SNF`, `MNF`), or calibrate capture profiles in Settings.
+1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team and opponent across sessions. You can freely switch teams, toggle between **Madden 26** and **Madden 27** playbook catalogs (which dynamically updates both offensive coordinators and the DC OCR Exact Call catalog), and select your broadcast presentation style (`Default`, `TNF`, `SNF`, `MNF`), or calibrate capture profiles in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings.
 5. In game, press the capture hotkey (`F8` or `Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
 6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
-7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning.
+7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning. Synchronized Madden version selection guarantees that DC Exact Call recommendations strictly surface authentic plays from the active game edition.
 
 <details>
 <summary><b>📸 Click to explore additional Coordinator & Preferences UI Screens</b></summary>

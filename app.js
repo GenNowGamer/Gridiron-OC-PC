@@ -541,6 +541,9 @@ async function reloadPlaysForVersion(targetVersion){
     if (dom.matchupTeamSelect) dom.matchupTeamSelect.value = state.selectedTeam;
     populateOpponentSelect();
     savePreferences(true);
+    if (window.GridironOcrUi?.reloadDefensivePlays) {
+      await window.GridironOcrUi.reloadDefensivePlays(ver).catch(() => {});
+    }
     resetOcrSession("version_change");
     computeRecommendations();
     render();

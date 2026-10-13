@@ -105,11 +105,11 @@ async function loadOcrCatalogs() {
       return [];
     }
   };
-  let version = "M26";
+  let version = "M27";
   try {
     const prefs = await readPreferencesFile();
-    if (String(prefs?.maddenVersion || "").toUpperCase() === "M27") {
-      version = "M27";
+    if (String(prefs?.maddenVersion || "").toUpperCase() === "M26") {
+      version = "M26";
     }
   } catch (_err) {}
 

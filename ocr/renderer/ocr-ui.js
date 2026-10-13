@@ -1714,14 +1714,17 @@
     bindCanvas();
   }
 
-  async function init() {
-    if (local.initialized) return;
-    local.initialized = true;
-    cacheUi();
-    populateFields();
-    bindEvents();
+  async function loadDefensiveCatalog(version) {
     try {
-      const defensive = desktop().loadDefensivePlays ? await desktop().loadDefensivePlays() : [];
+      let ver = version;
+      if (!ver && desktop().readPreferences) {
+        try {
+          const prefs = await desktop().readPreferences();
+          ver = String(prefs?.preferences?.maddenVersion || prefs?.maddenVersion || "M27").toUpperCase();
+        } catch (_) {}
+      }
+      ver = String(ver || "M27").toUpperCase() === "M26" ? "M26" : "M27";
+      const defensive = desktop().loadDefensivePlays ? await desktop().loadDefensivePlays(ver) : [];
       local.defensivePlays = (Array.isArray(defensive) ? defensive : []).map((play) => ({
         ...play,
         id: play.id || [play.team, play.formation, play.set, play.play_name || play.playName]
@@ -1732,6 +1735,15 @@
     } catch (_) {
       local.defensivePlays = [];
     }
+  }
+
+  async function init() {
+    if (local.initialized) return;
+    local.initialized = true;
+    cacheUi();
+    populateFields();
+    bindEvents();
+    await loadDefensiveCatalog();
     await refreshState();
     syncTeamContext();
   }
@@ -1745,6 +1757,12 @@
   window.GridironOcrUi = {
     onExactCallStateChanged: refreshExactCallsFromHost,
     refreshExactCalls: () => refreshExactCallsFromHost(exactCallState()),
+    reloadDefensivePlays: async (version) => {
+      await loadDefensiveCatalog(version);
+      if (!isOcHostRole()) {
+        renderExactCallsCard(local.latestExactRecommendations || [], exactCallState(), { syncHost: false });
+      }
+    },
     onRoleChanged: () => {
       // Strip chrome only — do not sync Exact Calls back into the host (re-enters render).
       if (isOcHostRole()) local.latestExactRecommendations = [];
