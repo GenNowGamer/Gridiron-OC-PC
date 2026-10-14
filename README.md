@@ -1,11 +1,11 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.21-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.22-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
-**Gridiron OC** is a desktop smart play-calling companion for football video games (such as Madden NFL) and real-time football simulation. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
+**Gridiron OC** is a desktop smart play-calling companion for Madden NFL 26 and Madden NFL 27, and for real-time football simulation. Both game versions use the same on-device recommendations for all 32 NFL team playbooks. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
 
 Gridiron OC operates completely on-device with zero cloud dependencies, utilizing low-latency video capture and computer vision OCR to deliver seamless coordinator intelligence.
 

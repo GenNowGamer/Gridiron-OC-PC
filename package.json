@@ -1,8 +1,8 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "private": true,
-  "description": "Electron desktop build of Gridiron Play Advisor",
+  "description": "Desktop play-calling companion for Madden NFL 26 and Madden NFL 27",
   "main": "main.js",
   "engines": {
     "node": ">=18.0.0"
