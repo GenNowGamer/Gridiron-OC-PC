@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.23-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.21-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -58,7 +58,8 @@ In competitive football gaming, calling plays under a running play clock can lea
   <img src="docs/screenshots/oc-workspace-overview.png" alt="Offensive Coordinator Workspace" width="100%">
 </p>
 
-- **Top-3 Recommendation Slate:** Evaluates your entire 32-team NFL playbook catalog and presents the 3 best calls for the exact down, distance, and field spot.
+- **Top-3 Recommendation Slate:** Evaluates your selected team's playbook and presents the 3 best calls for the exact down, distance, and field spot.
+- **Madden 26 and Madden 27 catalogs:** Both games use the same recommendation path. Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
 - **Why-This-Call Chips:** Every recommendation tile displays live contextual rationales (e.g., *Identity Fit*, *Sets up Play-Action*, *Coverage Beater*, *Third-Down Converter*).
 - **Playcalling Modes:** Instantly reshape your playbook strategy with specialized tactical overlays:
   - **Normal:** Balanced, situation-driven adaptive play calling dynamically tailored to your team's assigned tactical identity (e.g., Chicago Bears "PA Motion Explosive", Baltimore Ravens "Option & Power Run", Kansas City Chiefs "Downfield Spread Attack"). Calibrated to achieve 50%+ post-game Identity Fit execution without requiring secondary style toggles.
@@ -106,7 +107,7 @@ In competitive football gaming, calling plays under a running play clock can lea
   <img src="docs/screenshots/dc-workspace-overview.png" alt="Defensive Coordinator Workspace" width="100%">
 </p>
 
-- **Comprehensive Defensive Catalog (Madden 26 & Madden 27):** Includes authentic playbooks for all 32 NFL teams across both game versions (over 8,200 plays in M26 and over 10,200 plays in M27) spanning 3-4, 4-3, 46, Nickel, Dime, Dollar, and Goal Line fronts.
+- **Comprehensive Defensive Catalog (Madden 26 & Madden 27):** Includes the 32 NFL team playbooks for both game versions. Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Play types are `MAN`, `ZONE`, `BLITZ`, and `MATCH`, across 3-4, 4-3, 46, Nickel, Dime, Dollar, and Goal Line fronts. Alternate defense books are not included. Both versions are scored by the same defensive recommendation core.
 - **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
 - **Sticky "Offense Showing" Biasing:** Quickly tap the opponent's offensive formation (e.g., *Gun Bunch*, *Singleback Wing*, *I-Form*) to bias defensive recommendations toward optimal personnel groupings.
 - **Strict Situation Gating:**
@@ -242,6 +243,7 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        └── Shared Text & Grammar Parsers (ocr/shared/)
 ```
 
+- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` and `defensive_plays.json`. The Matchup modal chooses the version. Both files use team code, formation, set, play name, and type, and both pass through the same normalizer before offensive or defensive scoring.
 - **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
 - **Telemetry & Privacy:** Zero cloud telemetry. All playbooks and screen captures are processed strictly on your local hardware.
 
