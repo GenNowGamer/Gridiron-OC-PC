@@ -529,6 +529,11 @@ class IntegrationOcrManager extends EventEmitter {
         quarter: Math.max(1, Math.min(5, Number(patch.context.quarter) || current.config.context.quarter || 1)),
         userScore: Math.max(0, Math.min(99, Number(patch.context.userScore) || 0)),
         oppScore: Math.max(0, Math.min(99, Number(patch.context.oppScore) || 0)),
+        qbScramble: patch.context.qbScramble === true
+          ? true
+          : patch.context.qbScramble === false
+            ? false
+            : current.config.context.qbScramble === true,
       };
       this._alignContext(config.context);
     }
@@ -968,7 +973,9 @@ class IntegrationOcrManager extends EventEmitter {
         const parsed = HudText.parseDownDistanceText(sanitized);
         // Do not promote a distance guessed only from letters (e.g. "TSTA" →
         // "1st & 4"). Require OCR evidence for the distance token itself.
-        const hasDistanceEvidence = /(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\bINCH(?:ES)?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)G?INCH(?:ES)?|\b[1-4]D[G8]\s*\d{1,2}\b)/i.test(sanitized);
+        const hasDistanceEvidence = typeof HudText.hasDownDistanceEvidence === 'function'
+          ? HudText.hasDownDistanceEvidence(sanitized)
+          : /(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\bINCH(?:ES)?1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)G?INCH(?:ES)?1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(sanitized);
         value = parsed.ok && hasDistanceEvidence ? parsed.label : null;
         resolverConfidence = parsed.ok && hasDistanceEvidence ? 1 : 0;
         if (parsed.ok && hasDistanceEvidence) matchedLabel = parsed.label;
@@ -1732,7 +1739,9 @@ class IntegrationOcrManager extends EventEmitter {
         defenseSide: args.defenseSide,
         penalty: clean(fields.penalty_result && fields.penalty_result.value),
         driveStart: false,
+        scrambleSignal: args.qbScramble === true,
       });
+      if (args.qbScramble === true) await this._consumeQbScramble();
       const penaltyText = clean(fields.penalty_result && fields.penalty_result.value);
       const penaltyAmbiguous = Penalties.shouldSkipLearningForPenalty(priorSnap.penalty)
         || Boolean(penaltyText && !/^no\s+(?:flag|penalty)$/i.test(penaltyText));
@@ -1988,6 +1997,14 @@ class IntegrationOcrManager extends EventEmitter {
     this.sessionContextKey = args.context ? contextKey(args.context) : '';
     this._emit('session:reset', { reason: clean(args.reason) || 'session_reset' });
     return { reset: true };
+  }
+
+  async _consumeQbScramble() {
+    const stored = this.store.get();
+    const context = { ...((stored.config && stored.config.context) || {}) };
+    if (context.qbScramble !== true) return;
+    context.qbScramble = false;
+    await this.store.update({ config: { context } });
   }
 
   _alignContext(context) {

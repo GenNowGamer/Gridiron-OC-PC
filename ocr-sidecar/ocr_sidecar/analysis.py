@@ -15,6 +15,7 @@ from .images import (
     preprocess,
     shift_roi,
 )
+from .down_distance_slots import read_down_distance
 from .profile import crop_normalized
 
 
@@ -482,8 +483,29 @@ def _recognize_roi_with_band(
             "_prepared": prepared,
         }
 
+    # Closed-set slot read runs on the raw crop, before Otsu turns outlined
+    # ordinals into digit soup. Ambiguous crops fall through to PP-OCRv5.
+    slot_read = read_down_distance(base_crop) if field_id == "down_distance" else None
+    if slot_read:
+        prepared = preprocess(base_crop, preprocess_opts)
+        score = _field_read_score(field_id, slot_read["text"], slot_read["confidence"]) + 2.0
+        best = {
+            "text": slot_read["text"],
+            "confidence": slot_read["confidence"],
+            "cropHash": hashlib.sha256(base_crop.tobytes()).hexdigest(),
+            "processedCropHash": hashlib.sha256(prepared.tobytes()).hexdigest(),
+            "bandSource": "slot_recognizer",
+            "bandScore": round(float(score), 4),
+            "_score": score,
+            "_crop": base_crop,
+            "_prepared": prepared,
+        }
+    else:
+        best = None
+
     # Always evaluate the drawn ROI first. Prefer it when structure is already good.
-    best = _read_crop(base_crop, "roi", 0.55)
+    if best is None:
+        best = _read_crop(base_crop, "roi", 0.55)
     if best is None:
         prepared = preprocess(base_crop, preprocess_opts)
         best = {

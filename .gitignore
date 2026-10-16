@@ -58,6 +58,7 @@ docs/*
 !assets/
 !assets/**
 !docs/screenshots/**
+!ocr-sidecar/tests/fixtures/**
 *.txt
 # Local workspace and transient scratch / pipeline test scripts
 *.code-workspace

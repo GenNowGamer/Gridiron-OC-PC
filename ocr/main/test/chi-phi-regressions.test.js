@@ -53,8 +53,35 @@ test('word repairs preserve intact ZERO, LOOP and LB names and unrelated unknown
   assert.equal(Hud.repairPersonnelOcrConfusions("aR"), '1RB - 1TE 3WR');
   assert.equal(Hud.parseDownDistanceText("4&1").label, '4th & 1');
   assert.equal(Hud.parseDownDistanceText("2ND&2O").label, '2nd & 20');
+  assert.equal(Hud.parseDownDistanceText("'2'ND'9''7'").label, '2nd & 7');
+  assert.equal(Hud.parseDownDistanceText('2ND97').label, '2nd & 7');
+  assert.equal(Hud.parseDownDistanceText('2ND910').label, '2nd & 10');
+  assert.equal(Hud.parseDownDistanceText('2ND & 97').label, '2nd & 7');
+  assert.equal(Hud.parseDownDistanceText('2ND9').label, '2nd & 9');
+  assert.equal(Hud.parseDownDistanceText('2ND19').label, '2nd & 19');
+  assert.equal(Hud.parseDownDistanceText("'2'ND'&'INCHES'1'").label, '2nd & 1');
+  assert.equal(Hud.parseDownDistanceText("'2'WD'&''8''1'").label, '2nd & 8');
+  assert.equal(Hud.parseDownDistanceText("'3'D'&''8''1'").label, '3rd & 8');
+  assert.equal(Hud.parseDownDistanceText("'2'ND'&''1''0''1'").label, '2nd & 10');
+  assert.equal(Hud.parseDownDistanceText('2ND & 21').label, '2nd & 21');
+  assert.equal(Hud.parseDownDistanceText("'3'RD'&''1''1'").label, '3rd & 11');
+  assert.equal(Hud.parseDownDistanceText("'2''0''0''&''1''1'").label, '2nd & 11');
+  assert.equal(Hud.parseDownDistanceText("'1''3''0''&''3'").label, '3rd & 3');
+  assert.equal(Hud.parseDownDistanceText("'1''2''1''0''&''3'").label, '2nd & 3');
+  assert.equal(Hud.parseDownDistanceText('30&7').label, '3rd & 7');
+  assert.equal(Hud.hasDownDistanceEvidence("'2''0''0''&''1''1'"), true);
+  assert.equal(Hud.hasDownDistanceEvidence('2ND & 21'), true);
+  assert.equal(Hud.hasDownDistanceEvidence('TSTA'), false);
   assert.equal(Hud.parseFieldPositionText("Y'3'B").ok, false, 'Y is not enough evidence for a side');
   assert.equal(Hud.parseFieldPositionText("Y'3'B", { sideHint: 'OPP' }).ok, false);
+});
+
+test('Sunday Night outlined ordinals accept when the letters were read as zeros', async () => {
+  const fields = await manager()._resolveFields({
+    down_distance: { text: "'2''0''0''&''1''1'", confidence: 0.8, agreement: 1 },
+  }, { team: 'CHI', opponent: 'PIT', role: 'oc' });
+  assert.equal(fields.down_distance.value, '2nd & 11');
+  assert.equal(fields.down_distance.accepted, true);
 });
 
 test('impossible personnel totals stay reviewable without guessing a formation', async () => {

@@ -119,6 +119,36 @@
     return folded;
   }
 
+  // Outlined "&" is read as 9 glued to the yards: "'2'ND'9''7'" → 2ND97.
+  // Drop that 9 only when the whole number cannot be a distance and the rest can.
+  function yardsAfterFalseAmpersandNine(digits) {
+    if (!/^9\d{1,2}$/.test(digits)) return "";
+    var full = Number(digits);
+    var rest = Number(digits.slice(1));
+    if (full > 40 && rest >= 1 && rest <= 40) return String(rest);
+    return "";
+  }
+
+  // A down-distance box that also catches the next HUD glyph reads "8 1" as 81
+  // and "10 1" as 101. Drop that ending 1 only when the whole number cannot be
+  // a distance. Real 11 / 21 / 31 stay intact.
+  function yardsAfterTrailingOutlineOne(digits) {
+    if (!/^\d{2,3}$/.test(digits) || digits.charAt(digits.length - 1) !== "1") return "";
+    var full = Number(digits);
+    var rest = Number(digits.slice(0, -1));
+    if (full > 40 && rest >= 1 && rest <= 40) return String(rest);
+    return "";
+  }
+
+  function foldDownDistanceYards(yards) {
+    if (/^(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES)1?$/.test(yards)) return "1";
+    var folded = foldYardToken(yards);
+    if (!folded) return "";
+    return yardsAfterTrailingOutlineOne(yardsAfterFalseAmpersandNine(folded) || folded)
+      || yardsAfterFalseAmpersandNine(folded)
+      || folded;
+  }
+
   /**
    * Deterministic HUD repair for down/distance before grammar/catalog.
    * Uses ordinal suffix as ground truth for down; folds yard confusables after &.
@@ -172,6 +202,8 @@
     text = text.replace(/\b([1-4])N[O0](?=[&0-9A-Z\s-]|$)/g, "$1ND");
     // "2M0" / "2MO" — ND collapsed to M0 (export: "'2'M'0''&''4'").
     text = text.replace(/\b([1-4])M[O0](?=[&0-9A-Z\s-]|$)/g, "$1ND");
+    // Thursday Night outlined font reads N as W: "'2'WD'&''8''1'" → 2ND & 8.
+    text = text.replace(/\b2W[D0O](?=[&0-9A-Z\s-]|$)/g, "2ND");
     // "38D" / "3BD" — R misread as 8/B before D (export: "38D & GOAL", "3BD").
     text = text.replace(/\b([1-4])[8B]D(?=[&0-9A-Z\s-]|$)/g, "$1RD");
     // "SRO" / "SRD" / "BRD" / "BRO" — S/B misread as down 3 before R
@@ -225,7 +257,7 @@
 
     // Glued short-yardage: "'3'RDINCHES" → 3RD & 1. Inches is not a 1–2 char yard token.
     text = text.replace(
-      /\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)\b/g,
+      /\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b/g,
       function (_match, _head, suffix) {
         var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
         return down ? String(down) + suffix + " & 1" : _match;
@@ -248,17 +280,23 @@
     // A bare yard 8 ("3RD8") has nothing after it, so it stays the yard.
     text = text.replace(/\b([1-4](?:ST|ND|RD|TH))[GA8S](?!OAL)(?=[0-9A-Z])/g, "$1 & ");
 
+    // "'2'ND'9''7'" → 2ND97 → 2ND & 7. A real 2ND9 / 2ND19 does not match.
+    text = text.replace(/\b([1-4](?:ST|ND|RD|TH))(9\d{1,2})\b/g, function (_match, ord, yards) {
+      var rest = yardsAfterFalseAmpersandNine(yards);
+      return rest ? ord + " & " + rest : _match;
+    });
+
     // "3RD & A" / "3 & S" / "3RD & IO" → fold yard token confusables to digits.
+    // "2ND & 97" keeps the & and still needs the false 9 removed.
     text = text.replace(/((?:&|-)\s*)([0-9A-Z|]+)\b/g, function (_match, sep, yards) {
-      var folded = foldYardToken(yards);
-      if (!folded) return sep + yards;
-      return sep + folded;
+      var folded = foldDownDistanceYards(yards);
+      return folded ? sep + folded : sep + yards;
     });
 
     // Glued ordinal+yards with confusable yards: 3RDA → 3RD4, 1STIO → 1ST10
     text = text.replace(/\b([1-4](?:ST|ND|RD|TH))([0-9A-Z|]{1,2})\b/g, function (_match, ord, yards) {
       if (yards === "GOAL") return ord + yards;
-      var folded = foldYardToken(yards);
+      var folded = foldDownDistanceYards(yards);
       return folded ? ord + folded : ord + yards;
     });
 
@@ -267,6 +305,25 @@
 
     // Digit-soup before &: "38 &5" / "3 8 & 5" where leading 3 is the down (→ 3RD & 5).
     // Same family as "380"→"3RD"; only fire when no real ordinal already present.
+    if (!/\b[1-4](?:ST|ND|RD|TH)\b/.test(text)) {
+      // Sunday Night outlined ordinals collapse both letters to digits:
+      // "'2''0''0''&''1''1'" → 200&11 (2ND & 11), "'1''3''0''&''3'" → 130&3
+      // (yellow-bar 1 + 3RD & 3), "'1''2''1''0''&''3'" → 1210&3 (2ND & 3).
+      // "10" before & is N+D of 2ND only. Run before the broader soup rule so
+      // the yellow-bar 1 is not taken as 1st down.
+      var compactOutlined = text.replace(/\s+/g, "");
+      var outlined = compactOutlined.match(/^(?:1(?=[2-4]))?([1-4])(0{1,2}|10)&(\d{1,2})$/);
+      if (outlined) {
+        var outlinedDown = outlined[1];
+        var outlinedMarks = outlined[2];
+        var outlinedYards = Number(outlined[3]);
+        var marksOk = outlinedMarks !== "10" || outlinedDown === "2";
+        if (marksOk && outlinedYards >= 1 && outlinedYards <= 40) {
+          var outlinedSuffix = ({ "1": "ST", "2": "ND", "3": "RD", "4": "TH" })[outlinedDown];
+          text = outlinedDown + outlinedSuffix + " & " + String(outlinedYards);
+        }
+      }
+    }
     if (!/\b[1-4](?:ST|ND|RD|TH)\b/.test(text)) {
       text = text.replace(/\b([1-4])\s*[0-9OIl|]{0,2}\s*&/g, function (_match, down) {
         var suffix = ordinalSuffix(Number(down)).toUpperCase();
@@ -338,6 +395,22 @@
   function downDistanceAliasMap() {
     if (!DOWN_DISTANCE_ALIASES) DOWN_DISTANCE_ALIASES = buildDownDistanceAliasMap();
     return DOWN_DISTANCE_ALIASES;
+  }
+
+  // Sanitized OCR must still show a distance token. Repaired labels are not
+  // enough: "TSTA" must not become "1st & 4" without a yard digit in the crop.
+  function hasDownDistanceEvidence(raw) {
+    var text = sanitizeHudText(raw).toUpperCase();
+    if (!text) return false;
+    if (/(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\bINCH(?:ES)?1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)G?INCH(?:ES)?1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(text)) {
+      return true;
+    }
+    var compact = text.replace(/\s+/g, "");
+    // 2ND/3RD/4TH/1ST whose letters were read as 0, plus a bare "3&4".
+    if (/^(?:1(?=[2-4]))?[1-4]0{1,2}&\d{1,2}$/.test(compact)) return true;
+    if (/^(?:1(?=2))?210&\d{1,2}$/.test(compact)) return true;
+    if (/^[1-4]&\d{1,2}$/.test(compact)) return true;
+    return false;
   }
 
   function hasDownDistanceStructure(raw) {
@@ -1434,6 +1507,7 @@
     repairPreviousPlayOcrText: repairPreviousPlayOcrText,
     parseDownDistanceText: parseDownDistanceText,
     hasDownDistanceStructure: hasDownDistanceStructure,
+    hasDownDistanceEvidence: hasDownDistanceEvidence,
     fieldSideFromArrowGlyphs: fieldSideFromArrowGlyphs,
     parseFieldPositionText: parseFieldPositionText,
     isEmptyPreviousPlayOcr: isEmptyPreviousPlayOcr,

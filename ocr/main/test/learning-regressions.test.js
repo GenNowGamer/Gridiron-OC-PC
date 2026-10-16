@@ -187,3 +187,17 @@ test('in-flight capture from a reset session cannot update the new game', async 
   assert.equal(h.manager.lastCapture, null);
   assert.equal(h.records.length, 0);
 });
+
+test('a qb scramble charges the defense half the positive yards of a throw', () => {
+  const Outcome = require('../../shared/defensiveOutcomeInference');
+  const before = { down: 2, yards: 10, yardsToGo: 10, fieldSide: 'OWN', yardLine: 25 };
+  const after = { down: 3, yards: 2, yardsToGo: 2, fieldSide: 'OWN', yardLine: 33 };
+  const thrown = Outcome.inferDefensiveOutcome({ before, after });
+  const scrambled = Outcome.inferDefensiveOutcome({ before, after, scrambleSignal: true });
+  assert.equal(thrown.yardsAllowed, 8);
+  assert.equal(scrambled.actualYardsAllowed, 8);
+  assert.equal(scrambled.yardsAllowed, 4);
+  assert.equal(scrambled.qbScramble, true);
+  assert.equal(scrambled.successfulDefense, true);
+  assert.equal(thrown.successfulDefense, false);
+});

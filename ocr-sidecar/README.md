@@ -20,6 +20,9 @@ py -3.12 -m venv .venv
 `pytesseract` is only a Python adapter. Install the separate Tesseract OCR
 Windows executable and ensure `tesseract.exe` is on `PATH` for fallback. Preferred
 HUD engine is **`onnx_ppocrv5`** (bundled PP-OCRv5 mobile recognition ONNX).
+Down / distance is read first by `ocr_sidecar/down_distance_slots.py` on the raw
+crop. A clear ordinal-and-yards match replaces the OCR string (`bandSource:
+slot_recognizer`). A close or incomplete split falls through to PP-OCRv5.
 Fetch with `scripts\fetch-pp-ocrv5-onnx.ps1` if `models\PP-OCRv5_mobile_rec`
 is missing. The charset dict must preserve the leading ideographic space
 (U+3000); stripping it shifts every CTC index and garbles Latin output.

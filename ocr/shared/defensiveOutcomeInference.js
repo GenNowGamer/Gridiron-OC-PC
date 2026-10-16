@@ -153,6 +153,20 @@
       result.learnable = true;
       result.evidence.push("explicit_sack_signal");
     }
+    // A confirmed scramble still moves the chains by the real yardage, but the
+    // defensive call is graded on half of a positive gain so it outscores a throw.
+    if (source.scrambleSignal === true && result.yardsAllowed != null && result.yardsAllowed > 0) {
+      var actualYards = result.yardsAllowed;
+      var weightedYards = actualYards * 0.5;
+      result.actualYardsAllowed = actualYards;
+      result.yardsAllowed = weightedYards;
+      result.qbScramble = true;
+      result.evidence.push("qb_scramble");
+      if (result.firstDownAllowed !== true) {
+        result.successfulDefense = weightedYards <= Math.max(3, beforeDistance == null ? 3 : beforeDistance * 0.45);
+        if (result.successfulDefense === true) result.kind = "scramble_contained";
+      }
+    }
     if (result.confidence < (Number(cfg.minConfidence) || 0.72)) result.learnable = false;
     return result;
   }

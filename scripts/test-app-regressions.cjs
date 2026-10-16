@@ -471,6 +471,52 @@ test('autoFillScript generates a 15-play sequence using NFL setup-to-payoff arch
   assert.equal(slot5.type, 'PA');
 });
 
+test('auto-fill uses an opponent early-down shell and falls back when that history is thin', () => {
+  const a = app();
+  a.run(`
+    state.selectedTeam = 'KC';
+    state.selectedOpponent = 'DAL';
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'Inside Zone', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'PA Boot', type: 'PA' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Quick Slants', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Curl Flat', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Wide Zone', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Trips', play_name: 'Counter', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Empty', play_name: 'Mesh', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Trips', play_name: 'Levels', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Spread', play_name: 'Four Verticals', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Stick', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Heavy', play_name: 'Power', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Bunch', play_name: 'Screen', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'Dive', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Gun', set: 'Trips', play_name: 'Smash', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'KC', formation: 'Singleback', set: 'Ace', play_name: 'Iso', type: 'RUN' })
+    ];
+    state.recentRunScripts = [];
+    state.userLearning = createEmptyUserLearning();
+    const thinKey = 'kc|down1|long|own_territory|normal|normal|fam|inside_zone';
+    state.userLearning.opponentScouting.byOpponent.DAL = {
+      updatedAt: 1,
+      contexts: { [thinKey]: { updatedAt: 1, defenses: { 'Cover 3': { observations: 2 } } } }
+    };
+    Math.random = () => 0;
+  `);
+  assert.equal(a.run(`openingScriptOpponentShell(state.userLearning, 'DAL')`), null);
+  a.run('autoFillScript()');
+  const thinSlot = a.run(`state.normalizedPlays.find(p => p.id === state.customScriptPlays[1]).play_name`);
+  assert.equal(thinSlot, 'Quick Slants');
+
+  a.run(`
+    state.userLearning.opponentScouting.byOpponent.DAL.contexts[thinKey].defenses['Cover 3'].observations = 8;
+    autoFillScript();
+  `);
+  const fitted = a.run(`openingScriptOpponentShell(state.userLearning, 'DAL')`);
+  assert.equal(fitted.observations, 8);
+  const fittedSlot = a.run(`state.normalizedPlays.find(p => p.id === state.customScriptPlays[1]).play_name`);
+  assert.equal(fittedSlot, 'Curl Flat');
+});
+
 test('Two-game cooldown: excludes plays from the last 2 executed scripts, respects preview re-clicks', () => {
   const a = app();
   a.run(`
@@ -630,6 +676,45 @@ test('halftime does not build play-action off a stuffed run', () => {
 test('halftime protects a lead and chases a two-score deficit when coverage is mixed', () => {
   assert.equal(halftimeDecision({ userScore: 24, oppScore: 10 }).profileId, 'run_first');
   assert.equal(halftimeDecision({ userScore: 7, oppScore: 21 }).profileId, 'aggressive');
+});
+
+test('qb scramble stays on offense and scores a gain below a throw', () => {
+  const a = app();
+  const graded = a.run(`(() => {
+    const pending = { down: 1, yardsToGo: 10, goalToGo: false, fieldPosition: normalizeFieldPosition('OWN', 25), qbScramble: true };
+    const next = { down: 2, yardsToGo: 1, goalToGo: false, fieldPosition: normalizeFieldPosition('OWN', 40) };
+    const thrown = inferPendingOutcome({ ...pending, qbScramble: false }, next);
+    const scrambled = applyQbScrambleOffenseWeight(inferPendingOutcome(pending, next), pending);
+    return { thrownPoints: thrown.successPoints, thrownExplosive: thrown.explosiveGain, thrownYards: thrown.yardsGained,
+      scramblePoints: scrambled.successPoints, scrambleExplosive: scrambled.explosiveGain, scrambleYards: scrambled.yardsGained };
+  })()`);
+  assert.equal(graded.thrownYards, 15);
+  assert.equal(graded.thrownExplosive, true);
+  assert.equal(graded.scrambleYards, 15);
+  assert.equal(graded.scrambleExplosive, false);
+  assert.equal(graded.scramblePoints, (graded.thrownPoints - 0.5) * 0.5);
+  a.run(`state.normalizedPlays=[normalizeImportedPlay({team:'CHI',formation:'Gun',set:'Trips',play_name:'Mesh',type:'PASS'})];
+    state.hasActiveSituation=true; startCoordinatorSession('normal');
+    state.down=1; state.yards=10; state.fieldPosition=normalizeFieldPosition('OWN', 25);
+    computeRecommendations(); onGetPlays();
+    confirmRecommendedPlay(state.presentedRecommendations[0].play.id);
+    applyDriveResultAndReset('qb_scramble');`);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  assert.equal(a.run('state.pendingOutcome.qbScramble'), true);
+  assert.equal(a.run('state.down'), 1);
+  assert.equal(a.run('state.userScore'), 0);
+});
+
+test('defensive qb scramble stays on defense and arms the next capture', () => {
+  const a = app();
+  a.run(`state.coordinatorRole='dc'; state.gameStarted=true; state.selectedTeam='CHI'; state.selectedOpponent='DAL';
+    state.confirmedDcBasePlay={id:'cover-3'}; state.confirmedDcRecommendationId='cover-3';
+    window.desktopApi={ ocrUpdateConfig: patch => { window.__ocr = patch; return Promise.resolve(); } };
+    applyDcGameState('qb_scramble');`);
+  assert.equal(a.run('state.coordinatorRole'), 'dc');
+  assert.equal(a.run('state.dcQbScramble'), true);
+  assert.equal(a.run('window.__ocr.context.qbScramble'), true);
+  assert.equal(a.run('state.confirmedDcBasePlay'), null);
 });
 
 

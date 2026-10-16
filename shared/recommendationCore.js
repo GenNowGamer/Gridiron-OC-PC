@@ -219,6 +219,7 @@
     { id: "touchdown", label: "Touchdown", successPoints: 4.5, firstDownAchieved: true },
     { id: "field_goal", label: "Field Goal", successPoints: 1.5, firstDownAchieved: false },
     { id: "sack", label: "Sack", successPoints: 0, firstDownAchieved: false, driveEnding: false, negativePlay: true },
+    { id: "qb_scramble", label: "QB Scramble", successPoints: 0, firstDownAchieved: false, driveEnding: false },
     { id: "punt", label: "Punt", successPoints: -1.25, firstDownAchieved: false },
     { id: "safety", label: "Safety", successPoints: -3.5, firstDownAchieved: false, negativePlay: true },
     { id: "interception", label: "Interception", successPoints: -4.0, firstDownAchieved: false, negativePlay: true },
