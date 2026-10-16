@@ -175,7 +175,7 @@
     "team": "SF",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "MTN PA DEEPX OVER",
+    "play_name": "MTN PA DEEP X OVER",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -612,7 +612,7 @@
     "team": "SF",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -5820,7 +5820,7 @@
     "team": "SF",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -9794,7 +9794,7 @@
     "team": "CHI",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "MTN PA DEEPX OVER",
+    "play_name": "MTN PA DEEP X OVER",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -16478,7 +16478,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -16490,7 +16490,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -16611,7 +16611,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Trips TE Flex",
-    "play_name": "MTN FORKH CHOICE",
+    "play_name": "MTN FORK H CHOICE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -17874,7 +17874,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "DBL MTN STACK SHAKEN UP",
+    "play_name": "DBL MTN STACK SHAKE N UP",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -18139,7 +18139,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -18235,7 +18235,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Y Off Trips",
-    "play_name": "HB POWERRT",
+    "play_name": "HB POWER RT",
     "type": "RUN",
     "concepts": [
       "Power O"
@@ -18659,7 +18659,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Y Off Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -19142,7 +19142,7 @@
     "team": "CIN",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -23369,7 +23369,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Empty HB Wide",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -23562,7 +23562,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Empty Trips Speed",
-    "play_name": "MTN WRANGLE",
+    "play_name": "MTN WR ANGLE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -23601,7 +23601,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Empty Trips Speed",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -24230,7 +24230,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Split Y Off",
-    "play_name": "MTN H ANGLE",
+    "play_name": "MTN H-ANGLE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -26027,7 +26027,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -31509,7 +31509,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -33398,7 +33398,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Empty Y Slot",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -34296,7 +34296,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Split Y Off",
-    "play_name": "MTN H ANGLE",
+    "play_name": "MTN H-ANGLE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -35751,7 +35751,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Trey Y-Flex",
-    "play_name": "RPO ZONEY PEEK",
+    "play_name": "RPO ZONE Y PEEK",
     "type": "RPO",
     "concepts": [
       "RPO"
@@ -35781,7 +35781,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Trey Y-Flex",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -35869,7 +35869,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "CLOSEX FADE",
+    "play_name": "CLOSE X FADE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -36083,7 +36083,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "WRDIAG",
+    "play_name": "WR DIAG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -36409,7 +36409,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -36768,7 +36768,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -38066,7 +38066,7 @@
     "team": "DEN",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "MTN PA DEEPX OVER",
+    "play_name": "MTN PA DEEP X OVER",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -38436,7 +38436,7 @@
     "team": "DEN",
     "formation": "Singleback",
     "set": "Doubles Y Off",
-    "play_name": "JET PABOOT",
+    "play_name": "JET PA BOOT",
     "type": "PASS",
     "concepts": [
       "Boot"
@@ -40158,7 +40158,7 @@
     "team": "DEN",
     "formation": "Full House",
     "set": "Tight",
-    "play_name": "CURLY CORNER",
+    "play_name": "CURL Y CORNER",
     "type": "PASS",
     "concepts": [
       "Corner",
@@ -42363,7 +42363,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -44820,7 +44820,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Trey Open Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -49929,7 +49929,7 @@
     "team": "CLE",
     "formation": "Pistol",
     "set": "U Off Trips",
-    "play_name": "JET PABOOT",
+    "play_name": "JET PA BOOT",
     "type": "PASS",
     "concepts": [
       "Boot"
@@ -53176,7 +53176,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -53972,7 +53972,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Trips TE Flex",
-    "play_name": "MTN FORKH CHOICE",
+    "play_name": "MTN FORK H CHOICE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -54646,7 +54646,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Wing Slot Offset",
-    "play_name": "MTN WRANGLE POST",
+    "play_name": "MTN WR ANGLE POST",
     "type": "PASS",
     "concepts": [
       "Post"
@@ -55189,7 +55189,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Y Off Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -56200,7 +56200,7 @@
     "team": "TB",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "MTN PA DEEPX OVER",
+    "play_name": "MTN PA DEEP X OVER",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -56560,7 +56560,7 @@
     "team": "TB",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -59649,7 +59649,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -63363,7 +63363,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Trips",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -63965,7 +63965,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -64405,7 +64405,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "DAGGERX OUT",
+    "play_name": "DAGGER X OUT",
     "type": "PASS",
     "concepts": [
       "Dagger",
@@ -64657,7 +64657,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -65695,7 +65695,7 @@
     "team": "ARI",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -69284,7 +69284,7 @@
     "team": "ARI",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -70913,7 +70913,7 @@
     "team": "ARI",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -73147,7 +73147,7 @@
     "team": "ARI",
     "formation": "Gun",
     "set": "Trey Y-Flex",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -75494,7 +75494,7 @@
     "team": "LAC",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -80093,7 +80093,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCK WROPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -81650,7 +81650,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Tight Offset TE",
-    "play_name": "STICKN OUT",
+    "play_name": "STICK N OUT",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -82793,7 +82793,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -83157,7 +83157,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -88753,7 +88753,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Empty Bunch Y Flex",
-    "play_name": "SWIRL HOOKN GO",
+    "play_name": "SWIRL HOOK N GO",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -88956,7 +88956,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Empty Trips Speed",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -90969,7 +90969,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Trey Open Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -93163,7 +93163,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Y Off Trips Wk",
-    "play_name": "MTN SHOCKH OPT",
+    "play_name": "MTN SHOCK H OPT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -95381,7 +95381,7 @@
     "team": "IND",
     "formation": "Strong I",
     "set": "Pro",
-    "play_name": "POWERO ALERT X SMOKE",
+    "play_name": "POWER O ALERT X SMOKE",
     "type": "RPO",
     "concepts": [
       "RPO",
@@ -97290,7 +97290,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -98291,7 +98291,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Doubles Off Close Wk",
-    "play_name": "MTN STICKX REPLACE",
+    "play_name": "MTN STICK X REPLACE",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -98343,7 +98343,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Doubles Off Close Wk",
-    "play_name": "PIVOT INSEAMS",
+    "play_name": "PIVOT IN SEAMS",
     "type": "PASS",
     "concepts": [
       "Seam"
@@ -98502,7 +98502,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -100628,7 +100628,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -103570,7 +103570,7 @@
     "team": "WAS",
     "formation": "Singleback",
     "set": "Doubles Y Off",
-    "play_name": "JET PABOOT",
+    "play_name": "JET PA BOOT",
     "type": "PASS",
     "concepts": [
       "Boot"
@@ -106978,7 +106978,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Bunch Str Offset",
-    "play_name": "MTN EMPTYQB SWEEP",
+    "play_name": "MTN EMPTY QB SWEEP",
     "type": "RUN",
     "concepts": [
       "Run"
@@ -107313,7 +107313,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -108441,7 +108441,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Doubles Y Off",
-    "play_name": "MTN EMPTY WRSCREEN",
+    "play_name": "MTN EMPTY WR SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -108456,7 +108456,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Doubles Y Off",
-    "play_name": "MTN EMPTYQB BLAST",
+    "play_name": "MTN EMPTY QB BLAST",
     "type": "RUN",
     "concepts": [
       "Run"
@@ -108839,7 +108839,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Empty Base",
-    "play_name": "STICKN NOD",
+    "play_name": "STICK N NOD",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -108870,7 +108870,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Empty Base",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -111000,7 +111000,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Trey Open Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -111342,7 +111342,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -118719,7 +118719,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -119003,7 +119003,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Normal Y Off Wk",
-    "play_name": "CLOSE MTNY READ OPTION",
+    "play_name": "CLOSE MTN Y READ OPTION",
     "type": "RUN",
     "concepts": [
       "Run"
@@ -119185,7 +119185,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Normal Y Off Wk",
-    "play_name": "MTN YWR SCREEN",
+    "play_name": "MTN Y WR SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -120718,7 +120718,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -121521,7 +121521,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Trips TE Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -125741,7 +125741,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -128526,7 +128526,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Split Close",
-    "play_name": "CLOSEX DRAG",
+    "play_name": "CLOSE X DRAG",
     "type": "PASS",
     "concepts": [
       "Drag"
@@ -130222,7 +130222,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -131032,7 +131032,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "GOALLINE FADE",
+    "play_name": "GOAL LINE FADE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -131189,7 +131189,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -136488,7 +136488,7 @@
     "team": "PHI",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -138873,7 +138873,7 @@
     "team": "PHI",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "H MTNX SHALLOW CROSS",
+    "play_name": "H MTN X SHALLOW CROSS",
     "type": "PASS",
     "concepts": [
       "Cross"
@@ -138993,7 +138993,7 @@
     "team": "PHI",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -139058,7 +139058,7 @@
     "team": "PHI",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -145716,7 +145716,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Bunch TE",
-    "play_name": "BOOMERANG PA YWHEEL",
+    "play_name": "BOOMERANG PA Y WHEEL",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -146526,7 +146526,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Empty Base Flex",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -149330,7 +149330,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Trey Y-Flex",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -150067,7 +150067,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Wing Slot Offset",
-    "play_name": "MTN WRANGLE POST",
+    "play_name": "MTN WR ANGLE POST",
     "type": "PASS",
     "concepts": [
       "Post"
@@ -154681,7 +154681,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Empty HB Wide",
-    "play_name": "SHOCKWR OPTION",
+    "play_name": "SHOCK WR OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -157438,7 +157438,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Trey Open Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -158216,7 +158216,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -159667,7 +159667,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -160693,7 +160693,7 @@
     "team": "JAX",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "MTN XWHIP",
+    "play_name": "MTN X WHIP",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -162387,7 +162387,7 @@
     "team": "JAX",
     "formation": "Singleback",
     "set": "Wing Stack",
-    "play_name": "YSTICK",
+    "play_name": "Y STICK",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -166033,7 +166033,7 @@
     "team": "JAX",
     "formation": "Gun",
     "set": "Doubles Flex Y Off Close",
-    "play_name": "MTN DAGGERY IN",
+    "play_name": "MTN DAGGER Y IN",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -166404,7 +166404,7 @@
     "team": "JAX",
     "formation": "Gun",
     "set": "Doubles Offset",
-    "play_name": "RPOX SMOKE",
+    "play_name": "RPO X SMOKE",
     "type": "RPO",
     "concepts": [
       "RPO"
@@ -168377,7 +168377,7 @@
     "team": "JAX",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -169724,7 +169724,7 @@
     "team": "JAX",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -170035,7 +170035,7 @@
     "team": "NYJ",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "FLATY LEAK",
+    "play_name": "FLAT Y LEAK",
     "type": "PASS",
     "concepts": [
       "Leak",
@@ -170054,7 +170054,7 @@
     "team": "NYJ",
     "formation": "Singleback",
     "set": "Bunch X Nasty",
-    "play_name": "FLATY SEAM",
+    "play_name": "FLAT Y SEAM",
     "type": "PASS",
     "concepts": [
       "Seam",
@@ -171232,7 +171232,7 @@
     "team": "NYJ",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -175450,7 +175450,7 @@
     "team": "NYJ",
     "formation": "Gun",
     "set": "Doubles Flex Y Off Close",
-    "play_name": "MTN DAGGERY IN",
+    "play_name": "MTN DAGGER Y IN",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -178146,7 +178146,7 @@
     "team": "NYJ",
     "formation": "Gun",
     "set": "Trips TE Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -180142,7 +180142,7 @@
     "team": "DET",
     "formation": "Singleback",
     "set": "Doubles Off Close",
-    "play_name": "SWITCHX COMEBACK",
+    "play_name": "SWITCH X COMEBACK",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -180668,7 +180668,7 @@
     "team": "DET",
     "formation": "Singleback",
     "set": "Wing",
-    "play_name": "MTN PA FKSLIDE",
+    "play_name": "MTN PA FK SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -181129,7 +181129,7 @@
     "team": "DET",
     "formation": "Singleback",
     "set": "Wing Stack",
-    "play_name": "YSTICK",
+    "play_name": "Y STICK",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -183895,7 +183895,7 @@
     "team": "DET",
     "formation": "Gun",
     "set": "Doubles Clamp Stack",
-    "play_name": "MTN CHOICE GOS Y-SHAKE",
+    "play_name": "MTN CHOICE GO'S Y-SHAKE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -184579,7 +184579,7 @@
     "team": "DET",
     "formation": "Gun",
     "set": "Empty Bunch Open",
-    "play_name": "DAGGERY CROSS",
+    "play_name": "DAGGER Y CROSS",
     "type": "PASS",
     "concepts": [
       "Cross",
@@ -186399,7 +186399,7 @@
     "team": "DET",
     "formation": "Gun",
     "set": "Tight Slots",
-    "play_name": "MTN PASLIDE",
+    "play_name": "MTN PA SLIDE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -187373,7 +187373,7 @@
     "team": "DET",
     "formation": "Gun",
     "set": "Trips Y Slot",
-    "play_name": "WRDIG",
+    "play_name": "WR DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -189005,7 +189005,7 @@
     "team": "GB",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -189671,7 +189671,7 @@
     "team": "GB",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -196460,7 +196460,7 @@
     "team": "GB",
     "formation": "Gun",
     "set": "Trio",
-    "play_name": "MILLSY CORNER",
+    "play_name": "MILLS Y CORNER",
     "type": "PASS",
     "concepts": [
       "Corner"
@@ -196824,7 +196824,7 @@
     "team": "GB",
     "formation": "Gun",
     "set": "Trips TE Offset Wk",
-    "play_name": "READY CORNER",
+    "play_name": "READ Y CORNER",
     "type": "PASS",
     "concepts": [
       "Corner"
@@ -199301,7 +199301,7 @@
     "team": "CAR",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -200185,7 +200185,7 @@
     "team": "CAR",
     "formation": "Strong",
     "set": "H Close Off",
-    "play_name": "WRGOS",
+    "play_name": "WR GOS",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -200769,7 +200769,7 @@
     "team": "CAR",
     "formation": "Pistol",
     "set": "Doubles",
-    "play_name": "PA WRSLIP",
+    "play_name": "PA WR SLIP",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -204789,7 +204789,7 @@
     "team": "CAR",
     "formation": "Gun",
     "set": "Trey Open Offset",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -206618,7 +206618,7 @@
     "team": "CAR",
     "formation": "Gun",
     "set": "Y Off Trips",
-    "play_name": "MTN PASMASH",
+    "play_name": "MTN PA SMASH",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -207668,7 +207668,7 @@
     "team": "NE",
     "formation": "Singleback",
     "set": "Ace Slot",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -208574,7 +208574,7 @@
     "team": "NE",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -214669,7 +214669,7 @@
     "team": "NE",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -217531,7 +217531,7 @@
     "team": "LV",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -217692,7 +217692,7 @@
     "team": "LV",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -218185,7 +218185,7 @@
     "team": "LV",
     "formation": "Singleback",
     "set": "Wing Slot",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -218263,7 +218263,7 @@
     "team": "LV",
     "formation": "Singleback",
     "set": "Wing Slot",
-    "play_name": "PA SAILX POST",
+    "play_name": "PA SAIL X POST",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -220363,7 +220363,7 @@
     "team": "LV",
     "formation": "Pistol",
     "set": "Tight Y Off Flex",
-    "play_name": "WRSTICK N OUT",
+    "play_name": "WR STICK N OUT",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -220810,7 +220810,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Ace Slot Offset",
-    "play_name": "CHINA DOUBLEIN",
+    "play_name": "CHINA DOUBLE IN",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -221188,7 +221188,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Box HB Strong",
-    "play_name": "SIT ZDRAG",
+    "play_name": "SIT Z DRAG",
     "type": "PASS",
     "concepts": [
       "Drag"
@@ -221204,7 +221204,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Box HB Strong",
-    "play_name": "WHIPY CROSS",
+    "play_name": "WHIP Y CROSS",
     "type": "PASS",
     "concepts": [
       "Cross"
@@ -224899,7 +224899,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Trips HB Wk",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -225950,7 +225950,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Wing Trio",
-    "play_name": "RPO PEEKY POP",
+    "play_name": "RPO PEEK Y POP",
     "type": "RPO",
     "concepts": [
       "RPO"
@@ -226363,7 +226363,7 @@
     "team": "LV",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -227536,7 +227536,7 @@
     "team": "LAR",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -228067,7 +228067,7 @@
     "team": "LAR",
     "formation": "Singleback",
     "set": "Trips",
-    "play_name": "CHEAT PABOOT LT FLAT",
+    "play_name": "CHEAT PA BOOT LT FLAT",
     "type": "PASS",
     "concepts": [
       "Boot",
@@ -228517,7 +228517,7 @@
     "team": "LAR",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -229363,7 +229363,7 @@
     "team": "LAR",
     "formation": "Singleback",
     "set": "Wing Tight Nasty",
-    "play_name": "MTN PABOOT LT",
+    "play_name": "MTN PA BOOT LT",
     "type": "PASS",
     "concepts": [
       "Boot"
@@ -234894,7 +234894,7 @@
     "team": "LAR",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -236321,7 +236321,7 @@
     "team": "BAL",
     "formation": "Singleback",
     "set": "Ace Double Wing",
-    "play_name": "MTN PAF-FLAT",
+    "play_name": "MTN PA F-FLAT",
     "type": "PASS",
     "concepts": [
       "Flat"
@@ -237172,7 +237172,7 @@
     "team": "BAL",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -237446,7 +237446,7 @@
     "team": "BAL",
     "formation": "Singleback",
     "set": "Wing Tight Z",
-    "play_name": "YSTICK",
+    "play_name": "Y STICK",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -241190,7 +241190,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "Normal Y Off Close",
-    "play_name": "YSTICK",
+    "play_name": "Y STICK",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -241977,7 +241977,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "Tight Slots",
-    "play_name": "PASEAM",
+    "play_name": "PA SEAM",
     "type": "PASS",
     "concepts": [
       "Seam"
@@ -242296,7 +242296,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "CURLSX GO",
+    "play_name": "CURLS X GO",
     "type": "PASS",
     "concepts": [
       "Curl",
@@ -242646,7 +242646,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -243863,7 +243863,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "U Off Trips",
-    "play_name": "PA UCORNER FLOOD",
+    "play_name": "PA U CORNER FLOOD",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -245120,7 +245120,7 @@
     "team": "BAL",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -245696,7 +245696,7 @@
     "team": "NO",
     "formation": "Singleback",
     "set": "Wing",
-    "play_name": "PA VERTSY DIG",
+    "play_name": "PA VERTS Y DIG",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -246032,7 +246032,7 @@
     "team": "NO",
     "formation": "Singleback",
     "set": "Wing Tight Nasty",
-    "play_name": "MTN PABOOT LT",
+    "play_name": "MTN PA BOOT LT",
     "type": "PASS",
     "concepts": [
       "Boot"
@@ -247719,7 +247719,7 @@
     "team": "NO",
     "formation": "Pistol",
     "set": "Wing Flex Close",
-    "play_name": "ZONE ALERTWR SCREEN",
+    "play_name": "ZONE ALERT WR SCREEN",
     "type": "RPO",
     "concepts": [
       "RPO",
@@ -249298,7 +249298,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Deuce Close",
-    "play_name": "MTN YCORNER",
+    "play_name": "MTN Y CORNER",
     "type": "PASS",
     "concepts": [
       "Corner"
@@ -249882,7 +249882,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Doubles Flex Y Off Close",
-    "play_name": "MTN DAGGERY IN",
+    "play_name": "MTN DAGGER Y IN",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -250223,7 +250223,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Doubles Off Close Wk",
-    "play_name": "MTN PA Y CROSS",
+    "play_name": "MTN PA Y-CROSS",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -250241,7 +250241,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Doubles Off Close Wk",
-    "play_name": "MTN STICKX REPLACE",
+    "play_name": "MTN STICK X REPLACE",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -251389,7 +251389,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "RPO ALERTZ SCREEN",
+    "play_name": "RPO ALERT Z SCREEN",
     "type": "RPO",
     "concepts": [
       "RPO",
@@ -253268,7 +253268,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -254654,7 +254654,7 @@
     "team": "NO",
     "formation": "Gun",
     "set": "Y Off Trips Nasty",
-    "play_name": "SLOT2BUC",
+    "play_name": "SLOT 2 BUC",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -255479,7 +255479,7 @@
     "team": "SEA",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -257572,7 +257572,7 @@
     "team": "SEA",
     "formation": "I Form",
     "set": "Wing",
-    "play_name": "PAU SLIDE",
+    "play_name": "PA U SLIDE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -259516,7 +259516,7 @@
     "team": "SEA",
     "formation": "Gun",
     "set": "Doubles Flex Y Off Close",
-    "play_name": "MTN DAGGERY IN",
+    "play_name": "MTN DAGGER Y IN",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -259706,7 +259706,7 @@
     "team": "SEA",
     "formation": "Gun",
     "set": "Doubles Z Close Wk",
-    "play_name": "DAGGERZ COMEBACK",
+    "play_name": "DAGGER Z COMEBACK",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -261062,7 +261062,7 @@
     "team": "SEA",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "MTN DBL DIGSWING",
+    "play_name": "MTN DBL DIG SWING",
     "type": "PASS",
     "concepts": [
       "Swing"
@@ -261218,7 +261218,7 @@
     "team": "SEA",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "RPO ALERTZ SCREEN",
+    "play_name": "RPO ALERT Z SCREEN",
     "type": "RPO",
     "concepts": [
       "RPO",
@@ -263783,7 +263783,7 @@
     "team": "SEA",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -264639,7 +264639,7 @@
     "team": "PIT",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -265146,7 +265146,7 @@
     "team": "PIT",
     "formation": "Singleback",
     "set": "Wing Close",
-    "play_name": "MTN PA ZSLIDE",
+    "play_name": "MTN PA Z SLIDE",
     "type": "PA",
     "concepts": [
       "Play Action"
@@ -265687,7 +265687,7 @@
     "team": "PIT",
     "formation": "Singleback",
     "set": "Wing Pair Heavy",
-    "play_name": "YSTICK",
+    "play_name": "Y STICK",
     "type": "PASS",
     "concepts": [
       "Stick",
@@ -271308,7 +271308,7 @@
     "team": "PIT",
     "formation": "Gun",
     "set": "Trips TE",
-    "play_name": "SHALLOWX DIG",
+    "play_name": "SHALLOW X DIG",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -272474,7 +272474,7 @@
     "team": "PIT",
     "formation": "Gun",
     "set": "Wing Trips Wk Nasty",
-    "play_name": "SHUFFLE WHEELY DRAG",
+    "play_name": "SHUFFLE WHEEL Y DRAG",
     "type": "PASS",
     "concepts": [
       "Drag",
@@ -272908,7 +272908,7 @@
     "team": "PIT",
     "formation": "Gun",
     "set": "Y Off Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -273710,7 +273710,7 @@
     "team": "HOU",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -277871,7 +277871,7 @@
     "team": "HOU",
     "formation": "Gun",
     "set": "Doubles Flex Y Off Close",
-    "play_name": "MTN DAGGERY IN",
+    "play_name": "MTN DAGGER Y IN",
     "type": "PASS",
     "concepts": [
       "Dagger"
@@ -278105,7 +278105,7 @@
     "team": "HOU",
     "formation": "Gun",
     "set": "Doubles HB Wk",
-    "play_name": "BOOMERANG 01 TRAP",
+    "play_name": "BOOMERANG 0 1 TRAP",
     "type": "RUN",
     "concepts": [
       "Trap"
@@ -282132,7 +282132,7 @@
     "team": "HOU",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -282261,7 +282261,7 @@
     "team": "HOU",
     "formation": "Gun",
     "set": "Y Trips Wk",
-    "play_name": "WRMID SCREEN",
+    "play_name": "WR MID SCREEN",
     "type": "PASS",
     "concepts": [
       "Screen"
@@ -283030,7 +283030,7 @@
     "team": "TEN",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -285689,7 +285689,7 @@
     "team": "TEN",
     "formation": "Gun",
     "set": "Bunch Quads",
-    "play_name": "MTN WRSWING",
+    "play_name": "MTN WR SWING",
     "type": "PASS",
     "concepts": [
       "Swing"
@@ -287805,7 +287805,7 @@
     "team": "TEN",
     "formation": "Gun",
     "set": "Empty Trips Speed",
-    "play_name": "MTN WRANGLE",
+    "play_name": "MTN WR ANGLE",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -290239,7 +290239,7 @@
     "team": "TEN",
     "formation": "Gun",
     "set": "Trey Y-Flex",
-    "play_name": "POSTY DIG",
+    "play_name": "POST Y DIG",
     "type": "PASS",
     "concepts": [
       "Post"
@@ -291732,7 +291732,7 @@
     "team": "TEN",
     "formation": "Gun",
     "set": "Y Off Trio Wk",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -292732,7 +292732,7 @@
     "team": "MIN",
     "formation": "Singleback",
     "set": "Deuce Close",
-    "play_name": "PA SLIDEY SCREEN",
+    "play_name": "PA SLIDE Y SCREEN",
     "type": "PA",
     "concepts": [
       "Play Action",
@@ -295678,7 +295678,7 @@
     "team": "MIN",
     "formation": "Gun",
     "set": "Ace",
-    "play_name": "MTN RPO ALERTY FLAT",
+    "play_name": "MTN RPO ALERT Y FLAT",
     "type": "RPO",
     "concepts": [
       "RPO",
@@ -298424,7 +298424,7 @@
     "team": "MIN",
     "formation": "Gun",
     "set": "Empty Chips Quads",
-    "play_name": "CHEAT TEXASX SLUGGO",
+    "play_name": "CHEAT TEXAS X SLUGGO",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -300534,7 +300534,7 @@
     "team": "MIN",
     "formation": "Gun",
     "set": "Trey Open",
-    "play_name": "SHOCKH OPTION",
+    "play_name": "SHOCK H OPTION",
     "type": "PASS",
     "concepts": [
       "Pass"

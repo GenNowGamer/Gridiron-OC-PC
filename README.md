@@ -128,11 +128,16 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 4. Halftime Review & Strategic Adjustments
 
-- **Strategic 1st-Half Debrief Panel:** Embedded directly inside the Halftime Adjustment overlay, delivering an instant tactical breakdown before entering Quarter 3:
-  - **1st Half Run/Pass Split:** Displays the exact ratio and percentage split of ground vs. aerial play calls.
-  - **Top Offensive Concept:** Identifies the highest-yield concept executed in the first half.
-  - **Primary Opponent Defense Faced:** Pinpoints the opponent's most heavily utilized coverage shell.
-  - **Coaching Takeaways & Adjustments:** Offers coordinator recommendations on whether to balance the attack, exploit coverage weaknesses, or maintain pressure.
+- **Strategic 1st-Half Debrief Panel:** Embedded in the Halftime Adjustment overlay. It reviews the game logged so far, recommends one second-half coordinator style, and marks that style **Suggested**. You still choose the style. Confirming it moves the scoreboard to Q3 and does not erase opponent scouting or drive history.
+  - **Run / Pass Ratio:** Share of confirmed `RUN` calls versus `PASS` and `PA` calls. `RPO` calls stay out of both sides of that split.
+  - **Best Concept:** The concept with the best average success points when at least two snaps have a graded outcome. Otherwise it shows the concept you called most often.
+  - **Opponent Shell:** The most logged coverage, with snap count and share. Unknown looks are ignored. A shell counts as a tendency only at 3 or more snaps and at least 40% of logged defenses.
+  - **One suggested style:** The Adjustment Key names a single profile (`Normal`, `Run First`, `Pass First`, `West Coast`, `Aggressive`, or `Tempo / Spread`):
+    - A tendency that is winning (graded success at least 55% on 3 or more snaps against it) keeps the current style, unless you are down 14 or more.
+    - A tendency that is losing (under 40% success on 3 or more snaps) is countered. Cover 3 leans West Coast, or Pass First when trailing by 9 or more. Cover 2 and Tampa 2 lean Aggressive. Man and Cover 1 lean Tempo / Spread. Cover 4 leans Run First, or West Coast when the run is stuffed. Cover 6 and Blitz lean Tempo / Spread. Cover 9 leans West Coast.
+    - With no tendency, a lead of 9 or more leans Run First. The same lead with a stuffed run leans West Coast. Down 9 leans Pass First. Down 14 leans Aggressive.
+    - A run rate of 65% or higher becomes West Coast play-action only when those runs are graded and moving. A stuffed run does not turn into play-action. It leans Tempo / Spread, or Pass First when you are behind.
+    - Otherwise a successful graded half keeps the current style. A thin or mixed half stays on Normal.
 
 ### 5. Computer Vision OCR Capture
 
@@ -164,7 +169,7 @@ In competitive football gaming, calling plays under a running play clock can lea
     - *Safety:* Automatically awards 2 points to the defending side.
     - *Pick 6 / Scoop & Score:* Automatically awards 6 points to the recovering side with the same transparent PAT overlay.
 - **Halftime Adjustments & Debrief:**
-  - Unlock mid-game coordinator style adjustments alongside the 1st-half debrief panel without erasing accumulated opponent scouting or game drive history.
+  - Open the style picker after New Game. The debrief recommends one second-half style from shell share, graded success, run efficiency, and score, and marks that button Suggested. Confirming a style sets Q3 without clearing opponent scouting or drive history.
 - **Audible Overlay:**
   - If you audible at the line of scrimmage, swap your confirmed play to the actual play executed from the same formation/set so your learning model stays accurate.
 - **Penalty Tracking:**
@@ -245,7 +250,7 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        └── Shared Text & Grammar Parsers (ocr/shared/)
 ```
 
-- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` and `defensive_plays.json`. The Matchup modal chooses the version. Both files use team code, formation, set, play name, and type, and both pass through the same normalizer before offensive or defensive scoring.
+- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` and `defensive_plays.json`. The Matchup modal chooses the version. If a version file is missing, that side falls back to the root `plays.json` or `defensive_plays.json`. Both catalogs use team code, formation, set, play name, and type, and both pass through the same normalizer before offensive or defensive scoring. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `COVER 3 SKY WK`). Where a name was missing a word, the Madden 27 catalog uses the fuller wording (Chicago defense includes `Nickel / 2-4 Odd Dbl Mug` and `Dime / 3-2 Rush`).
 - **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
 - **Telemetry & Privacy:** Zero cloud telemetry. All playbooks and screen captures are processed strictly on your local hardware.
 

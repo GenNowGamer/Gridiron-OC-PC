@@ -431,7 +431,7 @@
     "team": "SF",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 2 INVERT HARD FLAT",
+    "play_name": "2 INVERT HARD FLAT",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -485,7 +485,7 @@
     "team": "SF",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -3152,7 +3152,7 @@
     "team": "SF",
     "formation": "4-2-5",
     "set": "Over Wide",
-    "play_name": "COVER 1 STING",
+    "play_name": "COVER STING",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -3354,7 +3354,7 @@
     "team": "SF",
     "formation": "4-2-5",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -4127,7 +4127,7 @@
     "team": "SF",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -4779,7 +4779,7 @@
     "team": "CHI",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -4949,7 +4949,7 @@
     "team": "CHI",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -8979,7 +8979,7 @@
     "team": "CIN",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -11341,7 +11341,7 @@
     "team": "CIN",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -12095,7 +12095,7 @@
     "team": "BUF",
     "formation": "3-4",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -16107,7 +16107,7 @@
     "team": "BUF",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -17331,7 +17331,7 @@
     "team": "DEN",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -20720,7 +20720,7 @@
     "team": "DEN",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -21371,7 +21371,7 @@
     "team": "CLE",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -24250,7 +24250,7 @@
     "team": "CLE",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -28321,7 +28321,7 @@
     "team": "TB",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -32334,7 +32334,7 @@
     "team": "ARI",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -32371,7 +32371,7 @@
     "team": "ARI",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -33392,7 +33392,7 @@
     "team": "ARI",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -37139,7 +37139,7 @@
     "team": "LAC",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -38210,7 +38210,7 @@
     "team": "LAC",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -39138,7 +39138,7 @@
     "team": "KC",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -39515,7 +39515,7 @@
     "team": "KC",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -43257,7 +43257,7 @@
     "team": "KC",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -44232,7 +44232,7 @@
     "team": "IND",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -47285,7 +47285,7 @@
     "team": "IND",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -51802,7 +51802,7 @@
     "team": "WAS",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -51839,7 +51839,7 @@
     "team": "WAS",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -53151,7 +53151,7 @@
     "team": "WAS",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -57905,7 +57905,7 @@
     "team": "DAL",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -58869,7 +58869,7 @@
     "team": "MIA",
     "formation": "4-3",
     "set": "Over",
-    "play_name": "COVER 3 CLOUDSTR",
+    "play_name": "COVER 3 CLOUD STR",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -59078,7 +59078,7 @@
     "team": "MIA",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -62049,7 +62049,7 @@
     "team": "MIA",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -66750,7 +66750,7 @@
     "team": "PHI",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -70754,7 +70754,7 @@
     "team": "ATL",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -74536,7 +74536,7 @@
     "team": "NYG",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -74560,7 +74560,7 @@
     "team": "NYG",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -77156,7 +77156,7 @@
     "team": "JAX",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -81438,7 +81438,7 @@
     "team": "NYJ",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -83496,7 +83496,7 @@
     "team": "NYJ",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -85651,7 +85651,7 @@
     "team": "DET",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -88299,7 +88299,7 @@
     "team": "DET",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -92058,7 +92058,7 @@
     "team": "GB",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -92095,7 +92095,7 @@
     "team": "GB",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -93116,7 +93116,7 @@
     "team": "GB",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -94676,7 +94676,7 @@
     "team": "CAR",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -97574,7 +97574,7 @@
     "team": "CAR",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -97611,7 +97611,7 @@
     "team": "CAR",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -99897,7 +99897,7 @@
     "team": "NE",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -102828,7 +102828,7 @@
     "team": "NE",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -106880,7 +106880,7 @@
     "team": "LV",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -111104,7 +111104,7 @@
     "team": "LAR",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -112784,7 +112784,7 @@
     "team": "BAL",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -115320,7 +115320,7 @@
     "team": "BAL",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -115357,7 +115357,7 @@
     "team": "BAL",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -120008,7 +120008,7 @@
     "team": "NO",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -120045,7 +120045,7 @@
     "team": "NO",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "OKIEROLL 2",
+    "play_name": "OKIE ROLL 2",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -120913,7 +120913,7 @@
     "team": "NO",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -122323,7 +122323,7 @@
     "team": "SEA",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -122493,7 +122493,7 @@
     "team": "SEA",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -126115,7 +126115,7 @@
     "team": "SEA",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -130720,7 +130720,7 @@
     "team": "PIT",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -131181,7 +131181,7 @@
     "team": "HOU",
     "formation": "4-3",
     "set": "Over Solid",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -134059,7 +134059,7 @@
     "team": "HOU",
     "formation": "4-2-5",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -134753,7 +134753,7 @@
     "team": "HOU",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -135895,7 +135895,7 @@
     "team": "TEN",
     "formation": "4-3",
     "set": "Under",
-    "play_name": "COVER 3 SKYWK",
+    "play_name": "COVER 3 SKY WK",
     "type": "ZONE",
     "concepts": [
       "Zone",
@@ -139069,7 +139069,7 @@
     "team": "TEN",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",
@@ -143200,7 +143200,7 @@
     "team": "MIN",
     "formation": "Dime",
     "set": "1-4",
-    "play_name": "MIKE SS1 DOG",
+    "play_name": "MIKE SS 1 DOG",
     "type": "BLITZ",
     "concepts": [
       "Blitz"
@@ -144550,7 +144550,7 @@
     "team": "MIN",
     "formation": "Goal Line",
     "set": "5-3",
-    "play_name": "GAPS AB",
+    "play_name": "GAPS A B",
     "type": "BLITZ",
     "concepts": [
       "Blitz",

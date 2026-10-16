@@ -1388,6 +1388,16 @@ body {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
+.coordinatorBtn.is-suggested {
+  border-color: #38bdf8;
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.7);
+}
+
+.coordinatorBtn.is-suggested .coordinatorBtnLabel::after {
+  content: " · Suggested";
+  color: #38bdf8;
+}
+
 .coordinatorBtnLabel {
   font-size: 14px;
   font-weight: 700;

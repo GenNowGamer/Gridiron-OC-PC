@@ -567,5 +567,70 @@ test('normal coordinator style aligns with team identity and credits confirms to
   assert.match(report.identity.items[0].value, /100% identity fit/);
 });
 
+function halftimeDecision(overrides) {
+  const a = app();
+  a.halftimeInput = Object.assign({
+    confirms: [],
+    scoutingLog: [],
+    userScore: 14,
+    oppScore: 14,
+    currentProfileId: 'normal',
+  }, overrides);
+  return a.run('decideHalftimeAdjustment(halftimeInput)');
+}
+
+function shells(name, count, playPrefix) {
+  return Array.from({ length: count }, (_, index) => ({ defense: name, playId: `${playPrefix}-${index}` }));
+}
+
+test('halftime suggests one style for a dominant Cover 3 shell in a close game', () => {
+  const decision = halftimeDecision({ scoutingLog: shells('Cover 3', 4, 'c3').concat(shells('Cover 2', 1, 'c2')) });
+  assert.equal(decision.profileId, 'west_coast');
+  assert.match(decision.suggestion, /Switch to West Coast/);
+  assert.match(decision.topDefLabel, /Cover 3 \(4 snaps, 80%\)/);
+});
+
+test('halftime ignores a thin shell sample and does not invent a coverage change', () => {
+  const decision = halftimeDecision({ scoutingLog: shells('Cover 3', 2, 'c3') });
+  assert.equal(decision.profileId, 'normal');
+  assert.equal(decision.dominantShell, '');
+});
+
+test('halftime gives Blitz, Cover 4, and Cover 6 their own answers', () => {
+  assert.equal(halftimeDecision({ scoutingLog: shells('Blitz', 4, 'bl') }).profileId, 'tempo_spread');
+  assert.equal(halftimeDecision({ scoutingLog: shells('Cover 6', 3, 'c6') }).profileId, 'tempo_spread');
+  assert.equal(halftimeDecision({ scoutingLog: shells('Cover 4', 4, 'c4') }).profileId, 'run_first');
+});
+
+test('halftime stays with the current style when the main shell is being beaten only on paper but the snaps worked', () => {
+  const confirms = ['a', 'b', 'c'].map(id => ({
+    playId: id, type: 'PASS', family: 'flood',
+    outcome: { successPoints: 2, yardsGained: 12, firstDownAchieved: true },
+  }));
+  const decision = halftimeDecision({
+    currentProfileId: 'pass_first',
+    confirms,
+    scoutingLog: confirms.map(confirm => ({ defense: 'Cover 3', playId: confirm.playId })),
+  });
+  assert.equal(decision.profileId, 'pass_first');
+  assert.match(decision.suggestion, /Stay with Pass First/);
+  assert.match(decision.topConceptLabel, /flood/);
+});
+
+test('halftime does not build play-action off a stuffed run', () => {
+  const confirms = [0, 1, 2, 3].map(index => ({
+    playId: `run-${index}`, type: 'RUN', family: 'inside_zone',
+    outcome: { successPoints: -1, yardsGained: 0, negativePlay: true },
+  }));
+  const decision = halftimeDecision({ confirms, userScore: 7, oppScore: 7 });
+  assert.equal(decision.profileId, 'tempo_spread');
+  assert.match(decision.suggestion, /stuffed run|getting stopped/);
+});
+
+test('halftime protects a lead and chases a two-score deficit when coverage is mixed', () => {
+  assert.equal(halftimeDecision({ userScore: 24, oppScore: 10 }).profileId, 'run_first');
+  assert.equal(halftimeDecision({ userScore: 7, oppScore: 21 }).profileId, 'aggressive');
+});
+
 
 
