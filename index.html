@@ -600,25 +600,9 @@
       </div>
 
       <div class="matchupPresentationSection">
-        <label class="matchupLabel">BROADCAST PRESENTATION STYLE (OCR HUD)</label>
-        <div class="presentationPillGroup" id="presentationPillGroup" role="group" aria-label="Broadcast presentation style">
-          <button type="button" class="presentationPillBtn is-active" data-presentation="Default Presentation">
-            <span class="pillTitle">Default</span>
-            <span class="pillSub">Standard Broadcast</span>
-          </button>
-          <button type="button" class="presentationPillBtn" data-presentation="Thursday Night Football">
-            <span class="pillTitle">TNF</span>
-            <span class="pillSub">Thursday Night</span>
-          </button>
-          <button type="button" class="presentationPillBtn" data-presentation="Sunday Night Football">
-            <span class="pillTitle">SNF</span>
-            <span class="pillSub">Sunday Night</span>
-          </button>
-          <button type="button" class="presentationPillBtn" data-presentation="Monday Night Football">
-            <span class="pillTitle">MNF</span>
-            <span class="pillSub">Monday Night</span>
-          </button>
-        </div>
+        <label class="matchupLabel" for="matchupOcrProfileSelect">PRESENTATION PROFILE (OCR HUD)</label>
+        <select class="matchupSelect" id="matchupOcrProfileSelect" aria-describedby="matchupOcrProfileHint"></select>
+        <div class="matchupProfileHint" id="matchupOcrProfileHint">Choose the calibrated scoreboard layout shown in your Madden session.</div>
       </div>
 
       <div class="matchupActions">

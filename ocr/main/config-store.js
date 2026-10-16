@@ -3,7 +3,7 @@
 const REMOVED_OCR_FIELDS = new Set(['quarter_clock', 'scores', 'quarter', 'game_clock']);
 
 const DEFAULT_STATE = Object.freeze({
-  version: 1,
+  version: 2,
   featureFlags: Object.freeze({
     capture: false,
     exactCalls: false,
@@ -19,8 +19,8 @@ const DEFAULT_STATE = Object.freeze({
       pluginFallback: false,
       freshFrameTimeoutMs: 1000,
       settleDelayMs: 100,
-      frameCount: 3,
-      intervalMs: 80,
+      frameCount: 5,
+      intervalMs: 120,
       sourceId: '',
     }),
     context: Object.freeze({ team: '', opponent: '', role: '', quarter: 1, userScore: 0, oppScore: 0 }),
@@ -141,7 +141,20 @@ class VersionedConfigStore {
     }
     while (version < DEFAULT_STATE.version) {
       const migrate = this.migrations[version];
-      value = migrate ? migrate(value) : { ...value, version: version + 1 };
+      if (migrate) {
+        value = migrate(value);
+      } else if (version === 1) {
+        // Earlier builds sampled three frames 80 ms apart. Update only that
+        // untouched default so existing installs benefit from a wider HUD
+        // visibility window without overriding custom capture settings.
+        const capture = value.config && value.config.capture;
+        if (capture && capture.frameCount === 3 && capture.intervalMs === 80) {
+          value.config.capture = { ...capture, frameCount: 5, intervalMs: 120 };
+        }
+        value = { ...value, version: version + 1 };
+      } else {
+        value = { ...value, version: version + 1 };
+      }
       version += 1;
     }
     return mergeState(value);

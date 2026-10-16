@@ -154,6 +154,22 @@ class OcrDebugPack {
         fieldSide: field.fieldSide || null,
         fieldSideDirection: field.fieldSideDirection || null,
         roi: field.roi || null,
+        // Keep the OCR result for each burst frame in diagnostic exports.
+        // The consensus fields above explain the final decision; these samples
+        // show whether a miss was isolated to one frame or repeated throughout.
+        samples: Array.isArray(field.samples) ? field.samples.map((sample, sampleIndex) => ({
+          frameIndex: sampleIndex,
+          text: sample && sample.text || '',
+          confidence: Number(sample && sample.confidence) || 0,
+          cropHash: sample && sample.cropHash || null,
+          processedCropHash: sample && sample.processedCropHash || null,
+          bandSource: sample && sample.bandSource || null,
+          bandScore: sample && sample.bandScore != null ? sample.bandScore : null,
+          fieldSide: sample && sample.fieldSide || null,
+          fieldSideDirection: sample && sample.fieldSideDirection || null,
+          fieldSideConfidence: sample && sample.fieldSideConfidence != null
+            ? sample.fieldSideConfidence : null,
+        })) : [],
       };
       if (retainCrops) {
         const rawName = `${index}_${key}_raw.png`;
@@ -191,6 +207,7 @@ class OcrDebugPack {
       timing: payload.timing || null,
       validation: payload.validation || null,
       frameCount: payload.frameCount ?? null,
+      adaptiveSampling: payload.adaptiveSampling || null,
       duplicateFrames: payload.duplicateFrames ?? null,
       staleFrames: payload.staleFrames ?? null,
       captureAdapters: payload.captureAdapters || null,

@@ -803,6 +803,15 @@ class IntegrationOcrManager extends EventEmitter {
         engine: args.engine || 'auto',
         frameCount: state.config.capture.frameCount,
         intervalMs: state.config.capture.intervalMs,
+        requiredFields: [
+          'down_distance',
+          'field_position',
+          ...(!['oc', 'offense'].includes(
+            clean(args.role || args.hostRole || state.config.context.role).toLowerCase(),
+          ) ? ['offense_formation_personnel'] : []),
+        ].filter((fieldId) => (Array.isArray(profile.regions) ? profile.regions : []).some(
+          (region) => clean(region.field || region.id) === fieldId,
+        )),
         adapter: state.config.capture.adapter,
         freshFrameTimeoutMs: state.config.capture.freshFrameTimeoutMs,
         includeImages: retainDebug,
@@ -862,8 +871,15 @@ class IntegrationOcrManager extends EventEmitter {
         fields,
         scoreboard: resolveScoreboard(args, state.config.context),
         validation: transition,
-        timing: { captureMs: Number(result.elapsedMs) || completed - started, totalMs: completed - started },
+        timing: {
+          captureMs: Number(result.elapsedMs) || completed - started,
+          captureAcquisitionMs: Number(result.timing && result.timing.captureAcquisitionMs) || 0,
+          samplingSpanMs: Number(result.timing && result.timing.samplingSpanMs) || 0,
+          recognitionMs: Number(result.timing && result.timing.recognitionMs) || 0,
+          totalMs: completed - started,
+        },
         frameCount: Number(result.framesCaptured) || 0,
+        adaptiveSampling: result.adaptiveSampling || null,
         engine: result.engine,
         anchorDrift: result.anchorDrift || null,
         rawFramesRetained: retainDebug,
@@ -887,6 +903,7 @@ class IntegrationOcrManager extends EventEmitter {
         timing: capture.timing,
         validation: capture.validation,
         frameCount: capture.frameCount,
+        adaptiveSampling: capture.adaptiveSampling,
         duplicateFrames: Number(result.duplicateFrames) || 0,
         staleFrames: Number(result.staleFrames) || 0,
         captureAdapters: result.captureAdapters || [],
@@ -949,10 +966,14 @@ class IntegrationOcrManager extends EventEmitter {
 
       if (key === 'down_distance' && sanitized) {
         const parsed = HudText.parseDownDistanceText(sanitized);
-        value = parsed.ok ? parsed.label : null;
-        resolverConfidence = parsed.ok ? 1 : 0;
-        if (parsed.ok) matchedLabel = parsed.label;
-        else rejectedForRawDisagreement = true;
+        // Do not promote a distance guessed only from letters (e.g. "TSTA" →
+        // "1st & 4"). Require OCR evidence for the distance token itself.
+        const hasDistanceEvidence = /(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\bINCH(?:ES)?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)G?INCH(?:ES)?|\b[1-4]D[G8]\s*\d{1,2}\b)/i.test(sanitized);
+        value = parsed.ok && hasDistanceEvidence ? parsed.label : null;
+        resolverConfidence = parsed.ok && hasDistanceEvidence ? 1 : 0;
+        if (parsed.ok && hasDistanceEvidence) matchedLabel = parsed.label;
+        else if (!parsed.ok) rejectedForRawDisagreement = true;
+        else result._downDistanceEvidenceMissing = true;
       } else if (key === 'field_position' && (sanitized || rawText)) {
         const sideHint = clean(result.fieldSide || result.side).toUpperCase();
         const parsed = HudText.parseFieldPositionText(rawText || sanitized, {
@@ -1378,24 +1399,21 @@ class IntegrationOcrManager extends EventEmitter {
         }
       }
       // Madden upcoming personnel bar ("1RB - 1TE 3WR") is deterministic once repaired.
+      const personnelEvidence = value && typeof value === 'object'
+        ? [value.formation, value.set, value.personnel, value.label, rawText].map(clean).join(' ')
+        : rawText;
+      const personnelCounts = personnelEvidence.match(/(?<!\d)(\d)\s*RB\b[\s\S]*?(?<!\d)(\d)\s*TE\b[\s\S]*?(?<!\d)(\d)\s*WR\b/i);
+      const validPersonnelTriplet = Boolean(
+        personnelCounts
+        && Number(personnelCounts[1]) + Number(personnelCounts[2]) + Number(personnelCounts[3]) === 5
+      );
       if (
         key === 'offense_formation_personnel'
         && value
         && typeof value === 'object'
-        && /\b\d\s*RB\b/i.test(clean(value.formation))
-        && (
-          /\b\d\s*TE\b/i.test(clean(value.set) || clean(value.personnel))
-          || /\b\d\s*WR\b/i.test(clean(value.set) || clean(value.personnel))
-        )
-        && (
-          framesAgree >= (2 / 3)
-          // Glued personnel bar ("1RB - 1TE 3WR") is one deterministic string.
-          // A single disagreeing burst frame should not send it back to review.
-          || (
-            /^\d\s*RB$/i.test(clean(value.formation))
-            && /^\d\s*TE\s+\d\s*WR$/i.test(clean(value.set) || clean(value.personnel))
-          )
-        )
+        && validPersonnelTriplet
+        && resolverConfidence >= 0.99
+        && framesAgree >= (2 / 3)
       ) {
         accepted = true;
         if (!Array.isArray(decision.reasons)) decision.reasons = [];
@@ -1452,9 +1470,22 @@ class IntegrationOcrManager extends EventEmitter {
       const region = Array.isArray(profile && profile.regions)
         ? profile.regions.find((entry) => clean(entry.field || entry.id) === key)
         : null;
-      if (key === 'offense_formation_personnel' && !HudText.hasValidPersonnelCounts(value)) {
+      if (key === 'offense_formation_personnel' && isOcRole) {
+        // The Madden OC play-call HUD does not show upcoming personnel. A blank
+        // or unrelated crop is expected here; ignore it for OC captures.
+        value = null;
+        matchedLabel = '';
+        accepted = true;
+        alternatives = [];
+        resolverConfidence = 1;
+        decision.reasons = ['empty_oc_formation'];
+      } else if (key === 'offense_formation_personnel' && !HudText.hasValidPersonnelCounts(value)) {
         accepted = false;
         decision.reasons = [...(decision.reasons || []), 'invalid_personnel_total'];
+      }
+      if (key === 'down_distance' && result._downDistanceEvidenceMissing) {
+        accepted = false;
+        decision.reasons = [...(decision.reasons || []), 'distance_evidence_missing'];
       }
       fields[key] = {
         key,
@@ -1472,7 +1503,8 @@ class IntegrationOcrManager extends EventEmitter {
         acceptanceReasons: rejectedForRawDisagreement
           ? [...(decision.reasons || []), 'raw_catalog_disagreement']
           : decision.reasons,
-        required: REQUIRED_FIELDS.has(key),
+        required: REQUIRED_FIELDS.has(key)
+          && !(key === 'offense_formation_personnel' && isOcRole),
         alternatives,
         samples: clone(result.samples || []),
         rawCrop: clean(result.rawCrop),
@@ -1858,6 +1890,7 @@ class IntegrationOcrManager extends EventEmitter {
       validation: capture.validation,
       timing: capture.timing,
       frameHashes: clone((result && result.frameHashes) || []),
+      adaptiveSampling: clone((result && result.adaptiveSampling) || null),
       duplicateFrames: Number(result && result.duplicateFrames) || 0,
       staleFrames: Number(result && result.staleFrames) || 0,
       rawFramesRetained: Boolean(capture.rawFramesRetained),

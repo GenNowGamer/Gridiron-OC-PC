@@ -57,12 +57,24 @@ class SidecarService:
     def engine_warm(self, params):
         return self.engines.warm(params.get("engine", "auto"))
 
+    def _hud_fallback_engine(self, primary):
+        """Return optional Tesseract for guarded Madden HUD field rescues."""
+        if primary.name not in ("onnx_ppocrv5", "paddleocr"):
+            return None
+        if not self.engines.available().get("tesseract"):
+            return None
+        try:
+            return self.engines.create("tesseract")
+        except SidecarError:
+            return None
+
     def obs_configure(self, params):
         return self.obs.configure(params)
 
     def profile_test(self, params):
         profile = validate_profile(params.get("profile"))
         engine = self.engines.create(params.get("engine", "auto"))
+        fallback_engine = self._hud_fallback_engine(engine)
         include_images = params.get("includeImages") is not False
         adapter = _adapter(params)
         timeout = _fresh_timeout(params)
@@ -83,7 +95,10 @@ class SidecarService:
         return {
             "engine": engine.name,
             "profile": profile["name"],
-            "rois": analyze_frame(frame, profile, engine, include_images=include_images, drift=drift),
+            "rois": analyze_frame(
+                frame, profile, engine, fallback_engine=fallback_engine,
+                include_images=include_images, drift=drift
+            ),
             "anchorDrift": drift,
             "rawFrameRetained": False,
             "engineStatus": self.engines.status(),
@@ -109,8 +124,20 @@ class SidecarService:
         source = _source(params)
         profile = validate_profile(params.get("profile"))
         engine = self.engines.create(params.get("engine", "auto"))
+        fallback_engine = self._hud_fallback_engine(engine)
         frame_count = _bounded_int(params.get("frameCount", 5), "frameCount", 1, MAX_BURST_FRAMES)
         interval_ms = _bounded_int(params.get("intervalMs", 100), "intervalMs", 0, 2000)
+        required_fields = params.get("requiredFields", [])
+        if (
+            not isinstance(required_fields, list)
+            or any(not isinstance(field_id, str) for field_id in required_fields)
+            or len(required_fields) > len(profile["rois"])
+            or len(set(required_fields)) != len(required_fields)
+        ):
+            raise SidecarError("invalid_params", "requiredFields must be a unique list of profile ROI ids")
+        profile_roi_ids = {roi["id"] for roi in profile["rois"]}
+        if any(field_id not in profile_roi_ids for field_id in required_fields):
+            raise SidecarError("invalid_params", "requiredFields must refer to profile ROI ids")
         adapter = _adapter(params)
         timeout = _fresh_timeout(params)
         capture = lambda selected_source: self.obs.capture_frame(
@@ -130,7 +157,9 @@ class SidecarService:
                 frame_count,
                 interval_ms,
                 event,
+                fallback_engine=fallback_engine,
                 include_images=params.get("includeImages") is True,
+                required_fields=required_fields,
             )
             result["profile"] = profile["name"]
             result["requestedAdapter"] = adapter

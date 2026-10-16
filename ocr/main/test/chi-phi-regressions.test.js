@@ -42,6 +42,8 @@ test('word repairs preserve intact ZERO, LOOP and LB names and unrelated unknown
   assert.equal(Hud.isGarbagePreviousPlayOcr('callw'), true);
   assert.equal(Hud.isGarbagePreviousPlayOcr('cyalwbl'), true);
   assert.equal(Hud.parseFieldPositionText("A'7'").label, 'OPP 1');
+  assert.equal(Hud.parseFieldPositionText("▲'1'S").label, 'OPP 15');
+  assert.equal(Hud.parseFieldPositionText('▲S').label, 'OPP 5');
   assert.equal(Hud.parseFieldPositionText("-3B", { sideHint: 'OWN' }).label, 'OWN 38');
   assert.equal(Hud.repairPersonnelOcrConfusions("RBITER"), '1RB - 1TE 3WR');
   assert.equal(Hud.repairPersonnelOcrConfusions("RYTITEIWR"), '1RB - 1TE 3WR');
@@ -65,6 +67,30 @@ test('impossible personnel totals stay reviewable without guessing a formation',
   assert.equal(Hud.hasValidPersonnelCounts('1RB - 1TE 3WR'), true);
   assert.equal(Hud.hasValidPersonnelCounts('2RB - 2TE 1WR'), true);
   assert.equal(Hud.hasValidPersonnelCounts('Gun - Trips'), true);
+});
+
+test('stable defensive personnel counts survive OCR separator noise', async () => {
+  const fields = await manager()._resolveFields({
+    offense_formation_personnel: {
+      text: 'Gun - Tight Y Off 1RB]1TE|3WR',
+      confidence: 0.8261,
+      agreement: 1,
+      samples: [],
+    },
+  }, { team: 'CHI', opponent: 'ATL', role: 'dc' });
+  assert.equal(fields.offense_formation_personnel.accepted, true);
+  assert.equal(fields.offense_formation_personnel.value.formation, 'Gun');
+  assert.equal(fields.offense_formation_personnel.value.set, 'Tight Y Off');
+  assert.ok(fields.offense_formation_personnel.acceptanceReasons.includes('structured_hud_accept'));
+});
+
+test('glued ordinal plus GOAL OCR is valid down-distance evidence', async () => {
+  const fields = await manager()._resolveFields({
+    down_distance: { text: "'3'RDGGOAL", confidence: 0.8539, agreement: 1, samples: [] },
+    field_position: { text: '▲15', confidence: 0.95, agreement: 1, samples: [] },
+  }, { team: 'CHI', opponent: 'PHI', role: 'dc' });
+  assert.equal(fields.down_distance.value, '3rd & Goal');
+  assert.equal(fields.down_distance.accepted, true);
 });
 
 test('append-only correction replaces one capture, survives rebuild, and undo never revives its old value', () => {

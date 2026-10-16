@@ -33,7 +33,7 @@
     hotkey: "CommandOrControl+Shift+D",
     adapter: "capture-bridge",
     settleDelayMs: 100,
-    burstFrames: 3,
+    burstFrames: 5,
     retainDebugFrames: false,
   });
 
@@ -1777,5 +1777,28 @@
       return canonical;
     },
     getPresentationStyle: () => selectedPresentationStyle(),
+    getProfiles: () => (Array.isArray(local.profiles) ? local.profiles : []).map((profile) => ({
+      id: text(profile.id),
+      name: text(profile.name),
+      presentation: text(profile.presentation || profile.name),
+    })).filter((profile) => profile.id),
+    refreshProfiles: async () => {
+      await refreshState();
+      return Array.isArray(local.profiles) ? local.profiles : [];
+    },
+    getActiveProfile: () => local.activeProfile ? {
+      id: text(local.activeProfile.id),
+      name: text(local.activeProfile.name),
+      presentation: text(local.activeProfile.presentation || local.activeProfile.name),
+    } : null,
+    selectProfile: async (profileId) => {
+      const profile = local.profiles.find((entry) => text(entry.id) === text(profileId));
+      if (!profile) throw new Error("Selected OCR profile is no longer available.");
+      local.calibrationDraft = false;
+      hydrateCalibrationFromProfile(profile);
+      await activateProfile(profile);
+      setCalibrationStatus(`Loaded “${text(profile.name) || text(profile.presentation)}” for this session.`);
+      return local.activeProfile;
+    },
   };
 })();

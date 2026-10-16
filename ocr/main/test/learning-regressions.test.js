@@ -21,6 +21,16 @@ test('rapid config changes serialize persistence and retain the latest merged st
   assert.equal(persisted.config.context.role, 'dc');
 });
 
+test('config migration widens the untouched OCR frame burst but preserves customized sampling', () => {
+  const store = new VersionedConfigStore({ userData: 'unused-in-memory' });
+  const migratedDefault = store._migrate({ version: 1, config: { capture: { frameCount: 3, intervalMs: 80 } } });
+  assert.equal(migratedDefault.config.capture.frameCount, 5);
+  assert.equal(migratedDefault.config.capture.intervalMs, 120);
+  const customized = store._migrate({ version: 1, config: { capture: { frameCount: 4, intervalMs: 150 } } });
+  assert.equal(customized.config.capture.frameCount, 4);
+  assert.equal(customized.config.capture.intervalMs, 150);
+});
+
 function harness() {
   const records = [];
   const state = { featureFlags: { capture: true, learning: true }, activeProfileId: 'p',

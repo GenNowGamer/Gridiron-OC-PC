@@ -53,9 +53,20 @@ Requests have `id`, `command`, and optional `params`. Every response has
 
 `capture.analyze_burst` runs on a worker so a later `capture.cancel` can be
 handled while frames are being collected. Responses can therefore arrive out
-of request order. Temporal consensus groups Unicode-normalized,
-case-insensitive text and reports confidence, agreement, and per-frame OCR
-samples.
+of request order. Each accepted frame is recognized during the `intervalMs`
+wait before the next grab, so recognition overlaps sampling instead of
+following it. Temporal consensus groups Unicode-normalized, case-insensitive
+text and reports confidence, agreement, and per-frame OCR samples.
+
+When `requiredFields` is set, the burst plans three frames and may extend to
+`frameCount` (live captures use five) if a required field is missing, below a
+2-of-3 agreement, or structurally invalid. It stops after two frames when
+every ROI already agrees and each required field is stable: usable structure
+and confidence of at least 0.85. Field position does not stop early on a
+two-digit yard that a later short digit could reject as leading-digit bleed,
+or when OWN/OPP is still undecided. `adaptiveSampling.earlyStopped` records
+that skip. A disagreement on any ROI, including a previous-play name, keeps
+the third frame.
 
 ROI coordinates (`x`, `y`, `width`, `height`) are normalized to 0..1 and must
 remain inside the frame. Per-ROI preprocessing supports grayscale, 1x-4x

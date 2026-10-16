@@ -1,4 +1,5 @@
 import threading
+import time
 import unittest
 from unittest.mock import patch
 
@@ -85,6 +86,33 @@ class AnalysisTests(unittest.TestCase):
         self.assertNotIn("processedCrop", defense)
         self.assertNotIn("data:image", str(result).lower())
 
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_debug_crops_reuse_last_frame_ocr_without_recognizing_again(self, _preprocess):
+        frames = [np.full((12, 16, 3), value, dtype=np.uint8) for value in (10, 20, 30)]
+
+        class CountingEngine(MockEngine):
+            def __init__(self):
+                self.calls = 0
+
+            def recognize(self, image, options):
+                self.calls += 1
+                return super().recognize(image, options)
+
+        engine = CountingEngine()
+        result = analyze_burst(
+            lambda _source: frames.pop(0),
+            "Game",
+            profile(),
+            engine,
+            3,
+            0,
+            threading.Event(),
+            include_images=True,
+        )
+        self.assertEqual(3, engine.calls)
+        self.assertTrue(result["rois"]["defense"]["rawCrop"].startswith("data:image/png;base64,"))
+        self.assertTrue(result["rois"]["defense"]["processedCrop"].startswith("data:image/png;base64,"))
+
     def test_capture_benchmark_reports_hashes_and_duplicates(self):
         frame = np.full((12, 16, 3), 42, dtype=np.uint8)
         result = benchmark_capture(lambda _source: frame.copy(), "Game", 3, 0)
@@ -163,6 +191,183 @@ class AnalysisTests(unittest.TestCase):
         )
         result = benchmark_capture(lambda _source: next(frames), "Game", 2, 0)
         self.assertEqual(1, result["staleFrames"])
+
+    def _situation_profile(self, roi_id, text, confidence=0.95, extra_rois=None):
+        rois = [
+            {
+                "id": roi_id,
+                "x": 0,
+                "y": 0,
+                "width": 1,
+                "height": 1,
+                "ocr": {"mockText": text, "mockConfidence": confidence},
+            }
+        ]
+        rois.extend(extra_rois or [])
+        return validate_profile({"name": "playcall", "rois": rois})
+
+    def _frames(self, count=8):
+        return [np.full((12, 16, 3), index + 1, dtype=np.uint8) for index in range(count)]
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_recognition_overlaps_inter_frame_wait(self, _preprocess):
+        frames = self._frames()
+        starts = []
+
+        class SlowEngine(MockEngine):
+            def recognize(self, image, options):
+                time.sleep(0.08)
+                return super().recognize(image, options)
+
+        def capture(_source):
+            starts.append(time.monotonic())
+            return frames.pop(0)
+
+        result = analyze_burst(
+            capture, "Game", profile(), SlowEngine(), 3, 100, threading.Event()
+        )
+        self.assertEqual(3, result["framesCaptured"])
+        gap_ms = (starts[1] - starts[0]) * 1000
+        # 80 ms of OCR runs inside the 100 ms spacing, so the next grab is not
+        # delayed by another full recognition.
+        self.assertGreaterEqual(gap_ms, 90)
+        self.assertLess(gap_ms, 160)
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_two_agreeing_situation_reads_skip_the_third_frame(self, _preprocess):
+        frames = self._frames()
+        result = analyze_burst(
+            lambda _source: frames.pop(0),
+            "Game",
+            self._situation_profile("down_distance", "2nd & 8"),
+            MockEngine(),
+            5,
+            0,
+            threading.Event(),
+            required_fields=["down_distance"],
+        )
+        self.assertEqual(2, result["framesCaptured"])
+        self.assertTrue(result["adaptiveSampling"]["earlyStopped"])
+        self.assertFalse(result["adaptiveSampling"]["extended"])
+        self.assertEqual("2nd & 8", result["rois"]["down_distance"]["text"])
+        self.assertEqual(1.0, result["rois"]["down_distance"]["agreement"])
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_low_confidence_agreement_still_takes_a_third_frame(self, _preprocess):
+        frames = self._frames()
+        result = analyze_burst(
+            lambda _source: frames.pop(0),
+            "Game",
+            self._situation_profile("down_distance", "2nd & 8", confidence=0.4),
+            MockEngine(),
+            5,
+            0,
+            threading.Event(),
+            required_fields=["down_distance"],
+        )
+        self.assertEqual(3, result["framesCaptured"])
+        self.assertFalse(result["adaptiveSampling"]["earlyStopped"])
+        self.assertFalse(result["adaptiveSampling"]["extended"])
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_disagreement_keeps_the_third_frame_and_can_extend(self, _preprocess):
+        frames = self._frames()
+
+        class Scripted(MockEngine):
+            def recognize(self, _image, _options):
+                return {"text": "34", "confidence": 0.95}
+
+        result = analyze_burst(
+            lambda _source: frames.pop(0),
+            "Game",
+            self._situation_profile("down_distance", "ignored"),
+            Scripted(),
+            5,
+            0,
+            threading.Event(),
+            required_fields=["down_distance"],
+        )
+        self.assertEqual(5, result["framesCaptured"])
+        self.assertFalse(result["adaptiveSampling"]["earlyStopped"])
+        self.assertTrue(result["adaptiveSampling"]["extended"])
+        self.assertEqual(["down_distance"], result["adaptiveSampling"]["extensionReasonFields"])
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_other_roi_disagreement_blocks_early_stop(self, _preprocess):
+        frames = self._frames()
+        script = iter([
+            ("2nd & 8", 0.95),
+            ("Cover 3", 0.95),
+            ("2nd & 8", 0.95),
+            ("Cover 2", 0.95),
+            ("2nd & 8", 0.95),
+            ("Cover 3", 0.95),
+        ])
+
+        class Scripted(MockEngine):
+            def recognize(self, _image, _options):
+                text, confidence = next(script)
+                return {"text": text, "confidence": confidence}
+
+        hud = self._situation_profile(
+            "down_distance",
+            "2nd & 8",
+            extra_rois=[{
+                "id": "previous_defense_play",
+                "x": 0, "y": 0, "width": 1, "height": 1,
+                "ocr": {"mockText": "Cover 3", "mockConfidence": 0.95},
+            }],
+        )
+        result = analyze_burst(
+            lambda _source: frames.pop(0),
+            "Game",
+            hud,
+            Scripted(),
+            5,
+            0,
+            threading.Event(),
+            required_fields=["down_distance"],
+        )
+        self.assertEqual(3, result["framesCaptured"])
+        self.assertFalse(result["adaptiveSampling"]["earlyStopped"])
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_field_position_bleed_risk_keeps_the_third_frame(self, _preprocess):
+        frames = self._frames()
+        for text in ("45", "V47", "22"):
+            with self.subTest(text=text):
+                result = analyze_burst(
+                    lambda _source, pending=list(frames): pending.pop(0),
+                    "Game",
+                    self._situation_profile("field_position", text),
+                    MockEngine(),
+                    3,
+                    0,
+                    threading.Event(),
+                    required_fields=["field_position"],
+                )
+                self.assertEqual(3, result["framesCaptured"])
+                self.assertFalse(result["adaptiveSampling"]["earlyStopped"])
+
+    @patch("ocr_sidecar.analysis.preprocess", side_effect=lambda image, _options: image)
+    def test_unambiguous_field_position_stops_at_two_frames(self, _preprocess):
+        frames = self._frames()
+        for text in ("50", "OPP 50"):
+            with self.subTest(text=text):
+                pending = list(frames)
+                result = analyze_burst(
+                    lambda _source, pending=pending: pending.pop(0),
+                    "Game",
+                    self._situation_profile("field_position", text),
+                    MockEngine(),
+                    5,
+                    0,
+                    threading.Event(),
+                    required_fields=["field_position"],
+                )
+                self.assertEqual(2, result["framesCaptured"])
+                self.assertTrue(result["adaptiveSampling"]["earlyStopped"])
+                self.assertEqual(text, result["rois"]["field_position"]["text"])
 
     def test_cancelled_burst_does_not_capture(self):
         event = threading.Event()

@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.22-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.24-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -144,7 +144,7 @@ In competitive football gaming, calling plays under a running play clock can lea
    - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
    - Reads down, distance, and field position locally. On defensive captures it also reads the opponent's upcoming formation/personnel; that HUD graphic is absent from Madden's offensive play-call screen, so it is not required for OC situation sync.
    - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
-   - Adaptive capture starts with three frames and can extend to five when required fields are missing, uncertain, or structurally invalid. Diagnostics record per-frame OCR text, crop hashes, stale/duplicate-frame counts, and separate capture, sampling, recognition, and total timings.
+   - Adaptive capture samples up to five frames, 120 ms apart, after a 100 ms settle. OCR for each frame runs during that spacing instead of after the burst. When down, distance, field position, and (on defense) formation/personnel already agree, capture stops after two frames. It still takes a third frame when a read is weak, the regions disagree, or a field-position yard could be a leading-digit bleed, and it extends to five frames when a required field is missing or structurally invalid. Diagnostics record `adaptiveSampling.earlyStopped`, per-frame OCR text, crop hashes, stale/duplicate-frame counts, and separate capture, sampling, recognition, and total timings.
    - **Debug capture** retains field crop images locally for diagnostics. Diagnostic packs include only the active session segment; sessions rotate after 40 events, so include adjacent `ocr-debug-*` folders when sharing a full play session. The OCR JSON export records field decisions and corrections, while top-three recommendation slates are in `recommendation-trace` entries in `gridiron-trace-current.txt`.
    - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`), corrupted HUD chrome (`CYAALB`, `CYAAALB`), glued situation lookalikes (`1STS10` / `'1'STS'1''0'` → `1st & 10`, `'2'NDG'3'` / `2NO&6` → `2nd & 3` / `2nd & 6`, `38] &5` / `3BD & GOAL` → `3rd & 5` / `3rd & Goal`, `BRO & 14` / `SRO & 18` → `3rd & 14` / `3rd & 18`), and glued/damaged Madden play names (`BOOMERANGSLOTSWING`, `REDZONEHBSCISSRS`, `SDEZONESPLIT`, `SILVERSHOOTNCH`, `SAMMKELOOP`, `DTMKELOOPA`, `LBBLITZO`, `COVERIMBBLITZ`, `LDUBLEWRI`, `ZZZIN`, `MTNYCORNERUNER`, `NCKELSIMZ`, `NCKELZTRAP`, `ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`), preventing manual correction overhead during live sessions.
    - **Whitespace-Agnostic Compact Catalog Matching:** Employs normalized, whitespace-free compact Levenshtein distance evaluation in the catalog matcher (`rawAgreesWithMatch`), automatically healing glued play names with OCR dropped characters without requiring manual dictionary additions.
@@ -206,7 +206,7 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings.
-5. In game, press the capture hotkey (`F8` or `Ctrl+Shift+D` by default). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
+5. In game, press the capture hotkey (`Ctrl+Shift+D` by default; change it in Settings). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
 6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name or a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`.
 7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning. Synchronized Madden version selection guarantees that DC Exact Call recommendations strictly surface authentic plays from the active game edition.
 
@@ -241,7 +241,7 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        │
 [ OCR & Vision Subsystem (ocr/) ]
        ├── Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
-       ├── Python OCR Sidecar Worker (ocr-sidecar/ - OpenCV / Tesseract)
+       ├── Python OCR Sidecar Worker (ocr-sidecar/ - OpenCV / PP-OCRv5, Tesseract fallback)
        └── Shared Text & Grammar Parsers (ocr/shared/)
 ```
 
@@ -303,6 +303,8 @@ npm run verify:pc
 npm run check:core             # Validate local PC shared modules
 npm run test:regression        # App UI & play-calling regressions
 npm run test:ocr:js            # OCR grammar, confusables, and parser checks
+npm run test:ocr:worker        # Python sidecar unit tests
+npm run test:ocr               # JS OCR checks plus the sidecar suite
 node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance checks
 ```
 

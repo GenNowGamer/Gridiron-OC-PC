@@ -133,6 +133,13 @@
     rawSanitized = rawSanitized.replace(/\b4SE(?=[0-9A-Z]|$)/g, "3RD");
     rawSanitized = rawSanitized.replace(/\b2TU(?=[0-9A-Z]|$)/g, "1ST");
 
+    // On the compact HUD, PP-OCRv5 can collapse "3RD & 2" to "3DG2".
+    // The down digit determines the ordinal, and G is the missed ampersand.
+    rawSanitized = rawSanitized.replace(/\b([1-4])D[G8]\s*([0-9]{1,2})\b/g, function (_match, down, yards) {
+      var suffix = ({ "1": "ST", "2": "ND", "3": "RD", "4": "TH" })[down];
+      return down + suffix + " & " + yards;
+    });
+
     var text = foldOcrDigits(rawSanitized).toUpperCase().replace(/\s+/g, " ").trim();
 
     // Normalize conjunction early so "AND" is never mistaken for "2ND".
@@ -471,6 +478,32 @@
     // MNF outlined yard with one confusable glyph: "'2'B" → 28 (B=8), "A'3'" → 43 (A=4).
     // Two characters only, so arrow+yard ("V35") and real labels stay on the paths above.
     var compactField = raw.replace(/\s+/g, "");
+    // When the opponent triangle survives OCR, outlined yard digits may still
+    // be emitted as confusable letters (for example ▲1S for OPP 15, or ▲S for
+    // OPP 5). Decode only one or two yard glyphs after that explicit marker.
+    var trianglePair = compactField.match(/^(?:▲|△|▴)([1-4])([A-Z])$/);
+    var triangleYard = "";
+    if (trianglePair) {
+      var triangleOnes = YARD_CONFUSABLE_TO_DIGIT[trianglePair[2]] || "";
+      if (triangleOnes) triangleYard = trianglePair[1] + triangleOnes;
+    } else {
+      var triangleSingle = compactField.match(/^(?:▲|△|▴)([A-Z])$/);
+      var singleDigit = triangleSingle ? YARD_CONFUSABLE_TO_DIGIT[triangleSingle[1]] || "" : "";
+      if (/^[1-9]$/.test(singleDigit)) triangleYard = singleDigit;
+    }
+    if (triangleYard) {
+      var triangleYardNum = Number(triangleYard);
+      if (triangleYardNum >= 1 && triangleYardNum <= 50) {
+        return {
+          side: "OPP",
+          yardLine: triangleYardNum,
+          label: "OPP " + triangleYardNum,
+          ok: true,
+          glyphSide: "OPP",
+          alternatives: [],
+        };
+      }
+    }
     // Default outlined ▲ OCRs as A, and outlined 1 OCRs as T (or 7 in the tens place).
     // AT'3' → OPP 13, A'7''4' → OPP 14, A'3'A → OPP 34, IT'7' → 11.
     var defaultOppYard = "";

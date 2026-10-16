@@ -319,6 +319,8 @@ test('integration OCR manager gates capture and returns diagnostics', async (t) 
   assert.equal(configure.params.freshFrameTimeoutMs, 750);
   const burst = sidecar.requests.findLast((request) => request.method === 'capture.analyze_burst');
   assert.equal(burst.params.adapter, 'capture-bridge');
+  assert.equal(burst.params.frameCount, 5);
+  assert.equal(burst.params.intervalMs, 120);
   assert.ok(sidecar.requests.some((request) => request.method === 'capture.analyze_burst'));
   assert.ok(events.some((event) => event.type === 'capture:complete'));
   await manager.stop();

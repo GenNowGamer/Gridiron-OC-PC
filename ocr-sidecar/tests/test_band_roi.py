@@ -10,6 +10,7 @@ from ocr_sidecar.analysis import (
     _field_read_score,
     _recognize_roi_with_band,
     analyze_frame,
+    temporal_consensus,
 )
 from ocr_sidecar.engines import EngineRegistry, MockEngine
 from ocr_sidecar.errors import SidecarError
@@ -32,6 +33,8 @@ class BandRoiTests(unittest.TestCase):
     def test_field_has_usable_structure_for_down(self):
         self.assertTrue(_field_has_usable_structure("down_distance", "2nd & 8"))
         self.assertTrue(_field_has_usable_structure("down_distance", "'3'RD'&''2'"))
+        self.assertTrue(_field_has_usable_structure("down_distance", "'2'NDG'7'"))
+        self.assertFalse(_field_has_usable_structure("down_distance", "'2'ND'9''7'"))
         self.assertFalse(_field_has_usable_structure("down_distance", "1st"))
         self.assertFalse(_field_has_usable_structure("down_distance", ""))
 
@@ -41,6 +44,18 @@ class BandRoiTests(unittest.TestCase):
         self.assertTrue(_field_has_usable_structure("field_position", "^ 29"))
         self.assertTrue(_field_has_usable_structure("field_position", "50"))
         self.assertFalse(_field_has_usable_structure("field_position", ""))
+
+    def test_personnel_consensus_ignores_separator_artifacts(self):
+        samples = [
+            {"text": "Gun - Tight Y Off 1RB]1TE|3WR", "confidence": 0.82},
+            {"text": "Gun - Tight Y Off 1RB|]1TE|3WR", "confidence": 0.83},
+            {"text": "Gun - Tight Y Off 1RB|1TE|3WR", "confidence": 0.81},
+            {"text": "Gun - Tight Y Off 1RB]1TE|3WR", "confidence": 0.82},
+            {"text": "Gun - Tight Y Off 1RB|]1TE|3WR", "confidence": 0.82},
+        ]
+        consensus = temporal_consensus(samples, roi_id="offense_formation_personnel")
+        self.assertEqual(consensus["agreement"], 1.0)
+        self.assertEqual(consensus["sampleCount"], 5)
 
     def test_structured_roi_skips_band_search(self):
         frame = np.zeros((120, 320, 3), dtype=np.uint8)
