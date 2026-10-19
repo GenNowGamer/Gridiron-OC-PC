@@ -10,7 +10,7 @@ const withIds = rows => rows.map(play => ({ ...play,
   id: play.id || [play.team, play.formation, play.set, play.play_name || play.playName]
     .map(value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')).filter(Boolean).join('|'),
 }));
-const catalogs = { offensive: withIds(require('../../../plays.json')), defensive: withIds(require('../../../defensive_plays.json')) };
+const catalogs = { offensive: withIds(require('../../../data/madden26/plays.json')), defensive: withIds(require('../../../data/madden26/defensive_plays.json')) };
 function manager() {
   return new IntegrationOcrManager({ userData: 'unused-in-memory', sidecar: new EventEmitter(), hotkey: new EventEmitter(),
     loadCatalogs: async () => catalogs });
@@ -74,6 +74,26 @@ test('word repairs preserve intact ZERO, LOOP and LB names and unrelated unknown
   assert.equal(Hud.hasDownDistanceEvidence('TSTA'), false);
   assert.equal(Hud.parseFieldPositionText("Y'3'B").ok, false, 'Y is not enough evidence for a side');
   assert.equal(Hud.parseFieldPositionText("Y'3'B", { sideHint: 'OPP' }).ok, false);
+});
+
+test('Sunday Night outlined short yardage accepts a colon in place of the ampersand', async () => {
+  assert.equal(Hud.parseDownDistanceText("'3'RD':'INCHES").label, '3rd & 1');
+  assert.equal(Hud.hasDownDistanceEvidence("'3'RD':'INCHES"), true);
+  const fields = await manager()._resolveFields({
+    down_distance: { text: "'3'RD':'INCHES", confidence: 0.8, agreement: 1 },
+  }, { team: 'CHI', opponent: 'PIT', role: 'oc' });
+  assert.equal(fields.down_distance.value, '3rd & 1');
+  assert.equal(fields.down_distance.accepted, true);
+});
+
+test('Sunday Night outlined short yardage accepts MCHES as inches', async () => {
+  assert.equal(Hud.parseDownDistanceText("'3'RD'&MCHES").label, '3rd & 1');
+  assert.equal(Hud.hasDownDistanceEvidence("'3'RD'&MCHES"), true);
+  const fields = await manager()._resolveFields({
+    down_distance: { text: "'3'RD'&MCHES", confidence: 0.8, agreement: 1 },
+  }, { team: 'CHI', opponent: 'PIT', role: 'oc' });
+  assert.equal(fields.down_distance.value, '3rd & 1');
+  assert.equal(fields.down_distance.accepted, true);
 });
 
 test('Sunday Night outlined ordinals accept when the letters were read as zeros', async () => {

@@ -117,12 +117,10 @@ async function loadOcrCatalogs() {
   const offPath = isM27 ? path.join("data", "madden27", "plays.json") : path.join("data", "madden26", "plays.json");
   const defPath = isM27 ? path.join("data", "madden27", "defensive_plays.json") : path.join("data", "madden26", "defensive_plays.json");
 
-  let [offensive, defensive] = await Promise.all([
+  const [offensive, defensive] = await Promise.all([
     readJson(offPath),
     readJson(defPath),
   ]);
-  if (!offensive.length) offensive = await readJson("plays.json");
-  if (!defensive.length) defensive = await readJson("defensive_plays.json");
 
   const withIds = (items) => (Array.isArray(items) ? items : []).map((item) => ({
     ...item,

@@ -137,7 +137,7 @@ module.exports = { app };
 
 test('all 32 teams retain valid three-play sheets across six modes and field situations', () => {
   const a = app();
-  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   const result = a.run(`(() => {
     state.normalizedPlays=catalog.map(normalizeImportedPlay);
     const modes=['normal','two_minute','kill_clock','comeback','blitz_beater','redzone'];
@@ -166,7 +166,7 @@ test('all 32 teams retain valid three-play sheets across six modes and field sit
 
 test('audible and next spoken snap retain learning and confirmation flow', async () => {
   const a = app();
-  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`state.normalizedPlays=catalog.map(normalizeImportedPlay); state.hasActiveSituation=true;
     state.fieldPosition={side:'OWN',yardLine:25}; startCoordinatorSession('normal');
     computeRecommendations(); onGetPlays(); confirmRecommendedPlay(state.presentedRecommendations[0].play.id);
@@ -203,7 +203,7 @@ test('matchup setup modal updates team, opponent and presentation style', () => 
 
 test('auto playcaller defaults to enabled and confirms best play upon OCR capture', () => {
   const a = app();
-  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`
     state.normalizedPlays = catalog.map(normalizeImportedPlay);
     state.selectedTeam = 'CHI';
@@ -218,7 +218,7 @@ test('auto playcaller defaults to enabled and confirms best play upon OCR captur
 
 test('sequential OCR captures settle pending snap, log previous defense, and feed opponent scouting report', () => {
   const a = app();
-  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`
     state.normalizedPlays = catalog.map(normalizeImportedPlay);
     state.selectedTeam = 'CHI';
@@ -574,7 +574,7 @@ test('Two-game cooldown: excludes plays from the last 2 executed scripts, respec
 
 test('normal coordinator style aligns with team identity and credits confirms toward identity fit', () => {
   const a = app();
-  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'plays.json'), 'utf8'));
+  a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`
     state.normalizedPlays = catalog.map(normalizeImportedPlay);
     state.selectedTeam = 'CHI';

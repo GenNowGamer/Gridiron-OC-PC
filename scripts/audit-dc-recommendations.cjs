@@ -6,7 +6,7 @@ global.SelectionEngine = SelectionEngine;
 const DefenseRecommendationCore = require('../shared/defenseRecommendationCore.js');
 
 const defensivePlays = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../defensive_plays.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../data/madden26/defensive_plays.json'), 'utf8')
 );
 
 const chiPlays = defensivePlays.filter(p => p.team === 'CHI');

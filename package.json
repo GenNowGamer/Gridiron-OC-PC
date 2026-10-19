@@ -1,6 +1,6 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "description": "Desktop play-calling companion for Madden NFL 26 and Madden NFL 27",
   "main": "main.js",
@@ -39,8 +39,6 @@
       "ocr/main/**",
       "!ocr/main/test/**",
       "ocr-sidecar/README.md",
-      "plays.json",
-      "defensive_plays.json",
       "data/**",
       "THIRD_PARTY_NOTICES.md",
       "licenses/**",

@@ -3,7 +3,7 @@ const path = require('path');
 const { app } = require('./test-app-regressions.cjs');
 
 const a = app();
-a.catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../plays.json'), 'utf8'));
+a.catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/madden26/plays.json'), 'utf8'));
 
 // Initialize plays & team
 a.run(`

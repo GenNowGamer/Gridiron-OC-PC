@@ -255,6 +255,12 @@
       return down ? String(down) + suffix : match;
     });
 
+    // Sunday Night outlined "&" reads as a colon: "'3'RD':'INCHES" → 3RD & INCHES.
+    text = text.replace(/\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)\s*:\s*/g, function (_match, _head, suffix) {
+      var down = ORDINAL_DOWN_BY_SUFFIX[suffix];
+      return down ? String(down) + suffix + " & " : _match;
+    });
+
     // Glued short-yardage: "'3'RDINCHES" → 3RD & 1. Inches is not a 1–2 char yard token.
     text = text.replace(
       /\b([0-9A-Z|]{0,2})(ST|ND|RD|TH)(INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b/g,
@@ -402,7 +408,10 @@
   function hasDownDistanceEvidence(raw) {
     var text = sanitizeHudText(raw).toUpperCase();
     if (!text) return false;
-    if (/(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\bINCH(?:ES)?1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)G?INCH(?:ES)?1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(text)) {
+    // MCHES / MGHES / INGHES / INCRES are the same short-yardage "Inches" token
+    // foldYardToken already maps to 1. Sunday Night outlined crops read
+    // "3rd & Inches" as "'3'RD'&MCHES".
+    if (/(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\b(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)[^A-Z0-9]{0,3}(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(text)) {
       return true;
     }
     var compact = text.replace(/\s+/g, "");
