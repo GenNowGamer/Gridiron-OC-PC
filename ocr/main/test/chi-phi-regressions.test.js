@@ -96,6 +96,25 @@ test('Sunday Night outlined short yardage accepts MCHES as inches', async () => 
   assert.equal(fields.down_distance.accepted, true);
 });
 
+test('outlined m before the ampersand is 3rd and 3', async () => {
+  assert.equal(Hud.parseDownDistanceText("'3'm&'3'").label, '3rd & 3');
+  assert.equal(Hud.hasDownDistanceEvidence("'3'm&'3'"), true);
+  const fields = await manager()._resolveFields({
+    down_distance: { text: "'3'm&'3'", confidence: 0.8, agreement: 1 },
+  }, { team: 'CHI', opponent: 'NE', role: 'oc' });
+  assert.equal(fields.down_distance.value, '3rd & 3');
+  assert.equal(fields.down_distance.accepted, true);
+});
+
+test('dropped I in PIVOT still accepts BENCH DIG PIVOT', async () => {
+  assert.equal(Hud.repairPreviousPlayOcrText('BENCHDIGPVOT'), 'BENCH DIG PIVOT');
+  const fields = await manager()._resolveFields({
+    previous_offense_play: { text: 'BENCHDIGPVOT', confidence: 0.8, agreement: 1 },
+  }, { team: 'NE', opponent: 'CHI', role: 'dc' });
+  assert.equal(fields.previous_offense_play.matchedLabel, 'BENCH DIG PIVOT');
+  assert.equal(fields.previous_offense_play.accepted, true);
+});
+
 test('Sunday Night outlined ordinals accept when the letters were read as zeros', async () => {
   const fields = await manager()._resolveFields({
     down_distance: { text: "'2''0''0''&''1''1'", confidence: 0.8, agreement: 1 },
@@ -114,6 +133,21 @@ test('impossible personnel totals stay reviewable without guessing a formation',
   assert.equal(Hud.hasValidPersonnelCounts('1RB - 1TE 3WR'), true);
   assert.equal(Hud.hasValidPersonnelCounts('2RB - 2TE 1WR'), true);
   assert.equal(Hud.hasValidPersonnelCounts('Gun - Trips'), true);
+  assert.equal(Hud.hasValidPersonnelCounts('1RB - 2TE 1WR'), false);
+});
+
+test('heavy extra-lineman personnel accepts 1RB 2TE 1WR', async () => {
+  const raw = 'Singleback - Wing Pair Heavy 1RB | 2TE | 1WR';
+  assert.equal(Hud.hasValidPersonnelCounts(raw), true);
+  assert.equal(Hud.isHeavyExtraLinemanPersonnel(raw), true);
+  const fields = await manager()._resolveFields({
+    offense_formation_personnel: { text: raw, confidence: 0.99, agreement: 1 },
+  }, { team: 'CHI', opponent: 'NE', role: 'dc' });
+  assert.equal(fields.offense_formation_personnel.accepted, true);
+  assert.equal(fields.offense_formation_personnel.value.formation, 'Singleback');
+  assert.equal(fields.offense_formation_personnel.value.set, 'Wing Pair Heavy');
+  assert.match(fields.offense_formation_personnel.value.personnel, /1RB - 2TE 1WR/);
+  assert.ok(!fields.offense_formation_personnel.acceptanceReasons.includes('invalid_personnel_total'));
 });
 
 test('stable defensive personnel counts survive OCR separator noise', async () => {

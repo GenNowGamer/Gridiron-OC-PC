@@ -411,7 +411,7 @@
     // MCHES / MGHES / INGHES / INCRES are the same short-yardage "Inches" token
     // foldYardToken already maps to 1. Sunday Night outlined crops read
     // "3rd & Inches" as "'3'RD'&MCHES".
-    if (/(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\b(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)[^A-Z0-9]{0,3}(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(text)) {
+    if (/(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\b(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)[^A-Z0-9]{0,3}(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4][DM]&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(text)) {
       return true;
     }
     var compact = text.replace(/\s+/g, "");
@@ -1345,15 +1345,40 @@
       .replace(/\bPOST\s*YDIG\b/g, "POST Y DIG")
       .replace(/COVER\s*[I1]?\s*ROB+ER\s*RESS/g, "COVER 1 ROBBER PRESS")
       .replace(/COVER\s*[I1]?\s*ROB+ER\s*PRESS/g, "COVER 1 ROBBER PRESS")
-      .replace(/\bCOVER\s*UZZ\s*RESS\b/g, "COVER 3 BUZZ PRESS");
+      .replace(/\bCOVER\s*UZZ\s*RESS\b/g, "COVER 3 BUZZ PRESS")
+      .replace(/\bPVOT\b/g, "PIVOT")
 
     return text.replace(/\s+/g, " ").trim();
   }
 
+  function personnelCountMatch(value) {
+    var label = typeof value === "object" && value
+      ? [value.formation, value.set, value.personnel, value.label].filter(Boolean).join(" ")
+      : value;
+    var text = clean(label);
+    var match = text.match(/(\d+)\s*RB\b[^\d]*(\d+)\s*TE\b[^\d]*(\d+)\s*WR\b/i);
+    if (!match) return null;
+    return {
+      text: text,
+      rb: Number(match[1]),
+      te: Number(match[2]),
+      wr: Number(match[3]),
+    };
+  }
+
+  // Heavy sets put an offensive lineman at tight end, so the HUD prints four
+  // skill players: 1 RB | 2 TE | 1 WR. Require the Heavy name so a bare 4-count
+  // OCR repair is not treated as that package.
+  function isHeavyExtraLinemanPersonnel(value) {
+    var parsed = personnelCountMatch(value);
+    return Boolean(parsed && parsed.rb === 1 && parsed.te === 2 && parsed.wr === 1 && /\bHEAVY\b/i.test(parsed.text));
+  }
+
   function hasValidPersonnelCounts(value) {
-    var label = typeof value === "object" && value ? value.label : value;
-    var match = clean(label).match(/(\d+)\s*RB\b[^\d]*(\d+)\s*TE\b[^\d]*(\d+)\s*WR\b/i);
-    return !match || Number(match[1]) + Number(match[2]) + Number(match[3]) === 5;
+    var parsed = personnelCountMatch(value);
+    if (!parsed) return true;
+    var total = parsed.rb + parsed.te + parsed.wr;
+    return total === 5 || isHeavyExtraLinemanPersonnel(value);
   }
 
   function parseFormationPersonnelText(value) {
@@ -1527,6 +1552,7 @@
     parseFormationPersonnelText: parseFormationPersonnelText,
     significantTokens: significantTokens,
     hasValidPersonnelCounts: hasValidPersonnelCounts,
+    isHeavyExtraLinemanPersonnel: isHeavyExtraLinemanPersonnel,
     repairPersonnelOcrConfusions: repairPersonnelOcrConfusions,
   };
 });

@@ -975,7 +975,7 @@ class IntegrationOcrManager extends EventEmitter {
         // "1st & 4"). Require OCR evidence for the distance token itself.
         const hasDistanceEvidence = typeof HudText.hasDownDistanceEvidence === 'function'
           ? HudText.hasDownDistanceEvidence(sanitized)
-          : /(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\b(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)[^A-Z0-9]{0,3}(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4]D&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(sanitized);
+          : /(?:\bGOAL\b|(?:ST|ND|RD|TH)G?GOAL\b|\b(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?\b|(?:ST|ND|RD|TH)[^0-9]{0,3}\d|(?:ST|ND|RD|TH)[^A-Z0-9]{0,3}(?:INCH(?:ES)?|INGH?ES|INCRES|M[CG]HES|JOHIFT)1?|\b[1-4]D[G8]\s*\d{1,2}\b|\b[1-4][DM]&\d{1,2}\b|\b2W[D0O]&?\d)/i.test(sanitized);
         value = parsed.ok && hasDistanceEvidence ? parsed.label : null;
         resolverConfidence = parsed.ok && hasDistanceEvidence ? 1 : 0;
         if (parsed.ok && hasDistanceEvidence) matchedLabel = parsed.label;
@@ -1410,9 +1410,15 @@ class IntegrationOcrManager extends EventEmitter {
         ? [value.formation, value.set, value.personnel, value.label, rawText].map(clean).join(' ')
         : rawText;
       const personnelCounts = personnelEvidence.match(/(?<!\d)(\d)\s*RB\b[\s\S]*?(?<!\d)(\d)\s*TE\b[\s\S]*?(?<!\d)(\d)\s*WR\b/i);
+      const personnelTotal = personnelCounts
+        ? Number(personnelCounts[1]) + Number(personnelCounts[2]) + Number(personnelCounts[3])
+        : null;
       const validPersonnelTriplet = Boolean(
         personnelCounts
-        && Number(personnelCounts[1]) + Number(personnelCounts[2]) + Number(personnelCounts[3]) === 5
+        && (personnelTotal === 5 || (
+          typeof HudText.isHeavyExtraLinemanPersonnel === 'function'
+          && HudText.isHeavyExtraLinemanPersonnel(personnelEvidence)
+        ))
       );
       if (
         key === 'offense_formation_personnel'

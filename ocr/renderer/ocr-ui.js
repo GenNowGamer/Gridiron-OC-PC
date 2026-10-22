@@ -1277,7 +1277,7 @@
       const showRawOnly = raw && !matched;
       let hint = "";
       if (!field?.accepted && key === "offense_formation_personnel") {
-        hint = `<span class="settingsNote" style="color:#fca5a5;">Counts must total 5 skill players (e.g. 0RB - 1TE 4WR or 1RB - 1TE 3WR) or enter formation name (e.g. Gun - Empty).</span>`;
+        hint = `<span class="settingsNote" style="color:#fca5a5;">Counts must total 5 skill players (e.g. 0RB - 1TE 4WR or 1RB - 1TE 3WR). A Heavy set may be 1RB - 2TE 1WR when an offensive lineman is the extra tight end. Or enter a formation name (e.g. Gun - Empty).</span>`;
       }
       return `<label class="ocrReviewRow"><strong>${escapeHtml(key)}</strong><input class="settingsSelect settingsInput" data-review-field="${escapeHtml(key)}" value="${escapeHtml(matched)}" /><span style="${field?.accepted ? "" : "color:#fca5a5;"}">${field?.accepted ? "Accepted" : "Correction required"}</span>${hint}${showRaw ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}${field?.matchedLabel ? ` → matched: ${escapeHtml(field.matchedLabel)}` : ""}</span>` : (showRawOnly ? `<span class="settingsNote">Raw OCR: ${escapeHtml(raw)}</span>` : "")}</label>`;
     }).join("") || "<div class=\"settingsNote\">No capture fields available.</div>";
