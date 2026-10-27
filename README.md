@@ -68,17 +68,20 @@ In competitive football gaming, calling plays under a running play clock can lea
   - **Comeback:** Aggressive chunk-play hunting with deep intermediate pass concepts.
   - **Blitz Beater:** Hot throws, screens, draws, and quick perimeter answers that neutralize blitzes.
   - **Redzone:** Short-field spacing concepts (smash, smash-corner, snag, mesh, duo, power, and RPO).
-- **Opening 15 Script Builder ("Build A Script"):**
-  - Assemble a custom 15-play opening script directly from your team's playbook before kickoff or during opening series.
+- **Gameplan HQ (Opening 15 and Call Sheet):**
+  - Open **Gameplan** on the OC workspace. **Opening 15** is the script. **Call Sheet** is the eight situation rows. The navigator picks a formation, then a set, then a play to add or pin.
+  - Assemble a custom 15-play opening script from your team's playbook before kickoff or during a series. Lock a script slot to keep that play when Auto-Fill 15 runs.
   - **Authentic NFL Setup-to-Payoff Architecture:** 1-click **Auto-Fill 15** sequences the opening script using true NFL game-planning logic:
     - *Slots 1–4:* Establishing interior line of scrimmage (Inside Zone, Duo, Power) and rhythm passing (Quick Game) while stressing perimeter leverage.
     - *Slot 5 & 10 (Play-Action Payoffs):* Automatically pairs high-percentage PA deep shots directly off the primary run family and personnel groupings established in preceding series.
     - *Slots 6–15:* Methodical progression through misdirection constraints (Counter, Screen, Trap), intermediate chain movers (Mesh, Levels, Dig), perimeter stretching, deep explosive shots, money down answers, and red zone finishers.
   - **Two-Game Script Cooldown:** Excludes plays from your last 2 live executed game scripts from appearing in Auto-Fill 15 to ensure varied game-to-game scripts, while permitting unlimited re-generation preview clicks without penalizing the pool. Includes automatic soft fallback so all 32 NFL teams always generate full 15-play scripts.
-  - **Opponent-fitted fill:** When the selected opponent already has at least six early-down shell observations, Auto-Fill 15 ranks the same slot families by that shell mix and your early-down results, then picks among plays close to the best score. Fewer than six observations keeps the static sequence above.
+  - **Call Sheet situations:** Early down, 2nd and long, 3rd and short, 3rd and medium, 3rd and long, backed up, red zone, and goal line. Each row has a concept, a backup concept, an optional pinned play, a note, and a lock. A locked pin takes recommendation slot 1 after the opening script is inactive or finished. On 3rd or 4th and 10 or more, a locked run or RPO pin is bypassed.
+  - **Situation tendencies:** Matchup setup marks the opponent as **CPU** or **Human**. Those profiles stay separate. Logging the coverage shell after a snap, and the graded result of your play, is stored on the matching situation. A situation is ready at 4 snaps when one shell is at least 40% of them. **Fill from tendencies** writes Concept and Backup for ready unlocked rows. Locked rows stay. Auto-Fill 15 uses a ready early-down profile to choose the family inside each slot, and uses red zone or 3rd and long for those slots once they are ready. A specific play is preferred only after three graded results against that opponent.
+  - **Opponent-fitted fill:** Before a situation profile is ready, Auto-Fill 15 still uses the older early-down shell mix. At least six early-down shell observations rank the same slot families by that mix and your early-down results, then pick among plays close to the best score. Fewer than six observations keeps the static sequence above.
   - **Live Snap Injection:** When the script is active, Slot #1 of your recommendation slate features the next scheduled scripted call (`Script #1` through `Script #15`), while Slots #2 and #3 provide situational counters.
   - **Smart Situational Yield:** On extreme passing downs (e.g. 3rd/4th & 10+), if the scheduled scripted play is a run or RPO, the Auto Playcaller automatically yields priority to Slot #2's situational pass call without burning the scripted play.
-  - **Zero Cross-Game Persistence:** Scripts are game-specific and team-tailored—clearing cleanly upon New Game or team changes without lingering across sessions.
+  - **Matchup persistence:** The opening script, its Active toggle, and the offensive call sheet are saved for the Madden edition, your team, and the opponent. New Game and End Game start the script back at slot 1 and keep the list. Switching team or opponent loads that matchup's plan.
   - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15**.
 
 <p align="center">
@@ -177,7 +180,7 @@ In competitive football gaming, calling plays under a running play clock can lea
 - **Penalty Tracking:**
   - Stamp Madden flags (*holding, pass interference, false start*) to ensure penalized snaps do not corrupt your playbook success metrics.
 - **Drive Result Tracking & Coordinator Handoff:**
-  - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack, QB Scramble*) to reinforce situational learning and automatically hand off between OC and DC workspaces. **QB Scramble** does not end the drive or change the score. On offense it records the confirmed pass below a completion of the same yards. On defense it charges the confirmed call for half the yards the opponent quarterback ran. Press it before the next OCR snap settles the play.
+  - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack, QB Scramble*) to reinforce situational learning. **Offense & Defense**, the Matchup default, hands the workspace to DC after a drive-ending result or turnover when that team has a defensive playbook. **Offense Only** scores the same results and starts the next series on the offensive sheet. Sack and QB Scramble stay on the current side in both setups. **QB Scramble** does not end the drive or change the score. On offense it records the confirmed pass below a completion of the same yards. On defense it charges the confirmed call for half the yards the opponent quarterback ran. Press it before the next OCR snap settles the play.
 
 <p align="center">
   <img src="docs/screenshots/drive-result-modal.png" alt="Drive Result & Scoring Modal" width="60%">
@@ -185,9 +188,10 @@ In competitive football gaming, calling plays under a running play clock can lea
 
 ### 7. Opponent Scouting & Tendencies
 
-- **Last Defense Shown Bar (DC side):**
+- **Last Defense Shown Bar:**
   - With a single tap, record the coverage shell the defense ran (*Blitz, Man, C1, C2, C3, C4, C6, C9, Tampa 2*).
-  - Builds a multi-game tendency database against human opponents or CPU profiles.
+  - Each opponent keeps a **CPU** profile and a **Human** profile. A logged shell is counted on one of the eight Gameplan situations. Graded play results, including stops, are stored on that same situation. Gameplan HQ uses a situation only after 4 snaps and a shell share of at least 40%.
+  - The live ranker also keeps the finer down-and-distance scouting history used by the Opponent Tendency Radar.
 - **Predictive Pre-Snap Layering & Tendency Radar:**
   - When the defensive look is unknown, Gridiron OC predicts the opponent's likely coverage based on historical tendencies in that down/distance and biases offensive calls accordingly, while displaying live tactical counters on the Opponent Tendency Radar banner.
 
@@ -209,7 +213,7 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
   <img src="docs/screenshots/matchup-broadcast-setup.png" alt="Matchup & Broadcast Setup Modal" width="75%">
 </p>
 
-1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team and opponent across sessions. You can freely switch teams, toggle between **Madden 26** and **Madden 27** playbook catalogs (which dynamically updates both offensive coordinators and the DC OCR Exact Call catalog), and choose the presentation profile for that session from the dropdown. Calibrate or manage profiles in Settings.
+1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team, opponent, play-calling scope, and CPU/Human opponent type across sessions. Switch teams, choose **Madden 26** or **Madden 27** (that reloads both the offensive playbooks and the DC OCR Exact Call catalog), choose **Offense & Defense** or **Offense Only**, mark the opponent as **CPU** or **Human**, and choose the presentation profile for the session. Calibrate or manage profiles in Settings.
 2. In **Settings**, select your capture card or Madden PC window.
 3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
 4. Enable **OCR Capture** in Settings.
@@ -244,7 +248,10 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        ├── Defense Scorer (shared/defenseRecommendationCore.js)
        ├── Stage-2 Slate Builder (shared/selectionEngine.js)
        ├── End Game Report Builder (shared/coordinatorReport.js)
-       └── Madden Penalty Catalog (shared/penaltyCatalog.js)
+       ├── Madden Penalty Catalog (shared/penaltyCatalog.js)
+       ├── Opening 15 Filler (shared/openingScript.js)
+       ├── Gameplan Model (shared/gameplanModel.js)
+       └── Opponent Situation Tendencies (shared/opponentTendency.js)
        │
 [ OCR & Vision Subsystem (ocr/) ]
        ├── Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
@@ -301,13 +308,14 @@ The resulting installer is output to `dist\Gridiron Play Advisor Setup <version>
 Gridiron OC includes a comprehensive regression and domain validation suite. Always run verification before packaging:
 
 ```powershell
-# Run all PC verification suites (Core check, OCR tests, regressions, defensive tests)
+# Run all PC verification suites (core check, gameplan tests, regressions, OCR tests, defensive tests)
 npm test
 # or:
 npm run verify:pc
 
 # Run individual test components
 npm run check:core             # Validate local PC shared modules
+npm run test:gameplan          # Opening 15, call sheet, and opponent-tendency tests
 npm run test:regression        # App UI & play-calling regressions
 npm run test:ocr:js            # OCR grammar, confusables, and parser checks
 npm run test:ocr:worker        # Python sidecar unit tests

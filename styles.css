@@ -2070,6 +2070,30 @@ body {
   white-space: nowrap;
 }
 
+#matchupPlaycallScopeGroup .pillSub,
+#matchupOpponentContextGroup .pillSub {
+  white-space: normal;
+}
+
+.callSheetFillRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.callSheetFillHint,
+.callSheetTendency {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--hint, #c3cede);
+}
+
+.callSheetTendency {
+  font-weight: 700;
+  color: var(--secondary, #8fb8ff);
+}
+
 .presentationPillBtn.is-active .pillSub {
   color: var(--secondary, #8fb8ff);
 }
@@ -2298,7 +2322,7 @@ body {
 
 /* --- Opening 15 Script Builder --- */
 .scriptBuilderCard {
-  width: min(880px, 95vw);
+  width: min(1040px, 96vw);
   height: min(680px, 90vh);
   max-height: 90vh;
   display: flex;
@@ -2337,6 +2361,11 @@ body {
   background: rgba(0, 0, 0, 0.25);
   padding: 12px;
   overflow: hidden;
+}
+
+#gameplanSheet.scriptBuilderQueueCol {
+  overflow-y: auto;
+  gap: 8px;
 }
 
 .scriptColHead {
@@ -2380,6 +2409,84 @@ body {
   font-size: 11px;
   padding: 4px 8px;
   border-radius: 8px;
+}
+
+.gameplanTabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.navChoice,
+.navBack,
+.callSheetSelect {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+}
+
+.navBack,
+.navGroupTitle {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--secondary, #38bdf8);
+}
+
+.navCount {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.callSheetCell {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.callSheetCell.is-selected {
+  border-color: var(--secondary, #38bdf8);
+}
+
+.callSheetCellHead,
+.callSheetPin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.callSheetField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.callSheetField select,
+.callSheetField input {
+  width: 100%;
+}
+
+.scriptIconBtn.is-locked {
+  color: var(--secondary, #38bdf8);
 }
 
 .scriptPlaybookList,

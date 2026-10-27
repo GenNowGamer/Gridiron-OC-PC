@@ -651,6 +651,7 @@
       situation: 24,
       identity: 8,
       script: 8,
+      plan: 6,
       learning: 8,
       variety: 16,
       novelty: 3,
@@ -691,6 +692,7 @@
       situation: clampPart(raw.situation, caps.situation),
       identity: clampPart(raw.identity, caps.identity),
       script: clampPart(raw.script, caps.script),
+      plan: clampPart(raw.plan, caps.plan),
       learning: clampPart(raw.learning, caps.learning),
       variety: clampPart(raw.variety, caps.variety),
       novelty: clampPart(raw.novelty, caps.novelty),
@@ -701,6 +703,7 @@
       next.situation +
       next.identity +
       next.script +
+      next.plan +
       next.learning +
       next.variety +
       next.novelty +
@@ -1801,12 +1804,15 @@
     }
 
     if (params.scriptMatch === true) {
+      const slotLabel = cleanText(params.planChip);
       const scriptLabel = cleanText(params.scriptTag);
       chips.push({
         id: "script",
-        label: scriptLabel ? "On script · " + scriptLabel : "On script",
+        label: slotLabel || (scriptLabel ? "On script · " + scriptLabel : "On script"),
         tone: "script",
       });
+    } else if (cleanText(params.planChip)) {
+      chips.push({ id: "plan", label: cleanText(params.planChip), tone: "script" });
     } else if (cleanText(params.scriptTag)) {
       chips.push({ id: "script", label: cleanText(params.scriptTag), tone: "script" });
     }
@@ -1816,6 +1822,8 @@
       chips.push({ id: "coverage", label: beatLabel, tone: "coverage" });
     }
 
+    const planChipIndex = chips.findIndex(function (chip) { return chip.id === "plan"; });
+    if (planChipIndex > 0) chips.unshift(chips.splice(planChipIndex, 1)[0]);
     const limited = chips.slice(0, 4);
     const offIdentity = limited.some(function (chip) {
       return chip.id === "identity" && chip.tone === "warn";

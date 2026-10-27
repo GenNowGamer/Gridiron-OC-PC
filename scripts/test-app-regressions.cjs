@@ -21,6 +21,9 @@ function app() {
     GridironDefenseRecommendationCore: require('../shared/defenseRecommendationCore'),
     GridironCoordinatorReport: require('../shared/coordinatorReport'),
     GridironPenaltyCatalog: require('../shared/penaltyCatalog'),
+    GridironOpeningScript: require('../shared/openingScript'),
+    GridironGameplan: require('../shared/gameplanModel'),
+    GridironOpponentTendency: require('../shared/opponentTendency'),
   });
   const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   assert.match(source, /init\(\);\s*$/);
@@ -249,6 +252,38 @@ test('pick 6 from OC keeps user on OC after resolving PAT attempt', () => {
   assert.equal(a.run('state.oppScore'), 7);
 });
 
+test('offense-only play calling stays on the offensive sheet after drive endings and turnovers', () => {
+  const a = app();
+  a.run(`state.normalizedDefensivePlays=[{team:'CHI',id:'cover3'}];
+    state.selectedTeam='CHI';
+    state.playcallScope='both';
+    state.coordinatorRole='oc';
+    applyDriveResultAndReset('interception');`);
+  assert.equal(a.run('state.coordinatorRole'), 'dc');
+  a.run(`state.playcallScope='both'; state.coordinatorRole='oc'; applyDriveResultAndReset('touchdown');`);
+  assert.equal(a.run('state.patModalState.switchToDc'), true);
+  a.run('resolvePatAttempt(0);');
+  assert.equal(a.run('state.coordinatorRole'), 'dc');
+  a.run(`state.playcallScope='offense'; state.coordinatorRole='oc';`);
+  for (const resultId of ['interception', 'fumble', 'turnover_on_downs', 'punt', 'field_goal', 'safety']) {
+    a.run(`state.coordinatorRole='oc'; applyDriveResultAndReset('${resultId}');`);
+    assert.equal(a.run('state.coordinatorRole'), 'oc', resultId);
+  }
+  a.run(`state.coordinatorRole='oc'; applyDriveResultAndReset('touchdown');`);
+  assert.equal(a.run('state.patModalState.switchToDc'), false);
+  a.run('resolvePatAttempt(1);');
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  a.run(`setCoordinatorRole('dc');`);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  a.run(`state.playcallScope='both'; state.coordinatorRole='dc'; setPlaycallScope('offense');`);
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
+  assert.equal(a.run('buildPreferencesPayload().playcallScope'), 'offense');
+  a.run(`applyPersistedPreferences({});`);
+  assert.equal(a.run('state.playcallScope'), 'both');
+  a.run(`applyPersistedPreferences({playcallScope:'offense'});`);
+  assert.equal(a.run('state.playcallScope'), 'offense');
+});
+
 test('scoop and score from OC keeps user on OC after resolving PAT attempt', () => {
   const a = app();
   a.run(`
@@ -418,17 +453,87 @@ test('OC evaluateAutoPlaycall confirms Slot #1 on normal downs, yields to Slot #
   assert.match(a.run('moneyDecision.reason'), /Script paused|passing money down/);
 });
 
-test('Zero persistence: resetting or changing teams clears custom script', () => {
+test('Saved gameplan survives end game and the script cursor resets', () => {
   const a = app();
   a.run(`
-    state.customScriptPlays = [{ id: 'p1', play_name: 'Test Play' }];
+    state.customScriptPlays = ['p1', 'p2'];
     state.customScriptActive = true;
     state.customScriptIndex = 4;
+    state.customScriptLockedIndexes = [];
     backToTeamSelect();
   `);
-  assert.equal(a.run('state.customScriptPlays.length'), 0);
-  assert.equal(a.run('state.customScriptActive'), false);
+  assert.equal(a.run('state.customScriptPlays.length'), 2);
+  assert.equal(a.run('state.customScriptPlays[0]'), 'p1');
+  assert.equal(a.run('state.customScriptActive'), true);
   assert.equal(a.run('state.customScriptIndex'), 0);
+});
+
+test('a locked call-sheet pin takes slot 1 only after the script, and a money-down run is bypassed', () => {
+  const a = app();
+  a.run(`
+    state.normalizedPlays = [
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Trips', play_name: 'Mesh', type: 'PASS' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Singleback', set: 'Ace', play_name: 'HB Dive', type: 'RUN' }),
+      normalizeImportedPlay({ team: 'CHI', formation: 'Gun', set: 'Bunch', play_name: 'Drive', type: 'PASS' })
+    ];
+    state.selectedTeam = 'CHI';
+    state.selectedOpponent = 'DAL';
+    state.maddenVersion = 'M27';
+    state.hasActiveSituation = true;
+    state.goalToGo = false;
+    state.fieldPosition = { side: 'OWN', yardLine: 40 };
+    state.customScriptActive = false;
+    state.customScriptPlays = [];
+    state.customScriptIndex = 0;
+    const dive = state.normalizedPlays.find(play => play.play_name === 'HB Dive');
+    const mesh = state.normalizedPlays.find(play => play.play_name === 'Mesh');
+    state.activeGameplan = Gameplan.createPlan({ maddenEdition: 'M27', team: 'CHI', opponent: 'DAL' });
+    state.gameplans = { 'M27|CHI|DAL': state.activeGameplan };
+    state.activeGameplan.offense.third_long.pinnedPlayId = dive.id;
+    state.activeGameplan.offense.third_long.locked = true;
+    state.down = 3;
+    state.yards = 8;
+    computeRecommendations();
+  `);
+  assert.equal(a.run('state.recommendations[0].play.play_name'), 'HB Dive');
+  assert.equal(a.run('state.recommendations[0].planChip'), 'Gameplan pin');
+  assert.equal(a.run('state.recommendations[0].scriptMatch'), false);
+
+  a.run(`
+    state.customScriptPlays = [mesh.id];
+    state.customScriptActive = true;
+    state.customScriptIndex = 0;
+    computeRecommendations();
+  `);
+  assert.equal(a.run('state.recommendations[0].play.play_name'), 'Mesh');
+  assert.equal(a.run('state.recommendations[0].scriptMatch'), true);
+
+  a.run(`
+    state.customScriptActive = false;
+    state.customScriptPlays = [];
+    state.down = 3;
+    state.yards = 12;
+    computeRecommendations();
+  `);
+  const bypassed = a.run('state.recommendations');
+  const diveRec = bypassed.find(item => item.play.play_name === 'HB Dive');
+  if (diveRec) {
+    assert.equal(diveRec.planChip, 'Pin bypassed');
+    assert.notEqual(diveRec.score, 999);
+  } else {
+    assert.equal(bypassed[0].planChip, 'Pin bypassed');
+  }
+
+  a.run(`
+    state.activeGameplan.offense.third_long.pinnedPlayId = '';
+    state.activeGameplan.offense.third_long.locked = false;
+    state.down = 1;
+    state.yards = 10;
+    computeRecommendations();
+  `);
+  assert.equal(a.run('state.recommendations[0].scriptMatch'), false);
+  assert.equal(a.run('state.recommendations[0].planChip') || '', '');
+  assert.notEqual(a.run('state.recommendations[0].score'), 999);
 });
 
 test('autoFillScript generates a 15-play sequence using NFL setup-to-payoff architecture', () => {
@@ -515,6 +620,47 @@ test('auto-fill uses an opponent early-down shell and falls back when that histo
   assert.equal(fitted.observations, 8);
   const fittedSlot = a.run(`state.normalizedPlays.find(p => p.id === state.customScriptPlays[1]).play_name`);
   assert.equal(fittedSlot, 'Curl Flat');
+});
+
+test('opponent tendency fills ready call-sheet cells and keeps locked cells', () => {
+  const a = app();
+  a.run(`
+    state.selectedTeam = 'CHI';
+    state.selectedOpponent = 'DAL';
+    state.opponentContext = 'cpu';
+    state.maddenVersion = 'M27';
+    state.opponentTendencies = { byKey: {} };
+    for (let i = 0; i < 4; i += 1) {
+      state.opponentTendencies = Tendency.recordLook(state.opponentTendencies, { opponent: 'DAL', context: 'cpu', cellId: 'early_down', shell: 'Cover 3' });
+    }
+    ensureActivePlan();
+    state.activeGameplan.offense.third_long.locked = true;
+    state.activeGameplan.offense.third_long.concept = 'shot';
+    fillCallSheetFromTendencies();
+  `);
+  assert.equal(a.run('state.activeGameplan.offense.early_down.concept'), 'flood');
+  assert.equal(a.run('state.activeGameplan.offense.early_down.backup'), 'quick_game');
+  assert.equal(a.run('state.activeGameplan.offense.third_long.concept'), 'shot');
+  assert.equal(a.run('state.activeGameplan.offense.red_zone.concept'), '');
+});
+
+test('logged defensive looks build the opponent cell profile and a correction replaces the same snap', () => {
+  const a = app();
+  a.run(`
+    state.selectedTeam = 'CHI';
+    state.selectedOpponent = 'GB';
+    state.opponentContext = 'cpu';
+    state.down = 1;
+    state.yards = 10;
+    state.goalToGo = false;
+    state.fieldPosition = { side: 'OWN', yardLine: 25 };
+    state.pendingOutcome = { playId: 'p1', team: 'CHI', family: 'flood', formationKey: 'gun', formationSetKey: 'gun|base', down: 1, yardsToGo: 10, goalToGo: false, fieldPosition: { side: 'OWN', yardLine: 25 }, fieldPositionBucket: 'own_territory' };
+    setLastDefenseShown('Cover 3');
+    setLastDefenseShown('Cover 2');
+  `);
+  const cell = a.run(`Tendency.profileFor(state.opponentTendencies, 'GB', 'cpu').cells.early_down`);
+  assert.equal(cell.looks['Cover 3'], undefined);
+  assert.equal(cell.looks['Cover 2'].snaps, 1);
 });
 
 test('Two-game cooldown: excludes plays from the last 2 executed scripts, respects preview re-clicks', () => {

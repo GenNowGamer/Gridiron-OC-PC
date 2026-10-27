@@ -21,7 +21,8 @@
     "dist": "npm run prepare:dist && electron-builder --win nsis",
     "check:core": "node ./scripts/check-pc-core.mjs",
     "test:regression": "node --test ./scripts/test-app-regressions.cjs",
-    "verify:pc": "npm run check:core && npm run test:regression && npm run test:ocr:js && node ./scripts/smoke-defense-situation.mjs",
+    "test:gameplan": "node --test ./shared/test/*.test.js",
+    "verify:pc": "npm run check:core && npm run test:gameplan && npm run test:regression && npm run test:ocr:js && node ./scripts/smoke-defense-situation.mjs",
     "prepare:dist": "npm run verify:pc && npm run build:ocr-worker && npm run build:capture-bridge && npm run check:ocr-license"
   },
   "build": {

@@ -31,7 +31,7 @@
             <p class="heroCopy" id="heroCopy">Use OCR Capture for spots like "3rd and 6", "1st and goal on the 4", or "3rd and 5 on my own 30".</p>
           </div>
           <div class="heroActions">
-            <button class="secondaryBtn" id="scriptBuilderBtn" type="button">Game Script</button>
+            <button class="secondaryBtn" id="scriptBuilderBtn" type="button">Gameplan</button>
             <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
           </div>
         </div>
@@ -98,6 +98,10 @@
             <div class="statusRow">
               <span class="statusLabel">Situation</span>
               <span class="statusValue" id="situationValue">No live situation yet</span>
+            </div>
+            <div class="statusRow">
+              <span class="statusLabel">Gameplan</span>
+              <span class="statusValue" id="gameplanStatusValue">No live spot</span>
             </div>
             <div class="statusRow">
               <span class="statusLabel">Status</span>
@@ -336,22 +340,26 @@
       <div class="overlayTitleRow">
         <div>
           <div class="eyebrow">Offensive Game Plan</div>
-          <div class="overlayTitle">Opening 15 Script</div>
+          <div class="overlayTitle">Gameplan HQ</div>
         </div>
-        <button class="overlayCloseBtn" id="closeScriptBuilderBtn" type="button" aria-label="Close script builder">✕</button>
+        <button class="overlayCloseBtn" id="closeScriptBuilderBtn" type="button" aria-label="Close gameplan">✕</button>
       </div>
-      <div class="overlaySub" id="scriptBuilderSub">Assemble an opening 15-play script from your offensive playbook for the opening drives of this game. Slot #1 on live snaps will feature your scripted sequence.</div>
+      <div class="overlaySub" id="scriptBuilderSub">Opening script and call sheet for this matchup. While the script is active, slot 1 stays on the next scripted play.</div>
+      <div class="gameplanTabs">
+        <button class="modeBtn is-active" id="gameplanTabScript" type="button">Opening 15</button>
+        <button class="modeBtn" id="gameplanTabSheet" type="button">Call Sheet</button>
+      </div>
       
       <div class="scriptBuilderBody">
         <div class="scriptBuilderPickerCol">
           <div class="scriptColHead">
-            <span class="scriptColTitle">Playbook Explorer</span>
-            <input class="audibleSearch scriptSearch" id="scriptSearchInput" type="search" placeholder="Search formation, concept, or play" autocomplete="off" />
+            <span class="scriptColTitle">Offense Navigator</span>
+            <input class="audibleSearch scriptSearch" id="scriptSearchInput" type="search" placeholder="Search formation, set, concept, or play" autocomplete="off" />
           </div>
           <div class="scriptPlaybookList" id="scriptPlaybookList"></div>
         </div>
 
-        <div class="scriptBuilderQueueCol">
+        <div class="scriptBuilderQueueCol" id="scriptQueueCol">
           <div class="scriptColHead">
             <div class="scriptQueueHeaderRow">
               <span class="scriptColTitle">Opening Sequence</span>
@@ -364,6 +372,7 @@
           </div>
           <div class="scriptQueueList" id="scriptQueueList"></div>
         </div>
+        <div class="scriptBuilderQueueCol hidden" id="gameplanSheet"></div>
       </div>
 
       <div class="scriptModalActions">
@@ -571,7 +580,7 @@
         </div>
       </div>
       <div class="matchupTitle">Matchup &amp; Broadcast Setup</div>
-      <div class="matchupSub">Select your teams and broadcast style to calibrate OCR recognition and live coordinator logic before kickoff.</div>
+      <div class="matchupSub">Select your teams, play-calling scope, and broadcast style to calibrate OCR recognition and live coordinator logic before kickoff.</div>
       
       <div class="matchupVsSection">
         <div class="matchupTeamCol">
@@ -586,6 +595,20 @@
       </div>
 
       <div class="matchupPresentationSection">
+        <label class="matchupLabel">THIS OPPONENT IS</label>
+        <div class="maddenVersionPillGroup" id="matchupOpponentContextGroup" role="group" aria-label="Opponent control">
+          <button type="button" class="presentationPillBtn is-active" data-opponent-context="cpu">
+            <span class="pillTitle">CPU</span>
+            <span class="pillSub">Franchise and CPU games</span>
+          </button>
+          <button type="button" class="presentationPillBtn" data-opponent-context="human">
+            <span class="pillTitle">Human</span>
+            <span class="pillSub">A user running this team</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="matchupPresentationSection">
         <label class="matchupLabel">MADDEN GAME VERSION (PLAYBOOK CATALOG)</label>
         <div class="maddenVersionPillGroup" id="matchupMaddenVersionGroup" role="group" aria-label="Madden version">
           <button type="button" class="presentationPillBtn" data-madden-version="M26">
@@ -595,6 +618,20 @@
           <button type="button" class="presentationPillBtn is-active" data-madden-version="M27">
             <span class="pillTitle">Madden 27</span>
             <span class="pillSub">M27 Authentic 32-Team</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="matchupPresentationSection">
+        <label class="matchupLabel">PLAY-CALLING</label>
+        <div class="maddenVersionPillGroup" id="matchupPlaycallScopeGroup" role="group" aria-label="Play-calling scope">
+          <button type="button" class="presentationPillBtn is-active" data-playcall-scope="both">
+            <span class="pillTitle">Offense &amp; Defense</span>
+            <span class="pillSub">Switch sides when a drive ends</span>
+          </button>
+          <button type="button" class="presentationPillBtn" data-playcall-scope="offense">
+            <span class="pillTitle">Offense Only</span>
+            <span class="pillSub">Stay on the offensive sheet</span>
           </button>
         </div>
       </div>
@@ -617,6 +654,9 @@
   <script src="shared/defenseRecommendationCore.js"></script>
   <script src="shared/coordinatorReport.js"></script>
   <script src="shared/penaltyCatalog.js"></script>
+  <script src="shared/openingScript.js"></script>
+  <script src="shared/gameplanModel.js"></script>
+  <script src="shared/opponentTendency.js"></script>
   <script src="ocr/shared/contracts.js"></script>
   <script src="ocr/shared/confidenceCalibration.js"></script>
   <script src="ocr/shared/textCatalogMatcher.js"></script>
