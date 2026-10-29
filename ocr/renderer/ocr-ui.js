@@ -30,11 +30,13 @@
     enabled: false,
     exactCallsEnabled: true,
     learningEnabled: false,
-    hotkey: "CommandOrControl+Shift+D",
+    hotkey: "F8",
     adapter: "capture-bridge",
     settleDelayMs: 100,
     burstFrames: 5,
     retainDebugFrames: false,
+    trainingMode: false,
+    autoCaptureEnabled: false,
   });
 
   const PRESENTATION_STYLES = Object.freeze([
@@ -184,18 +186,26 @@
     setCalibrationStatus(`New calibration for ${style}. Capture a reference, draw regions, then Save Profile.`);
   }
 
+  function normalizeHotkey(value) {
+    const raw = text(value);
+    if (!raw || raw === "CommandOrControl+Shift+D") return "F8";
+    return raw;
+  }
+
   function normalizeConfig(value) {
     const incoming = value && typeof value === "object" ? value : {};
     return {
       ...DEFAULT_CONFIG,
       enabled: incoming.enabled === true,
       exactCallsEnabled: incoming.exactCallsEnabled !== false,
-      learningEnabled: incoming.learningEnabled === true,
-      hotkey: text(incoming.hotkey) || DEFAULT_CONFIG.hotkey,
+      learningEnabled: true,
+      hotkey: normalizeHotkey(incoming.hotkey),
       adapter: "capture-bridge",
       settleDelayMs: Math.max(0, Math.min(2000, Number(incoming.settleDelayMs) || DEFAULT_CONFIG.settleDelayMs)),
       burstFrames: Math.max(1, Math.min(5, Number(incoming.burstFrames) || DEFAULT_CONFIG.burstFrames)),
       retainDebugFrames: incoming.retainDebugFrames === true,
+      trainingMode: incoming.trainingMode === true,
+      autoCaptureEnabled: incoming.autoCaptureEnabled === true,
       activeProfileId: text(incoming.activeProfileId),
       sourceId: text(incoming.sourceId),
     };
@@ -218,6 +228,28 @@
     if (ui.exactToggle) updateToggle(ui.exactToggle, local.config.exactCallsEnabled);
     updateToggle(ui.learningToggle, local.config.learningEnabled);
     updateToggle(ui.debugToggle, local.config.retainDebugFrames);
+    updateToggle(ui.trainingToggle, local.config.trainingMode);
+    const detector = status.detector || local.lastStatus?.detector || {};
+    const detectorTrained = detector.trained === true;
+    updateToggle(ui.autoCaptureToggle, detectorTrained && local.config.autoCaptureEnabled);
+    if (ui.autoCaptureToggle) ui.autoCaptureToggle.disabled = !detectorTrained;
+    if (ui.autoCaptureSub) {
+      ui.autoCaptureSub.textContent = detectorTrained
+        ? "Reads the play-call screen once per appearance. F8 repeats the read."
+        : "Train a detector first.";
+    }
+    if (ui.detectorSummary) {
+      const counts = `${Number(detector.playCallSamples) || 0} play-call · ${Number(detector.otherSamples) || 0} other`;
+      const tail = text(detector.lastMessage);
+      const brief = tail.length > 180 ? "" : tail;
+      ui.detectorSummary.textContent = [
+        detectorTrained ? "Detector trained." : "Train a detector first.",
+        `Samples: ${counts}.`,
+        brief,
+      ].filter(Boolean).join(" ");
+    }
+    if (ui.trainDetectorBtn) ui.trainDetectorBtn.disabled = detector.trainingBusy === true;
+    if (ui.saveOtherScreenBtn) ui.saveOtherScreenBtn.disabled = detector.trainingBusy === true;
     if (ui.hotkeyInput) ui.hotkeyInput.value = local.config.hotkey;
     if (ui.captureAdapter) ui.captureAdapter.value = local.config.adapter;
     syncAdapterUi();
@@ -517,6 +549,10 @@
     const previousDefensePlayName = previousDefense && typeof previousDefense === "object"
       ? text(previousDefense.play_name || previousDefense.playName || previousDefense.name || "")
       : text(previousDefense || "");
+    const previousOffense = acceptedValue(fields.previous_offense_play);
+    const previousOffensePlayName = previousOffense && typeof previousOffense === "object"
+      ? text(previousOffense.play_name || previousOffense.playName || previousOffense.name || "")
+      : text(previousOffense || "");
     const down = parsed && parsed.ok
       ? parsed.down
       : Number(fields.down?.value || downMatch?.[1] || 1);
@@ -538,6 +574,9 @@
         set: offenseShowing.set || "",
       },
       previousDefensePlayName,
+      previousOffensePlayName,
+      downKnown: fields.down_distance?.accepted === true,
+      fieldKnown: fields.field_position?.accepted === true,
     };
   }
 
@@ -754,7 +793,7 @@
     try {
       const host = ocrHost();
       // Sync live board when role-required situation fields are ready (OC skips formation).
-      if (gate.ready && typeof host.applyOcrCaptureSituation === "function") {
+      if (typeof host.applyOcrCaptureSituation === "function") {
         host.applyOcrCaptureSituation(situation);
       }
       if (typeof host.applyOcrLearningSnapshot === "function" && capture?.learningSnapshot) {
@@ -770,24 +809,11 @@
         : (accepted ? "warning" : "error");
     }
     if (ui.status) {
-      const top = normalizeExactRecommendation(recommendations[0]);
-      if (isOcHostRole()) {
-        if (!local.config.enabled) {
-          ui.status.textContent = "Capture complete — OCR is disabled";
-        } else if (gate.missing.length) {
-          ui.status.textContent = `Review required — need ${gate.missing.join(", ")}`;
-        } else {
-          ui.status.textContent = "Situation synced — check Play Call recommendations";
-        }
-      } else if (top) {
-        ui.status.textContent = `Exact call ready: ${playPath(top)} — see Recommendations`;
-      } else if (exactGate.missing.length) {
-        ui.status.textContent = `Review required — need ${exactGate.missing.join(", ")}`;
-      } else {
-        ui.status.textContent = "Review required — exact call withheld";
-      }
+      if (!local.config.enabled) ui.status.textContent = "Capture complete — OCR is disabled";
+      else if (!situation.downKnown) ui.status.textContent = "Not logged";
+      else ui.status.textContent = "Capture logged";
     }
-    if (ui.reviewBtn) ui.reviewBtn.disabled = false;
+    if (ui.reviewBtn) ui.reviewBtn.disabled = true;
     renderReviewFields();
     window.dispatchEvent(new CustomEvent("gridiron:ocr-capture", {
       detail: { capture, context: situation, recommendations },
@@ -1494,6 +1520,10 @@
       confidence: byId("ocrDcConfidence"), exactCallsCard: byId("ocrExactCallsCard"),
       captureBtn: byId("ocrCaptureBtn"), reviewBtn: byId("ocrReviewBtn"),
       workerPill: byId("ocrWorkerPill"), captureToggle: byId("ocrCaptureToggleBtn"),
+      autoCaptureToggle: byId("ocrAutoCaptureToggleBtn"), autoCaptureSub: byId("ocrAutoCaptureSub"),
+      trainingToggle: byId("ocrTrainingToggleBtn"), trainingModeSub: byId("ocrTrainingModeSub"),
+      saveOtherScreenBtn: byId("ocrSaveOtherScreenBtn"), trainDetectorBtn: byId("ocrTrainDetectorBtn"),
+      detectorSummary: byId("ocrDetectorSummary"),
       exactToggle: byId("ocrExactToggleBtn"), learningToggle: byId("ocrLearningToggleBtn"),
       debugToggle: byId("ocrDebugToggleBtn"),
       hotkeyInput: byId("ocrHotkeyInput"), saveHotkeyBtn: byId("ocrSaveHotkeyBtn"),
@@ -1527,6 +1557,29 @@
 
   function bindEvents() {
     ui.captureToggle?.addEventListener("click", () => updateConfig({ enabled: !local.config.enabled }));
+    ui.autoCaptureToggle?.addEventListener("click", () => {
+      if (ui.autoCaptureToggle.disabled) return;
+      updateConfig({ autoCaptureEnabled: !local.config.autoCaptureEnabled });
+    });
+    ui.trainingToggle?.addEventListener("click", () => updateConfig({ trainingMode: !local.config.trainingMode }));
+    ui.saveOtherScreenBtn?.addEventListener("click", () => {
+      if (!desktop().ocrSaveTrainingSample) return;
+      if (ui.detectorSummary) ui.detectorSummary.textContent = "Saving other screen…";
+      desktop().ocrSaveTrainingSample({ label: "other" })
+        .then(() => refreshState())
+        .catch((error) => {
+          if (ui.detectorSummary) ui.detectorSummary.textContent = text(error?.message || error);
+        });
+    });
+    ui.trainDetectorBtn?.addEventListener("click", () => {
+      if (!desktop().ocrTrainDetector) return;
+      if (ui.detectorSummary) ui.detectorSummary.textContent = "Training detector…";
+      desktop().ocrTrainDetector({})
+        .then(() => refreshState())
+        .catch((error) => {
+          if (ui.detectorSummary) ui.detectorSummary.textContent = text(error?.message || error);
+        });
+    });
     ui.exactToggle?.addEventListener("click", () => updateConfig({ exactCallsEnabled: !local.config.exactCallsEnabled }));
     ui.learningToggle?.addEventListener("click", () => updateConfig({ learningEnabled: !local.config.learningEnabled }));
     ui.debugToggle?.addEventListener("click", () => updateConfig({

@@ -44,6 +44,26 @@ test("a tendency family list narrows the slot before the random pick", () => {
   assert.equal(result.playIds[1], "curl-a");
 });
 
+test("goal line plays stay out of the opening script, including a locked slot", () => {
+  const plays = book().concat([
+    play("gl-run", "RUN", "inside_zone", "Goal Line"),
+    play("gl-pa", "PA", "boot", "Goal Line"),
+  ]);
+  const result = Opening.fillOpeningScript({
+    plays: plays,
+    familyOf: function (item) { return item.family; },
+    cooldownIds: [],
+    shell: null,
+    setupPayoff: { inside_zone: ["boot"] },
+    random: function () { return 0; },
+    existingPlayIds: ["gl-run"],
+    lockedIndexes: [0],
+  });
+  assert.equal(result.playIds.includes("gl-run"), false);
+  assert.equal(result.playIds.includes("gl-pa"), false);
+  assert.equal(result.playIds.length, 15);
+});
+
 test("fill returns 15 plays and does not record cooldown history", () => {
   const history = [];
   const result = Opening.fillOpeningScript({
@@ -124,4 +144,20 @@ test("locked script slots stay put when the rest of the script is filled", () =>
   });
   assert.equal(result.playIds[4], "screen-a");
   assert.equal(result.playIds.filter(function (id) { return id === "screen-a"; }).length, 1);
+});
+
+test("ignoreLearning does not let a shell score choose the play", () => {
+  const plays = [play("quick-low", "PASS", "quick_game"), play("quick-high", "PASS", "quick_game")];
+  const shell = { observations: 8, distribution: { total: 8, entries: [["Cover 3", 1]] } };
+  const result = Opening.fillOpeningScript({
+    plays: plays.concat(book().slice(2)),
+    familyOf: function (item) { return item.family; },
+    cooldownIds: [],
+    shell: shell,
+    setupPayoff: {},
+    random: function () { return 0; },
+    ignoreLearning: true,
+    playScore: function (item) { return item.id === "quick-high" ? 5 : 0; },
+  });
+  assert.equal(result.playIds[1], "quick-low");
 });

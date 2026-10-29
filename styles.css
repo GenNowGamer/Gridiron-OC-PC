@@ -21,6 +21,7 @@
   --control-bg: #152131;
   --control-bg-hover: #1b2a3d;
   --control-text: #eef4ff;
+  --on-secondary: #101820;
 }
 
 * { box-sizing: border-box; }
@@ -36,8 +37,8 @@ body {
   font-family: "Segoe UI", system-ui, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 15% 10%, rgba(42, 108, 255, 0.24), transparent 28%),
-    radial-gradient(circle at 80% 16%, rgba(143, 184, 255, 0.12), transparent 26%),
+    radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--primary) 32%, transparent), transparent 28%),
+    radial-gradient(circle at 80% 16%, color-mix(in srgb, var(--secondary) 22%, transparent), transparent 26%),
     linear-gradient(180deg, var(--bg), var(--bg-alt));
 }
 
@@ -97,7 +98,7 @@ body {
   justify-content: space-between;
   padding: 10px 20px 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(9, 16, 25, 0.74);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   backdrop-filter: blur(12px);
   flex-shrink: 0;
 }
@@ -205,7 +206,7 @@ body {
   padding: 10px 14px;
   min-width: 140px;
   background: var(--secondary);
-  color: #0e1722;
+  color: var(--on-secondary, #0e1722);
   font-weight: 800;
   font-size: 13px;
   cursor: pointer;
@@ -2681,4 +2682,213 @@ body {
   color: #f59e0b;
   font-weight: 800;
 }
+
+.tablet {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  background: transparent;
+  color: var(--text);
+}
+
+.tabletStrip {
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tabletStripFixed,
+.tabletStripLive {
+  display: grid;
+  gap: 12px;
+}
+
+.tabletStripLive {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.tabletKicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--secondary);
+}
+
+.tabletCard header {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.tabletScriptKicker {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.tabletStripValue {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 800;
+}
+
+.tabletMain {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 12px;
+}
+
+.tabletToolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tabletScript {
+  background: linear-gradient(180deg, var(--top-play-bg), rgba(255, 255, 255, 0.03));
+  color: var(--top-play-text);
+  border: 1px solid var(--top-play-border);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.tabletScript.is-hidden { display: none; }
+
+.tabletScriptCall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+
+.tabletScriptPlay,
+.tabletPlay {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tabletScriptPath,
+.tabletPath,
+.tabletCard p,
+.tabletScriptMeta {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tabletGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 0;
+}
+
+.tabletCard {
+  background: linear-gradient(180deg, var(--top-play-bg), rgba(255, 255, 255, 0.03));
+  color: var(--top-play-text);
+  border: 1px solid var(--top-play-border);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tabletCard.is-hot {
+  position: relative;
+  z-index: 2;
+  border-color: #f5c451;
+  outline: 2px solid #f5c451;
+  outline-offset: 1px;
+  background: linear-gradient(180deg, rgba(245, 196, 81, 0.34), rgba(255, 255, 255, 0.06));
+  animation: tabletSituationPulse 1s ease-in-out infinite;
+}
+
+.tabletHotMark {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #f5c451;
+  color: #1a1404;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@keyframes tabletSituationPulse {
+  0%, 100% {
+    border-color: #f5c451;
+    box-shadow:
+      inset 0 0 0 2px #f5c451,
+      0 0 14px 2px rgba(245, 196, 81, 0.8);
+  }
+  50% {
+    border-color: #fff1c2;
+    box-shadow:
+      inset 0 0 0 3px #fff1c2,
+      0 0 26px 6px rgba(245, 196, 81, 1);
+    background: linear-gradient(180deg, rgba(245, 196, 81, 0.5), rgba(255, 255, 255, 0.1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabletCard.is-hot {
+    animation: none;
+    box-shadow: inset 0 0 0 3px #f5c451, 0 0 18px 3px rgba(245, 196, 81, 0.9);
+  }
+}
+
+.tabletCard .tabletPlay { font-size: 15px; }
+
+.tabletRate { font-size: 18px; font-weight: 800; min-height: 1.2em; }
+
+.tabletCard p,
+.tabletScriptMeta {
+  margin: 0;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.tabletRan,
+.tabletCard button {
+  margin-top: auto;
+  border: 1px solid var(--border-strong);
+  background: var(--secondary);
+  color: var(--on-secondary, #101820);
+  padding: 6px 8px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.tabletTicker {
+  border-top: 2px solid var(--secondary);
+  color: var(--hint);
+  padding-top: 6px;
+  font-size: 13px;
+}
+
 

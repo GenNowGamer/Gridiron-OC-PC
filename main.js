@@ -326,6 +326,8 @@ app.whenReady().then(() => {
     return ocrManager.exportDiagnosticPack();
   });
   ipcMain.handle("desktop:ocr-delete", async (_event, args) => ocrManager.deleteData(args));
+  ipcMain.handle("desktop:ocr-save-training-sample", async (_event, args) => ocrManager.saveTrainingSample(args));
+  ipcMain.handle("desktop:ocr-train-detector", async (_event, args) => ocrManager.trainDetector(args));
 
   createWindow();
   ocrManager.initialize().then(publishOcrEvent).catch((error) => {

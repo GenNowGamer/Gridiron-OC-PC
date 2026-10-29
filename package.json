@@ -1,6 +1,6 @@
 {
   "name": "gridiron-play-advisor-pc",
-  "version": "0.1.28",
+  "version": "0.1.30",
   "private": true,
   "description": "Desktop play-calling companion for Madden NFL 26 and Madden NFL 27",
   "main": "main.js",
@@ -59,6 +59,14 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "scripts/train-playcall-detector.py",
+        "to": "train/train-playcall-detector.py"
+      },
+      {
+        "from": "yolov8n.pt",
+        "to": "train/yolov8n.pt"
       },
       {
         "from": "capture-bridge/dist",

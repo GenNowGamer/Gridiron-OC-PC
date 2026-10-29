@@ -1,3 +1,4 @@
+import os
 import threading
 
 from . import SCHEMA_VERSION, __version__
@@ -7,14 +8,16 @@ from .errors import SidecarError
 from .images import decode_image_data, decode_image_path, estimate_anchor_drift
 from .obs import ObsClient
 from .profile import validate_profile
+from .screen_detector import ScreenDetector
 
 MAX_BURST_FRAMES = 30
 
 
 class SidecarService:
-    def __init__(self, obs=None, engines=None):
+    def __init__(self, obs=None, engines=None, detector=None):
         self.obs = obs or ObsClient()
         self.engines = engines or EngineRegistry()
+        self.detector = detector or ScreenDetector()
         self.cancel_events = {}
         self.cancel_lock = threading.Lock()
         self.shutdown_requested = False
@@ -27,6 +30,7 @@ class SidecarService:
             "obs.configure": self.obs_configure,
             "engine.warm": self.engine_warm,
             "profile.test": self.profile_test,
+            "screen.detect": self.screen_detect,
             "capture.benchmark": self.capture_benchmark,
             "capture.analyze_burst": lambda p: self.capture_analyze_burst(p, request_id),
             "capture.cancel": self.capture_cancel,
@@ -45,7 +49,7 @@ class SidecarService:
             "protocol": "json-lines",
             "commands": [
                 "hello", "obs.configure",
-                "engine.warm", "profile.test", "capture.benchmark", "capture.analyze_burst",
+                "engine.warm", "profile.test", "screen.detect", "capture.benchmark", "capture.analyze_burst",
                 "capture.cancel", "shutdown",
             ],
             "ocrEngines": self.engines.available(),
@@ -53,6 +57,33 @@ class SidecarService:
             "captureAdapters": ["capture-bridge"],
             "rawRetentionDefault": False,
         }
+
+    def screen_detect(self, params):
+        model_path = params.get("modelPath")
+        path = os.path.abspath(model_path) if isinstance(model_path, str) and model_path.strip() else ""
+        save_image = params.get("saveImagePath")
+        has_save = isinstance(save_image, str) and bool(save_image.strip())
+        if (not path or not os.path.isfile(path)) and not has_save:
+            return self.detector.detect(None, model_path)
+        if "imagePath" in params and params.get("imagePath"):
+            frame = decode_image_path(params["imagePath"])
+        elif params.get("imageBase64"):
+            frame = decode_image_data(params["imageBase64"])
+        else:
+            captured = self.obs.capture_frame(
+                _source(params),
+                adapter=_adapter(params),
+                timeout_seconds=_fresh_timeout(params),
+            )
+            frame = getattr(captured, "image", captured)
+        if has_save:
+            save_path = os.path.abspath(save_image)
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            import cv2
+            cv2.imwrite(save_path, frame)
+        if not path or not os.path.isfile(path):
+            return self.detector.detect(None, model_path)
+        return self.detector.detect(frame, path)
 
     def engine_warm(self, params):
         return self.engines.warm(params.get("engine", "auto"))

@@ -43,6 +43,8 @@ contextBridge.exposeInMainWorld("desktopApi", {
   ocrExportData: () => ipcRenderer.invoke("desktop:ocr-export"),
   ocrExportDiagnosticPack: () => ipcRenderer.invoke("desktop:ocr-export-diagnostic"),
   ocrDeleteData: (args) => ipcRenderer.invoke("desktop:ocr-delete", args),
+  ocrSaveTrainingSample: (args) => ipcRenderer.invoke("desktop:ocr-save-training-sample", args),
+  ocrTrainDetector: (args) => ipcRenderer.invoke("desktop:ocr-train-detector", args),
   onOcrEvent: (callback) => {
     if (typeof callback !== "function") return () => {};
     const listener = (_event, payload) => callback(payload);

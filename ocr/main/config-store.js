@@ -12,7 +12,7 @@ const DEFAULT_STATE = Object.freeze({
   profiles: Object.freeze([]),
   activeProfileId: '',
   config: Object.freeze({
-    hotkey: 'CommandOrControl+Shift+D',
+    hotkey: 'F8',
     obs: Object.freeze({ host: '127.0.0.1', port: 4455, password: '' }),
     capture: Object.freeze({
       adapter: 'capture-bridge',
@@ -25,6 +25,8 @@ const DEFAULT_STATE = Object.freeze({
     }),
     context: Object.freeze({ team: '', opponent: '', role: '', quarter: 1, userScore: 0, oppScore: 0 }),
     retainDebugFrames: false,
+    trainingMode: false,
+    autoCaptureEnabled: false,
   }),
 });
 

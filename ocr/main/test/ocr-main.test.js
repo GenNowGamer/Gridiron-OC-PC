@@ -325,3 +325,86 @@ test('integration OCR manager gates capture and returns diagnostics', async (t) 
   assert.ok(events.some((event) => event.type === 'capture:complete'));
   await manager.stop();
 });
+
+test('watch loop requires trained model, fires one burst per appearance, and allows F8 while locked', async (t) => {
+  const userData = await temporaryDirectory(t);
+  const sidecar = new FakeSidecar();
+  const hotkey = new FakeHotkey();
+  let now = 1000;
+  let playCall = false;
+  const origRequest = sidecar.request.bind(sidecar);
+  sidecar.request = async (method, params) => {
+    if (method === 'screen.detect') {
+      sidecar.requests.push({ method, params });
+      return { trained: true, reason: null, boxes: [], playCall };
+    }
+    return origRequest(method, params);
+  };
+  const manager = new IntegrationOcrManager({
+    userData,
+    sidecar,
+    bridge: new FakeBridge(),
+    hotkey,
+    now: () => now,
+    watchIntervalMs: 60000,
+    watchDebounceMs: 250,
+    loadCatalogs: async () => ({ offensive: [], defensive: [] }),
+  });
+  await manager.initialize();
+  await manager.saveProfile({
+    id: 'profile-watch',
+    name: 'Watch Test',
+    source: { id: 'window:madden', name: 'Madden' },
+    regions: [
+      { field: 'down_distance', x: 0.1, y: 0.1, width: 0.2, height: 0.1 },
+      { field: 'field_position', x: 0.1, y: 0.2, width: 0.2, height: 0.1 },
+    ],
+  });
+  await manager.updateConfig({
+    enabled: true,
+    autoCaptureEnabled: true,
+    settleDelayMs: 0,
+    sourceId: 'window:madden',
+  });
+  await manager._warmEngine();
+
+  // Model file is missing, so auto-capture stays off and no watch loop starts.
+  assert.equal(manager.getStatus().config.autoCaptureEnabled, false);
+  assert.equal(manager.getStatus().watch.active, false);
+
+  await fs.mkdir(path.dirname(manager.detectorModelPath), { recursive: true });
+  await fs.writeFile(manager.detectorModelPath, 'onnx-placeholder', 'utf8');
+  await manager.updateConfig({ autoCaptureEnabled: true });
+  assert.equal(manager.getStatus().config.autoCaptureEnabled, true);
+  assert.equal(manager.getStatus().watch.active, true);
+
+  const countBursts = () => sidecar.requests.filter((r) => r.method === 'capture.analyze_burst').length;
+
+  playCall = true;
+  await manager._watchTick();
+  assert.equal(manager.watchState, 'debounce');
+  assert.equal(countBursts(), 0);
+
+  now += 260;
+  await manager._watchTick();
+  assert.equal(manager.watchState, 'locked');
+  assert.equal(countBursts(), 1);
+
+  // Staying on the play-call screen must not fire a second burst.
+  now += 300;
+  await manager._watchTick();
+  assert.equal(manager.watchState, 'locked');
+  assert.equal(countBursts(), 1);
+
+  // F8 still runs while the watch loop is locked.
+  await manager.capture({ reason: 'hotkey' });
+  assert.equal(countBursts(), 2);
+
+  // Leaving the play-call screen unlocks back to idle.
+  playCall = false;
+  now += 300;
+  await manager._watchTick();
+  assert.equal(manager.watchState, 'idle');
+
+  await manager.stop();
+});

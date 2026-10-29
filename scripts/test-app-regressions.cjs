@@ -180,10 +180,8 @@ test('audible and next spoken snap retain learning and confirmation flow', async
   await a.run(`processTranscript('2nd and 5 on my own 30')`);
   // The prior snap (audible) was settled and learned
   assert.equal(a.run('Object.keys(state.userLearning.global.plays)[0]'), audible);
-  // Auto Playcaller auto-confirms the top play for the new 2nd & 5 spot
-  assert.ok(a.run('state.pendingOutcome'));
-  assert.equal(a.run('state.pendingOutcome.down'), 2);
-  assert.equal(a.run('state.presentedRecommendations.length'), 3);
+  assert.equal(a.run('state.pendingOutcome'), null);
+  assert.equal(a.run('state.confirmedRecommendationId'), null);
 });
 
 test('fresh start initializes coordinatorRole to OC even if persisted prefs had DC', () => {
@@ -204,7 +202,7 @@ test('matchup setup modal updates team, opponent and presentation style', () => 
   assert.equal(a.run('state.selectedOpponent'), 'BUF');
 });
 
-test('auto playcaller defaults to enabled and confirms best play upon OCR capture', () => {
+test('OCR capture does not auto-confirm a play', () => {
   const a = app();
   a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`
@@ -213,32 +211,25 @@ test('auto playcaller defaults to enabled and confirms best play upon OCR captur
     startCoordinatorSession('normal');
     applyOcrCaptureSituation({ down: 3, yards: 4, goalToGo: false, fieldPosition: { side: 'OPP', yardLine: 35 } });
   `);
-  assert.equal(a.run('state.autoPlaycallerEnabled'), true);
-  assert.ok(a.run('state.confirmedRecommendationId'));
-  assert.ok(a.run('state.confirmedBasePlay'));
-  assert.equal(a.run('state.pendingOutcome.down'), 3);
+  assert.equal(a.run('state.autoPlaycallerEnabled'), false);
+  assert.equal(a.run('state.confirmedRecommendationId'), null);
+  assert.equal(a.run('state.confirmedBasePlay'), null);
+  assert.equal(a.run('state.pendingOutcome'), null);
 });
 
-test('sequential OCR captures settle pending snap, log previous defense, and feed opponent scouting report', () => {
+test('sequential OCR captures do not write a scouting report or confirm a card', () => {
   const a = app();
   a.catalog = JSON.parse(fs.readFileSync(path.join(root, 'data', 'madden26', 'plays.json'), 'utf8'));
   a.run(`
     state.normalizedPlays = catalog.map(normalizeImportedPlay);
     state.selectedTeam = 'CHI';
     state.selectedOpponent = 'DAL';
-    state.autoPlaycallerEnabled = true;
     startCoordinatorSession('normal');
     applyOcrCaptureSituation({ down: 1, yards: 10, goalToGo: false, fieldPosition: { side: 'OWN', yardLine: 25 } });
-    const firstConfirmed = state.confirmedRecommendationId;
     applyOcrCaptureSituation({ down: 2, yards: 4, goalToGo: false, fieldPosition: { side: 'OWN', yardLine: 31 }, previousDefensePlayName: 'COVER 3' });
-    onPressEndGame();
   `);
-  assert.equal(a.run('state.gameScoutingLog.length'), 1);
-  assert.equal(a.run('state.gameScoutingLog[0].defense'), 'Cover 3');
-  assert.equal(a.run('state.gameScoutingLog[0].opponent'), 'DAL');
-  assert.equal(a.run('state.coordinatorReport.scouting.empty'), false);
-  assert.equal(a.run('state.coordinatorReport.scouting.items.length > 0'), true);
-  assert.ok(a.run('state.sessionReport.confirms[0].outcome'));
+  assert.equal(a.run('state.confirmedRecommendationId'), null);
+  assert.equal(a.run('state.gameScoutingLog.length'), 0);
 });
 test('pick 6 from OC keeps user on OC after resolving PAT attempt', () => {
   const a = app();
@@ -259,11 +250,11 @@ test('offense-only play calling stays on the offensive sheet after drive endings
     state.playcallScope='both';
     state.coordinatorRole='oc';
     applyDriveResultAndReset('interception');`);
-  assert.equal(a.run('state.coordinatorRole'), 'dc');
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
   a.run(`state.playcallScope='both'; state.coordinatorRole='oc'; applyDriveResultAndReset('touchdown');`);
-  assert.equal(a.run('state.patModalState.switchToDc'), true);
+  assert.equal(a.run('state.patModalState.switchToDc'), false);
   a.run('resolvePatAttempt(0);');
-  assert.equal(a.run('state.coordinatorRole'), 'dc');
+  assert.equal(a.run('state.coordinatorRole'), 'oc');
   a.run(`state.playcallScope='offense'; state.coordinatorRole='oc';`);
   for (const resultId of ['interception', 'fumble', 'turnover_on_downs', 'punt', 'field_goal', 'safety']) {
     a.run(`state.coordinatorRole='oc'; applyDriveResultAndReset('${resultId}');`);
@@ -279,8 +270,8 @@ test('offense-only play calling stays on the offensive sheet after drive endings
   assert.equal(a.run('state.coordinatorRole'), 'oc');
   assert.equal(a.run('buildPreferencesPayload().playcallScope'), 'offense');
   a.run(`applyPersistedPreferences({});`);
-  assert.equal(a.run('state.playcallScope'), 'both');
-  a.run(`applyPersistedPreferences({playcallScope:'offense'});`);
+  assert.equal(a.run('state.playcallScope'), 'offense');
+  a.run(`applyPersistedPreferences({playcallScope:'both'});`);
   assert.equal(a.run('state.playcallScope'), 'offense');
 });
 

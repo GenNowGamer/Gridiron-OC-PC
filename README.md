@@ -1,13 +1,13 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.28-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.30-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
-**Gridiron OC** is a desktop smart play-calling companion for Madden NFL 26 and Madden NFL 27, and for real-time football simulation. Both game versions use the same on-device recommendations for all 32 NFL team playbooks. Designed for both Offense and Defense, it serves as an intelligent coordinator assistant that surfaces high-probability, context-aware play recommendations in real time.
+**Gridiron OC** is a coach tablet for Madden NFL 26 and Madden NFL 27. **New Game** deals an opening script and 15 situational cards. You confirm the play you ran, and that card is replaced. F8 logs the snap after it ends. It does not pick a play. A success rate appears after three results for that play, situation, and opponent, and it never chooses the next card.
 
-Gridiron OC operates completely on-device with zero cloud dependencies, utilizing low-latency video capture and computer vision OCR to deliver seamless coordinator intelligence.
+Capture, OCR, and the optional play-call detector run on this PC. Nothing from the screen is sent to a cloud service.
 
 <p align="center">
   <img src="docs/screenshots/hero-recommendations-radar.png" alt="Gridiron OC Live Play Call & Opponent Radar" width="100%">
@@ -21,12 +21,8 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 - [Key Features](#key-features)
   - [Offensive Coordinator (OC) Workspace](#1-offensive-coordinator-oc-workspace)
   - [Defensive Coordinator (DC) Workspace](#2-defensive-coordinator-dc-workspace)
-  - [Play Sequencing & Tactical Tendency Radar](#3-play-sequencing--tactical-tendency-radar)
-  - [Halftime Review & Strategic Adjustments](#4-halftime-review--strategic-adjustments)
-  - [Computer Vision OCR Capture](#5-computer-vision-ocr-capture)
-  - [Game Management, Scoreboard & Call Sheet](#6-game-management-scoreboard--call-sheet)
-  - [Opponent Scouting & Tendencies](#7-opponent-scouting--tendencies)
-  - [Post-Game Coordinator Report](#8-post-game-coordinator-report)
+  - [How a snap is graded](#3-how-a-snap-is-graded)
+  - [Computer Vision OCR Capture](#4-computer-vision-ocr-capture)
 - [Operator's Field Manual (User Guide)](USER_GUIDE.html)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
   - [OCR Screen Capture Workflow](#ocr-screen-capture-workflow)
@@ -40,13 +36,13 @@ Gridiron OC operates completely on-device with zero cloud dependencies, utilizin
 
 ## Core Purpose & Value Proposition
 
-In competitive football gaming, calling plays under a running play clock can lead to repetitive tendencies, panic calls, or playbook fatigue. **Gridiron OC solves this by acting as your virtual coordinator**:
+The live window is an offensive call sheet. It does not recommend a play and it does not call a defense.
 
-1. **Eliminates Repetitive Play-Calling:** Multi-tiered anti-repeat algorithms, session show limits, and whole-playbook freshness sampling ensure you stay unpredictable while maintaining sound football concepts.
-2. **Context-Aware Strategy:** Understands down, distance, yard line, score differential, clock urgency, and opponent habits.
-3. **Dual-Sided Mastery:** Seamlessly switch between offensive playbook mastery and defensive package counters.
-4. **Adaptive Personal Learning:** Learns which concepts succeed or fail against specific looks across your games.
-5. **Zero Lag & Complete Privacy:** Runs 100% locally on your machine with on-device computer vision and offline OCR processing.
+1. **New Game deals the sheet.** One 15-play opening script and 15 situational cards come from the selected team's offensive playbook.
+2. **Ran it confirms what you called.** On the script, that advances to the next scripted play. On a situational card, only that card is replaced.
+3. **F8 logs the snap that just ended.** Yards come from the change in yard line. Down and distance decide whether that gain was a success. The capture does not change the script or the cards.
+4. **Each situational card rotates its own list.** A play comes back to that card only after every other play that fits the card has already been shown. Team identity does not weight that draw.
+5. **Capture stays on this PC.** OCR and the optional play-call detector run locally. Auto-capture stays off until `playcall.onnx` exists.
 
 ---
 
@@ -58,51 +54,12 @@ In competitive football gaming, calling plays under a running play clock can lea
   <img src="docs/screenshots/oc-workspace-overview.png" alt="Offensive Coordinator Workspace" width="100%">
 </p>
 
-- **Top-3 Recommendation Slate:** Evaluates your selected team's playbook and presents the 3 best calls for the exact down, distance, and field spot.
-- **Madden 26 and Madden 27 catalogs:** Both games use the same recommendation path. Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
-- **Why-This-Call Chips:** Every recommendation tile displays live contextual rationales (e.g., *Identity Fit*, *Sets up Play-Action*, *Coverage Beater*, *Third-Down Converter*).
-- **Playcalling Modes:** Instantly reshape your playbook strategy with specialized tactical overlays:
-  - **Normal:** Balanced, situation-driven adaptive play calling dynamically tailored to your team's assigned tactical identity (e.g., Chicago Bears "PA Motion Explosive", Baltimore Ravens "Option & Power Run", Kansas City Chiefs "Downfield Spread Attack"). Calibrated to achieve 50%+ post-game Identity Fit execution without requiring secondary style toggles.
-  - **2 Minute Drill:** Prioritizes sideline access, quick yardage, and hurry-up pass concepts.
-  - **Kill Clock:** Favors interior runs, clock-chewing concepts, and conservative pass options.
-  - **Comeback:** Aggressive chunk-play hunting with deep intermediate pass concepts.
-  - **Blitz Beater:** Hot throws, screens, draws, and quick perimeter answers that neutralize blitzes.
-  - **Redzone:** Short-field spacing concepts (smash, smash-corner, snag, mesh, duo, power, and RPO).
-- **Gameplan HQ (Opening 15 and Call Sheet):**
-  - Open **Gameplan** on the OC workspace. **Opening 15** is the script. **Call Sheet** is the eight situation rows. The navigator picks a formation, then a set, then a play to add or pin.
-  - Assemble a custom 15-play opening script from your team's playbook before kickoff or during a series. Lock a script slot to keep that play when Auto-Fill 15 runs.
-  - **Authentic NFL Setup-to-Payoff Architecture:** 1-click **Auto-Fill 15** sequences the opening script using true NFL game-planning logic:
-    - *Slots 1–4:* Establishing interior line of scrimmage (Inside Zone, Duo, Power) and rhythm passing (Quick Game) while stressing perimeter leverage.
-    - *Slot 5 & 10 (Play-Action Payoffs):* Automatically pairs high-percentage PA deep shots directly off the primary run family and personnel groupings established in preceding series.
-    - *Slots 6–15:* Methodical progression through misdirection constraints (Counter, Screen, Trap), intermediate chain movers (Mesh, Levels, Dig), perimeter stretching, deep explosive shots, money down answers, and red zone finishers.
-  - **Two-Game Script Cooldown:** Excludes plays from your last 2 live executed game scripts from appearing in Auto-Fill 15 to ensure varied game-to-game scripts, while permitting unlimited re-generation preview clicks without penalizing the pool. Includes automatic soft fallback so all 32 NFL teams always generate full 15-play scripts.
-  - **Call Sheet situations:** Early down, 2nd and long, 3rd and short, 3rd and medium, 3rd and long, backed up, red zone, and goal line. Each row has a concept, a backup concept, an optional pinned play, a note, and a lock. A locked pin takes recommendation slot 1 after the opening script is inactive or finished. On 3rd or 4th and 10 or more, a locked run or RPO pin is bypassed.
-  - **Situation tendencies:** Matchup setup marks the opponent as **CPU** or **Human**. Those profiles stay separate. Logging the coverage shell after a snap, and the graded result of your play, is stored on the matching situation. A situation is ready at 4 snaps when one shell is at least 40% of them. **Fill from tendencies** writes Concept and Backup for ready unlocked rows. Locked rows stay. Auto-Fill 15 uses a ready early-down profile to choose the family inside each slot, and uses red zone or 3rd and long for those slots once they are ready. A specific play is preferred only after three graded results against that opponent.
-  - **Opponent-fitted fill:** Before a situation profile is ready, Auto-Fill 15 still uses the older early-down shell mix. At least six early-down shell observations rank the same slot families by that mix and your early-down results, then pick among plays close to the best score. Fewer than six observations keeps the static sequence above.
-  - **Live Snap Injection:** When the script is active, Slot #1 of your recommendation slate features the next scheduled scripted call (`Script #1` through `Script #15`), while Slots #2 and #3 provide situational counters.
-  - **Smart Situational Yield:** On extreme passing downs (e.g. 3rd/4th & 10+), if the scheduled scripted play is a run or RPO, the Auto Playcaller automatically yields priority to Slot #2's situational pass call without burning the scripted play.
-  - **Matchup persistence:** The opening script, its Active toggle, and the offensive call sheet are saved for the Madden edition, your team, and the opponent. New Game and End Game start the script back at slot 1 and keep the list. Switching team or opponent loads that matchup's plan.
-  - **Interactive Management:** Quick search, single-click +Add, re-ordering (▲/▼), deletion (✕), clear, and 1-click **Auto-Fill 15**.
-
-<p align="center">
-  <img src="docs/screenshots/opening-15-script.png" alt="Opening 15 Script Game Planning" width="80%">
-</p>
-
-- **Auto Playcaller Mode (Hands-Free Coordinator Execution):**
-  - Optional toggle available in **Settings** and the pre-game **Matchup & Broadcast Setup** modal.
-  - Evaluates the top-3 coordinator recommendations dynamically on both OC and DC sides, identifying the optimal call based on active sequence payoffs, opponent defensive/offensive tendencies, opening script priorities, and score/clock context.
-  - **Intelligent Defensive Football Logic:** 
-    - *Goal Line Override:* Automatically prioritizes heavy Goal Line packages inside the 3-yard line on goal-to-go spots.
-    - *Money Down Passing Counters:* Rotates Dime, Dollar, and 3-3-5 coverage packages on 3rd & 7+ situations.
-    - *Defensive Front & Shell Rotation:* If candidate #1 repeats the same front as the previous snap, dynamically rotates to a competitive alternate front (within 3.0 points) to avoid repetitive looks.
-    - *3-3-5 Personnel Matching:* Enables 3-3-5 fronts to naturally counter 3-WR/spread formations alongside Nickel.
-  - Instantly confirms the winning play, updating down/distance settlement, play cooldowns, and session metrics automatically upon OCR capture.
-- **Setup-to-Payoff Engine:** Tracks conceptual sequencing across drives (e.g., establishing inside zone to unlock explosive play-action bootlegs later in the series).
-- **Full-Playbook Exploration Engine:** 
-  - **Slot 1 & Slot 2 Temperature Sampling:** Uses softmax exploration across near-tie optimal calls so high-variance primary calls and complementary counters rotate naturally.
-  - **Slot 3 Fresh-Play Elasticity:** Periodically draws from unexposed plays across the entire playbook (`_sessionShowCount === 0`) using bounded softmax probability flooring (`Math.max((score - best) / temp, -4.5)`), guaranteeing that uncalled plays are never mathematically zeroed out and ensuring wide playbook exploration across full games.
-  - **Red Zone & Goal-to-Go Pass Prioritization:** Explicitly classifies specialized red zone passing concepts (`redzone_pass`) with dedicated situation scoring bonuses (+7.5 in red zone geography), elevating calls like `Redzone Scissors` and `Redzone HB Scissors` to top recommendations inside the 20-yard line and in goal-to-go spots.
-  - **Balanced Scheme Stacking & Play-Action Calibration:** Softens early-down schedule penalties on play-action (`gainFitScore` penalty factor softened to 0.45) and removes blanket pressure penalties on standard looks, allowing deep PA concepts, motion bootlegs, wheel concepts, and jet touch passes to surface naturally alongside interior ground schemes.
+- **Madden 26 and Madden 27 catalogs:** Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
+- **Opening script:** New Game deals 15 plays. Goal Line formation plays are left out of the script. **Ran it** moves to the next play. F8 and auto-capture do not move the script or put a play back.
+- **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. **Ran it** replaces only that card. The replacement is drawn from plays that fit the card and have not been shown there yet this game. Plays already sitting on the other cards are skipped while an unseen play remains. A play can return only after that card's fitting list has been shown once. Goal Line formation plays, such as Goal Line / Normal / PA Sprint, appear only on the Goal Line card.
+- **Situation glow:** A captured down, yard line, or defensive shell lights the matching card with a gold pulse and a Now mark. A down lights its down card. Own 10 or closer lights Backed up. Opponent 20 or closer, outside the goal line, lights Red zone. A real goal-line spot lights Goal Line. Blitz, Man, Cover 1, and Cover 3 light those beater cards. Several cards can glow at once. The plays on the cards do not change.
+- **Last capture:** The strip shows the logged play, the yards, and success or failure. A new set of downs that is still 1st & 10 uses the yard-line change, so a 10-yard gain that stays 1st & 10 is `+10 · success`. Reading the same play-call screen again does not replace that result with a no-gain failure. A rate for that play, slot, and opponent appears after three results and does not choose the next card.
+- **Play-call detector:** Settings can train a local YOLOv8n model from F8 play-call samples and **Save other screen** negatives. Training needs at least one of each. The model is `playcall.onnx` under the app's user data, not a file in the repo. Auto-capture stays disabled until that file exists, and it also stays off while Training mode is on. The watch loop looks about four times a second, waits 250 ms, and runs one OCR burst per play-call appearance. A screen counts as a play call when down-and-distance and field position are both at least 0.75. F8 still captures immediately. A training failure is one short sentence in Settings. The Ultralytics log is not shown there.
 
 
 ### 2. Defensive Coordinator (DC) Workspace
@@ -111,39 +68,18 @@ In competitive football gaming, calling plays under a running play clock can lea
   <img src="docs/screenshots/dc-workspace-overview.png" alt="Defensive Coordinator Workspace" width="100%">
 </p>
 
-- **Comprehensive Defensive Catalog (Madden 26 & Madden 27):** Includes the 32 NFL team playbooks for both game versions. Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Play types are `MAN`, `ZONE`, `BLITZ`, and `MATCH`, across 3-4, 4-3, 46, Nickel, Dime, Dollar, and Goal Line fronts. Alternate defense books are not included. Both versions are scored by the same defensive recommendation core.
-- **Realistic Blitz & Pressure Balancing:** Delivers authentic NFL pressure rates (~25%–35%) with fine-grained classification between disguised `zone_blitz` and aggressive `man_blitz`.
-- **Sticky "Offense Showing" Biasing:** Quickly tap the opponent's offensive formation (e.g., *Gun Bunch*, *Singleback Wing*, *I-Form*) to bias defensive recommendations toward optimal personnel groupings.
-- **Strict Situation Gating:**
-  - *Goal Line Fronts:* Enforced strictly on goal-to-go inside 3 yards or critical short-yardage downs.
-  - *Prevent Packages:* Restricted to Hail Mary situations or protect-the-lead late-game scenarios.
-- **Standard Exact Calls:** Receive exact defensive play calls matched directly to your selected team's loaded defensive playbook.
-- **Dynamic Play Rotation & Session Exposure:**
-  - **Session Play Exposure Memory:** Retains game-long tracking of surfaced defensive calls across series, penalizing repetitive calls and ensuring balanced playbook rotation.
-  - **Play Rotation & Surface Depth:** Candidate plays are dynamically scored and sorted by fewest session appearances, rotating through the entire playbook rather than anchoring to repetitive calls.
-  - **Selection Engine Diversity Alignment:** Exact Calls leverage the shared composite selection engine (`selectDiversitySlate`) with temperature exploration and multi-batch repetition bans while strictly preserving situational sound rules.
+The live window does not recommend or confirm a defensive play. Defensive playbooks stay loaded so a captured previous defensive name can be read as a shell. Blitz, Man, Cover 1, and Cover 3 light the matching beater card. Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Play types are `MAN`, `ZONE`, `BLITZ`, and `MATCH`. Alternate defense books are not included.
 
-### 3. Play Sequencing & Tactical Tendency Radar
+### 3. How a snap is graded
 
-- **Play Sequencing Progression (`⚡ SEQUENCE PAYOFF`):** Detects established ground sequences ($\ge 2$ consecutive run or RPO calls) and highlights corresponding play-action, leak, boot, flood, shot, or vertical payoff passes with an eye-catching purple/indigo badge and dedicated setup context notes.
-- **Opponent Habits (Live Tendency Radar Banner):** Positioned immediately above the recommendation cards in both OC and DC workspaces. Analyzes live game scouting history to dynamically broadcast:
-  - *Observed Opponent Tendency:* (e.g., *"Shows Cover 3 on 2nd & 7"* or *"High Blitz Tendency on 3rd Down"*).
-  - *Recommended Tactical Hard Counter:* Surfaces proven conceptual counters (e.g., *"Hard Counter: Flood / Seams / PA Boot"* or *"Counter: Quick Slants / Bubble Screen"*).
+`shared/resultLabels.js` compares the spot saved when you press **Ran it** with the next play-call read.
 
-### 4. Halftime Review & Strategic Adjustments
+- Yards are the change in absolute field position. Own yard line counts up from 0. Opponent yard line counts as `100` minus the number. Midfield is 50. A jump larger than 80 yards is ignored as a misread.
+- Down and distance supply the yards only when one of the yard lines is missing. If the down advances by one, yards are the old distance minus the new distance. If the down returns to 1st from any later down, yards are at least the previous distance.
+- The same down, the same distance, and a yard line that did not move is the same screen. That read is not logged and does not replace the previous result.
+- A gain that reaches a new set of downs is a success, including 1st & 10 that stays 1st & 10 when the yard line moved at least the yards to go. Otherwise 1st down succeeds at half the yards to go, and 2nd down succeeds at 70% of the yards to go.
 
-- **Strategic 1st-Half Debrief Panel:** Embedded in the Halftime Adjustment overlay. It reviews the game logged so far, recommends one second-half coordinator style, and marks that style **Suggested**. You still choose the style. Confirming it moves the scoreboard to Q3 and does not erase opponent scouting or drive history.
-  - **Run / Pass Ratio:** Share of confirmed `RUN` calls versus `PASS` and `PA` calls. `RPO` calls stay out of both sides of that split.
-  - **Best Concept:** The concept with the best average success points when at least two snaps have a graded outcome. Otherwise it shows the concept you called most often.
-  - **Opponent Shell:** The most logged coverage, with snap count and share. Unknown looks are ignored. A shell counts as a tendency only at 3 or more snaps and at least 40% of logged defenses.
-  - **One suggested style:** The Adjustment Key names a single profile (`Normal`, `Run First`, `Pass First`, `West Coast`, `Aggressive`, or `Tempo / Spread`):
-    - A tendency that is winning (graded success at least 55% on 3 or more snaps against it) keeps the current style, unless you are down 14 or more.
-    - A tendency that is losing (under 40% success on 3 or more snaps) is countered. Cover 3 leans West Coast, or Pass First when trailing by 9 or more. Cover 2 and Tampa 2 lean Aggressive. Man and Cover 1 lean Tempo / Spread. Cover 4 leans Run First, or West Coast when the run is stuffed. Cover 6 and Blitz lean Tempo / Spread. Cover 9 leans West Coast.
-    - With no tendency, a lead of 9 or more leans Run First. The same lead with a stuffed run leans West Coast. Down 9 leans Pass First. Down 14 leans Aggressive.
-    - A run rate of 65% or higher becomes West Coast play-action only when those runs are graded and moving. A stuffed run does not turn into play-action. It leans Tempo / Spread, or Pass First when you are behind.
-    - Otherwise a successful graded half keeps the current style. A thin or mixed half stays on Normal.
-
-### 5. Computer Vision OCR Capture
+### 4. Computer Vision OCR Capture
 
 <p align="center">
   <img src="docs/screenshots/ocr-calibration-hud.png" alt="Madden HUD Computer Vision Calibration" width="90%">
@@ -151,57 +87,15 @@ In competitive football gaming, calling plays under a running play clock can lea
  
  - **Local Computer Vision (Madden OCR DC & OC):**
    - Connects to your gameplay via the bundled **Gridiron Capture Bridge** (compatible with PC window capture or Elgato capture cards).
-   - Reads down, distance, and field position locally. On defensive captures it also reads the opponent's upcoming formation/personnel; that HUD graphic is absent from Madden's offensive play-call screen, so it is not required for OC situation sync.
+   - Reads down, distance, field position, the previous offensive play, and the previous defensive play. The upcoming formation graphic is not on the offensive play-call screen, so that box is not required to log a snap.
    - **Down / distance slot reader:** Before general OCR, the capture worker splits that crop into the ordinal, the ampersand, and the yards and matches them to a legal spot (`1st`–`4th`, `&`, `1`–`40`). A clear match is used as the read. A close call, including `1ST & 10` when it resembles `19`, leaves the crop to PP-OCRv5. Draw the box through the last yard digit and stop before the next HUD glyph; a separate `1` to the right is not part of the distance. A thin marker on the far left of the box is ignored.
    - Calibrates to major broadcast presentation styles (Default, TNF, MNF, SNF).
    - Adaptive capture plans three frames, 120 ms apart, after a 100 ms settle, and may extend to five. OCR for each frame runs during that spacing instead of after the burst. It stops after two frames when every region already agrees and each required field is stable: usable structure and confidence of at least 0.85. Field position does not stop early on a two-digit yard that a later short digit could reject as leading-digit bleed, or when OWN/OPP is still undecided. A disagreement on any region, including a previous-play name, keeps the third frame. Capture extends to five when a required field is missing, below a 2-of-3 agreement, or structurally invalid. Diagnostics record `adaptiveSampling.earlyStopped`, per-frame OCR text, crop hashes, stale/duplicate-frame counts, and separate capture, sampling, recognition, and total timings.
-   - **Debug capture** retains field crop images locally for diagnostics. Diagnostic packs include only the active session segment; sessions rotate after 40 events, so include adjacent `ocr-debug-*` folders when sharing a full play session. The OCR JSON export records field decisions and corrections, while top-three recommendation slates are in `recommendation-trace` entries in `gridiron-trace-current.txt`.
+   - **Debug capture** retains field crop images locally for diagnostics. Diagnostic packs include only the active session segment; sessions rotate after 40 events, so include adjacent `ocr-debug-*` folders when sharing a full play session. The OCR JSON export records field decisions. It does not include raw frames.
    - **Deterministic Normalization & Repair Engine:** Automatically repairs clipped personnel fragments (`RITER`, `RTER`, `RBITEIR`, `RBITEISR`, `RITEISR`, `RIYELWR`, `IRBIOTELWR`), corrupted HUD chrome (`CYAALB`, `CYAAALB`), and glued situation lookalikes. Outlined down-and-distance text is repaired only when the full number cannot be a real distance: `'2'ND'9''7'` / `2ND97` → `2nd & 7`, `200&11` → `2nd & 11`, `130&3` → `3rd & 3` (the leading `1` is a HUD marker), `30&7` → `3rd & 7`, `2WD&81` → `2nd & 8`, `2ND&101` → `2nd & 10`, and `INCHES1` → `2nd & 1` when the ordinal is `2ND`. Sunday Night outlined short yardage accepts `'3'RD'&MCHES` and `'3'RD':'INCHES` as `3rd & 1`: `MCHES` / `MGHES` / `INGHES` / `INCRES` are the same "Inches" token, and a colon after the ordinal is the outlined ampersand. Outlined `m` before the ampersand is the same ordinal repair as `3D&`: `'3'm&'3'` → `3rd & 3`, and that `M&` token is enough distance evidence to accept the spot. Real `2nd & 9`, `2nd & 11`, `2nd & 21`, and `3rd & 11` stay unchanged. The same pass still repairs `1STS10` / `'1'STS'1''0'` → `1st & 10`, `'2'NDG'3'` / `2NO&6` → `2nd & 3` / `2nd & 6`, `38] &5` / `3BD & GOAL` → `3rd & 5` / `3rd & Goal`, and `BRO & 14` / `SRO & 18` → `3rd & 14` / `3rd & 18`, plus glued play names (`BOOMERANGSLOTSWING`, `REDZONEHBSCISSRS`, `SDEZONESPLIT`, `SILVERSHOOTNCH`, `SAMMKELOOP`, `DTMKELOOPA`, `LBBLITZO`, `COVERIMBBLITZ`, `LDUBLEWRI`, `ZZZIN`, `MTNYCORNERUNER`, `NCKELSIMZ`, `NCKELZTRAP`, `ESCAPE`, `FKTOSSSLIDE`, `DEEPSTICK`, `MTNDRIVE`, `FOURVERTICALS`). A dropped `I` in PIVOT repairs before catalog match: `BENCHDIGPVOT` → `BENCH DIG PIVOT`.
    - **Whitespace-Agnostic Compact Catalog Matching:** Employs normalized, whitespace-free compact Levenshtein distance evaluation in the catalog matcher (`rawAgreesWithMatch`), automatically healing glued play names with OCR dropped characters without requiring manual dictionary additions.
    - **Structural Broadcast Personnel Recognition:** Utilizes generalized structural sequence and archetype matching across all presentation styles (Default, TNF, MNF, SNF). Fused broadcast pipes and ornament artifacts (such as TNF badge compressions `RYTITEIWR`, `ITEIR`, `RITEIR`, `ITER`, `1TE3WR`, `RBITEIR`, `IRBITEIWR`) are automatically resolved to legal NFL personnel packages (`1RB - 1TE 3WR`) without requiring manual review.
-   - **Manual Review for formation / personnel:** If a defensive capture requires review for `offense_formation_personnel`, open **Review**, correct the field, and choose **Accept Corrections**. This field is intentionally optional on OC captures because Madden does not display the opponent personnel graphic on the offensive play-call screen. Unaccepted raw OCR noise is never pre-filled into the review input. Skill counts must add to 5 (`RB + TE + WR`). Empty backfield is valid (`0RB - 1TE 4WR`, `0RB - 2TE 3WR`). A typed `0RB` is kept in that case. `0RB` paired with TE + WR totaling 4 (for example `0RB 1TE 3WR`) is still treated as a misread `1RB`. Heavy is the four-skill exception: `1RB - 2TE 1WR` accepts when the formation or set name contains Heavy, because Madden lines an offensive lineman up as the extra tight end (`Singleback - Wing Pair Heavy`). The same counts without Heavy stay in review. The review row states this when the field is still rejected.
-   - **Auto Playcaller Option:** When enabled, automatically generates and surfaces coordinator play calls upon each successful OCR snap detection.
-
-### 6. Game Management, Scoreboard & Call Sheet
-
-- **Call Sheet Layout:** OC and DC share one fixed layout. Game context (scoreboard, situation, playcalling mode or offense showing) sits in a left rail. The play calls fill the rest of the window. There is no screen-layout picker and no draggable window positions.
-- **Interactive Game Scoreboard & Automatic Scoring:**
-  - Track and adjust score (*You / Opp*) and quarter (*Q1–Q4, OT*) directly on both the OC and DC call sheets with zero desync.
-  - Automatically factors score differential and remaining time into coordinator play-calling aggression and defensive shell eligibility.
-  - **Drive Result & Game State Scoring Integration:** Selecting scoring outcomes in OC or DC Game State automatically updates the scoreboard:
-    - *Touchdown (OC / DC):* Automatically awards 6 points and triggers a streamlined, transparent modal overlay prompting for extra point attempts (+1 PAT, +2 Two-Point Conversion, or 0 Missed/None).
-    - *Field Goal:* Automatically awards 3 points to the scoring side.
-    - *Safety:* Automatically awards 2 points to the defending side.
-    - *Pick 6 / Scoop & Score:* Automatically awards 6 points to the recovering side with the same transparent PAT overlay.
-- **Halftime Adjustments & Debrief:**
-  - Open the style picker after New Game. The debrief recommends one second-half style from shell share, graded success, run efficiency, and score, and marks that button Suggested. Confirming a style sets Q3 without clearing opponent scouting or drive history.
-- **Audible Overlay:**
-  - If you audible at the line of scrimmage, swap your confirmed play to the actual play executed from the same formation/set so your learning model stays accurate.
-- **Penalty Tracking:**
-  - Stamp Madden flags (*holding, pass interference, false start*) to ensure penalized snaps do not corrupt your playbook success metrics.
-- **Drive Result Tracking & Coordinator Handoff:**
-  - Log possession outcomes (*Touchdown, Field Goal, Punt, Turnover, Sack, QB Scramble*) to reinforce situational learning. **Offense & Defense**, the Matchup default, hands the workspace to DC after a drive-ending result or turnover when that team has a defensive playbook. **Offense Only** scores the same results and starts the next series on the offensive sheet. Sack and QB Scramble stay on the current side in both setups. **QB Scramble** does not end the drive or change the score. On offense it records the confirmed pass below a completion of the same yards. On defense it charges the confirmed call for half the yards the opponent quarterback ran. Press it before the next OCR snap settles the play.
-
-<p align="center">
-  <img src="docs/screenshots/drive-result-modal.png" alt="Drive Result & Scoring Modal" width="60%">
-</p>
-
-### 7. Opponent Scouting & Tendencies
-
-- **Last Defense Shown Bar:**
-  - With a single tap, record the coverage shell the defense ran (*Blitz, Man, C1, C2, C3, C4, C6, C9, Tampa 2*).
-  - Each opponent keeps a **CPU** profile and a **Human** profile. A logged shell is counted on one of the eight Gameplan situations. Graded play results, including stops, are stored on that same situation. Gameplan HQ uses a situation only after 4 snaps and a shell share of at least 40%.
-  - The live ranker also keeps the finer down-and-distance scouting history used by the Opponent Tendency Radar.
-- **Predictive Pre-Snap Layering & Tendency Radar:**
-  - When the defensive look is unknown, Gridiron OC predicts the opponent's likely coverage based on historical tendencies in that down/distance and biases offensive calls accordingly, while displaying live tactical counters on the Opponent Tendency Radar banner.
-
-### 8. Post-Game Coordinator Report
-
-At the conclusion of each match, select **End Game** to view a comprehensive analytical debrief:
-- **Trust & Fidelity Scores:** Evaluates how consistently you executed the coordinator's recommendations.
-- **Success Leaders:** Pinpoints your most effective plays and concepts (requiring minimum sample sizes).
-- **Scouting Matchup Breakdown:** Details how often your offensive calls exploited the opponent's defensive tendencies.
-- **Learned Adjustments:** Summarizes strategic tweaks stored for future matchups against this opponent.
+   - **Formation and personnel:** That field is optional on the offensive play-call screen, because Madden does not show the upcoming personnel graphic there. Skill counts must add to 5 (`RB + TE + WR`). Empty backfield is valid (`0RB - 1TE 4WR`, `0RB - 2TE 3WR`). `0RB` paired with TE + WR totaling 4 is treated as a misread `1RB`. Heavy is the exception: `1RB - 2TE 1WR` accepts when the formation or set name contains Heavy. There is no review step during a game. A field under 70% is left out.
 
 ---
 
@@ -213,13 +107,13 @@ At the conclusion of each match, select **End Game** to view a comprehensive ana
   <img src="docs/screenshots/matchup-broadcast-setup.png" alt="Matchup & Broadcast Setup Modal" width="75%">
 </p>
 
-1. On launch, the **Matchup & Broadcast Setup** modal automatically loads and retains your last-used team, opponent, play-calling scope, and CPU/Human opponent type across sessions. Switch teams, choose **Madden 26** or **Madden 27** (that reloads both the offensive playbooks and the DC OCR Exact Call catalog), choose **Offense & Defense** or **Offense Only**, mark the opponent as **CPU** or **Human**, and choose the presentation profile for the session. Calibrate or manage profiles in Settings.
-2. In **Settings**, select your capture card or Madden PC window.
-3. Align the ROI crop boxes with your broadcast scoreboard and test the profile.
-4. Enable **OCR Capture** in Settings.
-5. In game, press the capture hotkey (`Ctrl+Shift+D` by default; change it in Settings). Gridiron OC will parse the live situation and surface play calls instantly with the optimal play auto-selected (you can freely override or select any of the top-3 calls at any time).
-6. If the OCR strip says **Review required**, open **Review**, fix the listed field, and choose **Accept Corrections**. For upcoming formation / personnel, enter a formation name, a five-skill grouping such as `1RB - 1TE 3WR` or `0RB - 1TE 4WR`, or a Heavy set such as `1RB - 2TE 1WR` when the name includes Heavy.
-7. **100% Lifecycle Parity:** Every OCR capture automatically resolves prior snap outcomes (`settlePendingOcSnap`), logs previous defense coverages into opponent scouting (`logOcrPreviousDefense`), advances play-calling cooldowns, and updates personalized learning. Synchronized Madden version selection guarantees that DC Exact Call recommendations strictly surface authentic plays from the active game edition.
+1. In **Settings**, choose your playbook, the opponent, and **Madden 26** or **Madden 27**.
+2. Select the capture card or the Madden window, calibrate the down-and-distance and field-position boxes, and test the profile.
+3. Press **New Game**. That deals a new opening script and 15 situational cards.
+4. Enable **OCR Capture**. The capture hotkey is **F8**.
+5. Call the script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced. F8 does not do either.
+6. On the next play-call screen, press **F8**. A field is logged only when its read clears 70%. Yards are the change in yard line. The strip shows success or failure. The cards stay as they were.
+7. To use auto-capture, turn **Training mode** on, save play-call samples with F8 and at least one **Save other screen**, then press **Train detector**. After `playcall.onnx` is written, turn Training mode off and turn **Auto-capture play-call screen** on. Restart the app if it was open while training finished.
 
 <details>
 <summary><b>📸 Click to explore additional Coordinator & Preferences UI Screens</b></summary>
@@ -249,9 +143,11 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        ├── Stage-2 Slate Builder (shared/selectionEngine.js)
        ├── End Game Report Builder (shared/coordinatorReport.js)
        ├── Madden Penalty Catalog (shared/penaltyCatalog.js)
-       ├── Opening 15 Filler (shared/openingScript.js)
-       ├── Gameplan Model (shared/gameplanModel.js)
-       └── Opponent Situation Tendencies (shared/opponentTendency.js)
+       ├── Opening Script (shared/openingScript.js)
+       ├── Situational Cards (shared/situationBoard.js)
+       ├── Sheet Session (shared/tabletSession.js)
+       ├── Snap Grades (shared/resultLabels.js)
+       └── Play-Call Detector (ocr-sidecar/ocr_sidecar/screen_detector.py)
        │
 [ OCR & Vision Subsystem (ocr/) ]
        ├── Gridiron Capture Bridge (capture-bridge/GridironCaptureBridge.exe)
@@ -259,7 +155,8 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        └── Shared Text & Grammar Parsers (ocr/shared/)
 ```
 
-- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The Matchup modal chooses the version. Both catalogs use team code, formation, set, play name, and type, and both pass through the same normalizer before offensive or defensive scoring. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `COVER 3 SKY WK`). Where a name was missing a word, the Madden 27 catalog uses the fuller wording (Chicago defense includes `Nickel / 2-4 Odd Dbl Mug` and `Dime / 3-2 Rush`).
+- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). Settings chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `COVER 3 SKY WK`).
+- **Detector files:** Training writes `playcall.onnx` and the sample set under Electron `userData` (`models\playcall.onnx`, `playcall-dataset`). Those files are not committed. Ultralytics is used only while training. The installed app runs the exported ONNX model.
 - **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
 - **Telemetry & Privacy:** Zero cloud telemetry. All playbooks and screen captures are processed strictly on your local hardware.
 
@@ -282,24 +179,18 @@ npm install
 npm start
 ```
 
-*Note: `npm start` automatically runs `npm run check:core` to validate all shared coordinator engines before launching Electron.*
+*Note: `npm start` runs `npm run check:core` before launching Electron.*
 
 ### Building the Windows Installer
 
 To generate a standalone Windows NSIS installer (`.exe`):
 
 ```powershell
-# Run the automated build script
-cd dist
-.\rebuild-installer.cmd
-```
-
-Or run manually via npm:
-```powershell
 $env:ALLOW_GPL_FFMPEG="true"
 npm run dist
 ```
-The resulting installer is output to `dist\Gridiron Play Advisor Setup <version>.exe`.
+
+The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the version in `package.json`. `npm run dist` runs `verify:pc`, builds the OCR worker and Capture Bridge, then packages with electron-builder. Do not rebuild when that setup file for the current version is already present and you are only publishing it.
 
 ---
 
@@ -315,7 +206,7 @@ npm run verify:pc
 
 # Run individual test components
 npm run check:core             # Validate local PC shared modules
-npm run test:gameplan          # Opening 15, call sheet, and opponent-tendency tests
+npm run test:gameplan          # Opening script, situational cards, snap grades, and tablet session
 npm run test:regression        # App UI & play-calling regressions
 npm run test:ocr:js            # OCR grammar, confusables, and parser checks
 npm run test:ocr:worker        # Python sidecar unit tests
@@ -330,8 +221,8 @@ node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance check
 Gridiron OC enforces strict local-only execution and repository hygiene practices:
 
 - **100% Local Execution & Zero Telemetry:**
-  - OCR and computer vision run locally via on-device Tesseract and ONNX runtimes.
-  - Recommendation cores and coordinator logic execute entirely on-device with zero external network calls.
+  - OCR and the play-call detector run locally via on-device PP-OCRv5, with Tesseract as fallback, and an ONNX runtime.
+  - The call sheet and playbooks stay on this PC. Capture does not call a network service.
   - No prompt data, game telemetry, audio, or video streams are ever transmitted to external cloud servers.
 - **Repository Hygiene & Secret Isolation:**
   - Sensitive configurations (`.env`, `.env.*`), credentials (`credentials.json`), certificates (`*.jks`, `*.keystore`, `*.p12`), and private Electron `userData/` are strictly excluded via `.gitignore`.

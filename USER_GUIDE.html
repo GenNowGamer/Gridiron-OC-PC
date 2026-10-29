@@ -663,7 +663,7 @@
       </div>
 
       <div class="cover-desc">
-        A low-latency, completely on-device situational coordinator engine engineered for competitive football simulation titles. Eliminates playbook stagnation and surfaces high-percentage, context-aware offensive and defensive schemes in real time with zero cloud dependency.
+        A local offensive call sheet for Madden NFL 26 and 27. New Game deals an opening script and 15 situational cards. You confirm the play you ran. F8 logs the snap after it ends and does not pick a play.
       </div>
 
       <div class="cover-pillars">
@@ -674,13 +674,13 @@
         </div>
         <div class="pillar-card">
           <div class="pillar-num">PILLAR 02</div>
-          <div class="pillar-title">FAST RECOMMENDATION</div>
-          <div class="pillar-text">Sub-50ms situational tree evaluates entire 32-team catalogs against field spot, score differential, and opponent defensive coverage habits.</div>
+          <div class="pillar-title">CALL SHEET</div>
+          <div class="pillar-text">Fifteen scripted plays and 15 situational cards. Ran it advances the script or replaces one card. Capture never changes either list.</div>
         </div>
         <div class="pillar-card">
           <div class="pillar-num">PILLAR 03</div>
           <div class="pillar-title">AUTONOMOUS OCR INGEST</div>
-          <div class="pillar-text">Capture down, distance, field location, and offensive formation directly from the broadcast scoreboard HUD in a single hotkey press.</div>
+          <div class="pillar-text">F8 logs the previous snap. It does not pick a play. A field under 70% is left out.</div>
         </div>
       </div>
     </div>
@@ -744,7 +744,7 @@
     </div>
 
     <h2>2. FIRST-TIME SETUP & BROADCAST CALIBRATION</h2>
-    <p>On initial launch, Gridiron OC presents the <strong>Matchup & Broadcast Setup</strong> dialog to calibrate teams, game modes, and scoreboard presentation:</p>
+    <p><strong>New Game</strong> deals the opening script and 15 situational cards. Press <strong>Ran it</strong> on the script tile to move to the next scripted play, or on one card to replace only that card. F8 logs the snap. It does not confirm a card or advance the script. Choose the team, opponent, and Madden version in Settings, then calibrate the capture profile.</p>
 
     <!-- ANNOTATED SCREENSHOT 1: Matchup & Broadcast Setup (Exact UI Alignment) -->
     <div class="annotated-shot-card">
@@ -803,7 +803,7 @@
   <!-- ===================================================================== -->
   <div class="doc-page">
     <h2>3. OFFENSIVE COORDINATOR (OC) WORKSPACE ANATOMY</h2>
-    <p>The primary Offensive Coordinator interface delivers immediate situational command, telemetry tracking, and sub-50ms play recommendations:</p>
+    <p>The live window is the call sheet: one opening script and 15 situational cards. The annotated screens below are from an earlier recommendation layout and are not the current window.</p>
 
     <!-- ANNOTATED SCREENSHOT 2: OC Playcall UI (Exact UI Alignment) -->
     <div class="annotated-shot-card">
@@ -1032,7 +1032,7 @@
   <!-- ===================================================================== -->
   <div class="doc-page">
     <h2>5. DEFENSIVE COORDINATOR (DC) OPERATIONS</h2>
-    <p>The DC workspace catalogs over 8,200 authentic NFL defensive plays, matching personnel packages and situational pressure schemes against what the opponent shows at the line:</p>
+    <p>The live window does not recommend a defensive play. Defensive playbooks stay loaded so a captured defensive name can light the Blitz, Man, or Cover 3 card. The annotated screen below is from an earlier defensive caller and is not the current window.</p>
 
     <!-- ANNOTATED SCREENSHOT 7: DC Playcall UI (Exact UI Alignment) -->
     <div class="annotated-shot-card">
@@ -1262,7 +1262,7 @@
             <div class="step-num">A</div>
             <div class="step-content">
               <div class="step-title">Confirm Play (<kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd>)</div>
-              <div class="step-desc">Click or hotkey to confirm play call; Auto Playcaller confirms automatically if enabled.</div>
+              <div class="step-desc">F8 logs the snap. Press Ran it on the card you ran. That card is replaced. The other 14 stay.</div>
             </div>
           </div>
           <div class="flow-step">

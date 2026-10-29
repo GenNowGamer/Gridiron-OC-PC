@@ -1,9 +1,11 @@
 'use strict';
 
 const { EventEmitter } = require('node:events');
+const fsSync = require('node:fs');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { spawn } = require('node:child_process');
 const { VersionedConfigStore } = require('./config-store');
 const { EventLedger, buildLearningSnapshot } = require('./event-ledger');
 const { SidecarManager } = require('./sidecar-manager');
@@ -36,6 +38,15 @@ const MULTILINE_FIELDS = new Set([
   'previous_defense_play',
 ]);
 const REMOVED_OCR_FIELDS = new Set(['quarter_clock', 'scores', 'quarter', 'game_clock']);
+const DETECTOR_FIELDS = new Set([
+  'down_distance',
+  'field_position',
+  'offense_formation_personnel',
+  'previous_offense_play',
+  'previous_defense_play',
+]);
+const WATCH_INTERVAL_MS = 250;
+const WATCH_DEBOUNCE_MS = 250;
 const MAX_DIAGNOSTIC_SAMPLES = 200;
 
 function normalizePresentation(value) {
@@ -58,6 +69,20 @@ function snapSpot(state = {}) {
 
 function clean(value) {
   return String(value == null ? '' : value).trim();
+}
+
+function trainingFailureMessage(text) {
+  const lines = String(text || '')
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index];
+    if (line.length > 180) continue;
+    if (/Error:|SystemExit:/.test(line) || line.startsWith('Install the train-time tool')) return line;
+  }
+  return 'Detector training failed.';
 }
 
 function percentile(values, p) {
@@ -347,7 +372,7 @@ class IntegrationOcrManager extends EventEmitter {
     this._bridgeSourceId = '';
     this.hotkey = options.hotkey || new HotkeyManager({
       globalShortcut: options.globalShortcut,
-      accelerator: 'CommandOrControl+Shift+D',
+      accelerator: 'F8',
     });
     this.loadCatalogs = options.loadCatalogs || (async () => ({ offensive: [], defensive: [] }));
     this.exportDirectory = options.exportDirectory || (() => this.userData);
@@ -370,6 +395,21 @@ class IntegrationOcrManager extends EventEmitter {
       userData: this.userData,
       now: this.now,
     });
+    this.spawn = options.spawn || spawn;
+    const bundledTrainer = path.join(process.resourcesPath || '', 'train', 'train-playcall-detector.py');
+    const sourceTrainer = path.resolve(__dirname, '..', '..', 'scripts', 'train-playcall-detector.py');
+    this.trainerScriptPath = options.trainerScriptPath
+      || (fsSync.existsSync(bundledTrainer) ? bundledTrainer : sourceTrainer);
+    this.datasetDir = options.datasetDir || path.join(this.userData, 'playcall-dataset');
+    this.detectorModelPath = options.detectorModelPath || path.join(this.userData, 'models', 'playcall.onnx');
+    this.watchIntervalMs = Number(options.watchIntervalMs) || WATCH_INTERVAL_MS;
+    this.watchDebounceMs = Number(options.watchDebounceMs) || WATCH_DEBOUNCE_MS;
+    this.watchState = 'idle';
+    this.watchDebounceAt = 0;
+    this._watchTimer = null;
+    this._watchInFlight = false;
+    this.trainingBusy = false;
+    this.lastTrainingMessage = '';
     this._wire();
   }
 
@@ -435,6 +475,7 @@ class IntegrationOcrManager extends EventEmitter {
 
   getStatus() {
     const state = this.store.get();
+    const detector = this._detectorStatus();
     return clone({
       initialized: this.initialized,
       busy: this.busy,
@@ -446,6 +487,8 @@ class IntegrationOcrManager extends EventEmitter {
         activeProfileId: state.activeProfileId,
         obs: { host: state.config.obs.host, port: state.config.obs.port },
         retainDebugFrames: Boolean(state.config.retainDebugFrames),
+        trainingMode: Boolean(state.config.trainingMode),
+        autoCaptureEnabled: Boolean(state.config.autoCaptureEnabled && detector.trained),
         ...state.config.capture,
       },
       profiles: state.profiles,
@@ -459,8 +502,37 @@ class IntegrationOcrManager extends EventEmitter {
       debugSession: this.debugPack.sessionSummary(),
       hotkey: this.hotkey.getStatus(),
       diagnostics: this._diagnostics(),
+      detector,
+      watch: {
+        active: Boolean(this._watchTimer),
+        state: this.watchState,
+      },
       lastCapture: this.lastCapture,
     });
+  }
+
+  _detectorStatus() {
+    const trained = fsSync.existsSync(this.detectorModelPath);
+    const metaDir = path.join(this.datasetDir, 'meta');
+    let playCallSamples = 0;
+    let otherSamples = 0;
+    try {
+      for (const name of fsSync.readdirSync(metaDir)) {
+        if (!name.endsWith('.json')) continue;
+        const raw = JSON.parse(fsSync.readFileSync(path.join(metaDir, name), 'utf8'));
+        if (raw && raw.label === 'play-call') playCallSamples += 1;
+        else if (raw && raw.label === 'other') otherSamples += 1;
+      }
+    } catch (_error) {}
+    return {
+      trained,
+      modelPath: this.detectorModelPath,
+      datasetDir: this.datasetDir,
+      playCallSamples,
+      otherSamples,
+      trainingBusy: this.trainingBusy,
+      lastMessage: this.lastTrainingMessage,
+    };
   }
 
   async _warmEngine(force = false) {
@@ -500,7 +572,9 @@ class IntegrationOcrManager extends EventEmitter {
       });
       // Warm OCR off the capture path so live bursts reuse a ready engine.
       this._warmEngine(true).catch(() => {});
+      this._syncWatchLoop(state);
     } else {
+      this._stopWatchLoop();
       this.hotkey.stop();
       await this.sidecar.stop();
       if (this.bridge) await this.bridge.stop();
@@ -558,6 +632,13 @@ class IntegrationOcrManager extends EventEmitter {
     }
     if (patch.retainDebugFrames != null) {
       config.retainDebugFrames = patch.retainDebugFrames === true;
+    }
+    if (patch.trainingMode != null) {
+      config.trainingMode = patch.trainingMode === true;
+    }
+    if (patch.autoCaptureEnabled != null) {
+      config.autoCaptureEnabled = patch.autoCaptureEnabled === true
+        && fsSync.existsSync(this.detectorModelPath);
     }
     await this.store.update({ featureFlags: nextFlags, config });
     await this.debugPack.setEnabled(this.store.get().config.retainDebugFrames === true);
@@ -695,6 +776,7 @@ class IntegrationOcrManager extends EventEmitter {
     const state = this.store.get();
     const profiles = state.profiles.filter((entry) => entry.id !== normalized.id).concat(normalized);
     await this.store.update({ profiles, activeProfileId: normalized.id });
+    this._syncWatchLoop();
     this._emit('status', this.getStatus());
     return { profile: normalized };
   }
@@ -928,6 +1010,14 @@ class IntegrationOcrManager extends EventEmitter {
       this._recordDiagnostics(capture, result);
       const learningSnapshot = state.featureFlags.learning ? await this.ledger.getSnapshot() : null;
       this._assertSession(generation);
+      if (state.config.trainingMode === true && clean(args.reason) !== 'auto_watch') {
+        await this._recordTrainingSample({
+          label: 'play-call',
+          profile,
+          source,
+          capture,
+        }).catch(() => {});
+      }
       this._emit('capture:complete', { capture, learningSnapshot });
       return { capture, diagnostics: this._diagnostics(), learningSnapshot };
     } finally {
@@ -1499,6 +1589,17 @@ class IntegrationOcrManager extends EventEmitter {
       if (key === 'down_distance' && result._downDistanceEvidenceMissing) {
         accepted = false;
         decision.reasons = [...(decision.reasons || []), 'distance_evidence_missing'];
+      }
+      const resolvedConfidence = Math.max(
+        Number(decision.combinedConfidence) || 0,
+        Number(decision.calibratedConfidence) || 0,
+        Number(resolverConfidence) || 0
+      );
+      const blockedEvidence = key === 'down_distance' && result._downDistanceEvidenceMissing;
+      const blockedPersonnel = key === 'offense_formation_personnel' && !isOcRole && !HudText.hasValidPersonnelCounts(value);
+      if (!accepted && value && !rejectedForRawDisagreement && !blockedEvidence && !blockedPersonnel && resolvedConfidence >= 0.70) {
+        accepted = true;
+        decision.reasons = [...(decision.reasons || []), 'keep_confidence'];
       }
       fields[key] = {
         key,
@@ -2091,11 +2192,267 @@ class IntegrationOcrManager extends EventEmitter {
   }
 
   async stop() {
+    this._stopWatchLoop();
     this.hotkey.stop();
     await this.sidecar.stop();
     if (this.bridge) await this.bridge.stop();
     this._bridgeSourceId = '';
     this.initialized = false;
+  }
+
+  _canRunWatchLoop(state = this.store.get()) {
+    const profile = this._activeProfile(state);
+    const source = clean(
+      state.config.capture.sourceId
+      || (profile && profile.source && (profile.source.id || profile.source.name)),
+    );
+    return Boolean(
+      state.featureFlags.capture
+      && state.config.autoCaptureEnabled === true
+      && state.config.trainingMode !== true
+      && source
+      && fsSync.existsSync(this.detectorModelPath),
+    );
+  }
+
+  _syncWatchLoop(state = this.store.get()) {
+    if (!this._canRunWatchLoop(state)) {
+      this._stopWatchLoop();
+      return;
+    }
+    if (this._watchTimer) return;
+    this.watchState = 'idle';
+    this.watchDebounceAt = 0;
+    this._watchTimer = setInterval(() => {
+      this._watchTick().catch(() => {});
+    }, this.watchIntervalMs);
+    if (this._watchTimer && typeof this._watchTimer.unref === 'function') {
+      this._watchTimer.unref();
+    }
+  }
+
+  _stopWatchLoop() {
+    if (this._watchTimer) {
+      clearInterval(this._watchTimer);
+      this._watchTimer = null;
+    }
+    this._watchInFlight = false;
+    this.watchState = 'idle';
+    this.watchDebounceAt = 0;
+  }
+
+  async _watchTick() {
+    if (this._watchInFlight || this.busy) return;
+    const state = this.store.get();
+    if (!this._canRunWatchLoop(state)) {
+      this._stopWatchLoop();
+      return;
+    }
+    const profile = this._activeProfile(state);
+    const source = clean(
+      state.config.capture.sourceId
+      || (profile && profile.source && (profile.source.id || profile.source.name)),
+    );
+    if (!source) return;
+    this._watchInFlight = true;
+    try {
+      if (this.bridge && state.config.capture.adapter === 'capture-bridge') {
+        await this._selectBridgeSource(source).catch(() => {});
+      }
+      const detected = await this.sidecar.request('screen.detect', {
+        source,
+        modelPath: this.detectorModelPath,
+        adapter: state.config.capture.adapter,
+        freshFrameTimeoutMs: state.config.capture.freshFrameTimeoutMs,
+      }, { timeoutMs: 4000 });
+      if (!detected || detected.trained !== true) {
+        this._stopWatchLoop();
+        return;
+      }
+      const playCall = detected.playCall === true;
+      const now = this.now();
+      if (this.watchState === 'idle') {
+        if (playCall) {
+          this.watchState = 'debounce';
+          this.watchDebounceAt = now;
+        }
+        return;
+      }
+      if (this.watchState === 'debounce') {
+        if (!playCall) {
+          this.watchState = 'idle';
+          this.watchDebounceAt = 0;
+          return;
+        }
+        if (now - this.watchDebounceAt < this.watchDebounceMs) return;
+        this.watchState = 'locked';
+        await this.capture({ reason: 'auto_watch' }).catch((error) => {
+          this._emit('capture:error', { error: error.message, code: error.code, reason: 'auto_watch' });
+        });
+        return;
+      }
+      if (this.watchState === 'locked' && !playCall) {
+        this.watchState = 'idle';
+        this.watchDebounceAt = 0;
+      }
+    } catch (_error) {
+      // Detector probes must never break the loop or block F8.
+    } finally {
+      this._watchInFlight = false;
+    }
+  }
+
+  _trainingBoxesFromProfile(profile) {
+    const regions = Array.isArray(profile && profile.regions) ? profile.regions : [];
+    const boxes = [];
+    for (const region of regions) {
+      const field = clean(region && (region.field || region.id));
+      if (!DETECTOR_FIELDS.has(field)) continue;
+      const x = Number(region.x);
+      const y = Number(region.y);
+      const width = Number(region.width);
+      const height = Number(region.height);
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) continue;
+      if (width <= 0 || height <= 0) continue;
+      boxes.push({ field, x, y, width, height });
+    }
+    const fields = new Set(boxes.map((box) => box.field));
+    if (!fields.has('down_distance') || !fields.has('field_position')) return [];
+    return boxes;
+  }
+
+  async _recordTrainingSample({ label, profile, source, capture, imageBase64 } = {}) {
+    const kind = label === 'other' ? 'other' : 'play-call';
+    const state = this.store.get();
+    const activeProfile = profile || this._activeProfile(state);
+    const boxes = kind === 'play-call' ? this._trainingBoxesFromProfile(activeProfile) : [];
+    if (kind === 'play-call') {
+      if (!boxes.length) return { saved: false, reason: 'missing_profile_boxes' };
+      const fields = capture && capture.fields;
+      if (fields && (!fields.down_distance?.accepted || !fields.field_position?.accepted)) {
+        return { saved: false, reason: 'missing_accepted_spot' };
+      }
+    }
+    const id = (capture && clean(capture.id)) || crypto.randomUUID();
+    const imagesDir = path.join(this.datasetDir, 'images');
+    const metaDir = path.join(this.datasetDir, 'meta');
+    await Promise.all([
+      fs.mkdir(imagesDir, { recursive: true }),
+      fs.mkdir(metaDir, { recursive: true }),
+    ]);
+    const imagePath = path.join(imagesDir, `${id}.jpg`);
+    const metaPath = path.join(metaDir, `${id}.json`);
+    const activeSource = clean(
+      source
+      || state.config.capture.sourceId
+      || (activeProfile && activeProfile.source && (activeProfile.source.id || activeProfile.source.name)),
+    );
+    if (imageBase64) {
+      await this.sidecar.request('screen.detect', {
+        modelPath: '',
+        imageBase64,
+        saveImagePath: imagePath,
+      });
+    } else {
+      await this._prepareLiveCapture({ source: activeSource });
+      await this.sidecar.request('screen.detect', {
+        modelPath: '',
+        source: activeSource,
+        adapter: state.config.capture.adapter,
+        freshFrameTimeoutMs: state.config.capture.freshFrameTimeoutMs,
+        saveImagePath: imagePath,
+      });
+    }
+    const meta = {
+      id,
+      at: this.now(),
+      label: kind,
+      boxes,
+    };
+    await fs.writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`, 'utf8');
+    this.lastTrainingMessage = `Saved ${kind} sample (${id.slice(0, 8)}).`;
+    this._emit('status', this.getStatus());
+    return { saved: true, id, label: kind, detector: this._detectorStatus() };
+  }
+
+  async saveTrainingSample(args = {}) {
+    const label = clean(args.label) === 'play-call' ? 'play-call' : 'other';
+    const result = await this._recordTrainingSample({
+      label,
+      source: args.source,
+      imageBase64: args.imageBase64,
+    });
+    if (!result.saved) {
+      throw new Error(
+        result.reason === 'missing_profile_boxes'
+          ? 'Calibrate down & distance and field position regions first.'
+          : 'Could not save training sample.',
+      );
+    }
+    return result;
+  }
+
+  async trainDetector(args = {}) {
+    if (this.trainingBusy) throw new Error('Detector training is already running.');
+    const status = this._detectorStatus();
+    if (status.playCallSamples < 1 || status.otherSamples < 1) {
+      throw new Error(
+        `Record at least one F8 play-call screen and one other screen before training. Found ${status.playCallSamples} play-call and ${status.otherSamples} other.`,
+      );
+    }
+    this.trainingBusy = true;
+    this.lastTrainingMessage = 'Training detector…';
+    this._emit('status', this.getStatus());
+    const epochs = Math.max(1, Math.min(100, Number(args.epochs) || 30));
+    const imgsz = Number(args.imgsz) || 1280;
+    const scriptDir = path.dirname(this.trainerScriptPath);
+    const projectRoot = fsSync.existsSync(scriptDir) && !scriptDir.includes(`${path.sep}app.asar${path.sep}`) && !scriptDir.endsWith(`${path.sep}app.asar`)
+      ? scriptDir
+      : this.datasetDir;
+    try {
+      const output = await new Promise((resolve, reject) => {
+        const proc = this.spawn(
+          'py',
+          [
+            '-3.14',
+            this.trainerScriptPath,
+            '--dataset',
+            this.datasetDir,
+            '--output',
+            this.detectorModelPath,
+            '--epochs',
+            String(epochs),
+            '--imgsz',
+            String(imgsz),
+          ],
+          { cwd: projectRoot, windowsHide: true },
+        );
+        let stderr = '';
+        const discard = () => {};
+        proc.stdout?.on('data', discard);
+        proc.stderr?.on('data', (chunk) => {
+          stderr = `${stderr}${String(chunk)}`.slice(-8000);
+        });
+        proc.on('error', (error) => reject(error));
+        proc.on('close', (code) => {
+          if (code === 0) resolve('Detector trained.');
+          else reject(new Error(trainingFailureMessage(stderr)));
+        });
+      });
+      this.lastTrainingMessage = '';
+      await this._syncRuntime();
+      this._emit('status', this.getStatus());
+      return { trained: fsSync.existsSync(this.detectorModelPath), message: output, detector: this._detectorStatus() };
+    } catch (error) {
+      const raw = clean(error && error.message);
+      const message = !raw || raw.length > 180 ? 'Detector training failed.' : raw;
+      this.lastTrainingMessage = message;
+      this._emit('status', this.getStatus());
+      throw new Error(message);
+    } finally {
+      this.trainingBusy = false;
+      this._emit('status', this.getStatus());
+    }
   }
 
   _emit(type, payload) {

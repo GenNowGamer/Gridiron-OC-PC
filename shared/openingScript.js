@@ -93,9 +93,16 @@
     return score;
   }
 
+  function isGoalLinePlay(play) {
+    var text = (cleanText(play && play.formation) + " " + cleanText(play && play.set)).toLowerCase();
+    return text.indexOf("goal line") >= 0;
+  }
+
   function fillOpeningScript(params) {
     var options = params || {};
-    var teamPlays = Array.isArray(options.plays) ? options.plays : [];
+    var teamPlays = (Array.isArray(options.plays) ? options.plays : []).filter(function (play) {
+      return play && !isGoalLinePlay(play);
+    });
     var familyOf = options.familyOf || function () { return ""; };
     var cooldownIds = new Set((options.cooldownIds || []).filter(Boolean));
     var shell = options.shell || null;
@@ -124,6 +131,7 @@
     });
 
     function playScore(play) {
+      if (options.ignoreLearning === true) return 0;
       var base = typeof options.playScore === "function" ? options.playScore(play, shell) : openingScriptPlayScore(play, shell, scoreDeps);
       if (typeof options.tendencyPlayScore === "function") base += Number(options.tendencyPlayScore(play, scoringSlot)) || 0;
       return base;
@@ -141,7 +149,7 @@
       if (!available.length && allowReuse) available = candidatePool.filter(Boolean);
       if (!available.length) return null;
       var pool = available;
-      if (shell && shell.distribution && shell.distribution.entries && shell.distribution.entries.length && available.length > 1) {
+      if (options.ignoreLearning !== true && shell && shell.distribution && shell.distribution.entries && shell.distribution.entries.length && available.length > 1) {
         var ranked = available.map(function (play) {
           return { play: play, score: playScore(play) };
         }).sort(function (a, b) {
