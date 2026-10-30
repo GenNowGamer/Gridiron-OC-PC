@@ -18,7 +18,6 @@ The current window does not start screen capture, F8, the watch loop, or detecto
   - [Call sheet](#1-call-sheet)
   - [Script builder](#2-script-builder)
   - [Playbooks](#3-playbooks)
-  - [Capture source](#4-capture-source)
 - [How to Use Gridiron OC](#how-to-use-gridiron-oc)
 - [System Architecture](#system-architecture)
 - [Installation & Setup](#installation--setup)
@@ -58,12 +57,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 - **Madden 26 and Madden 27 catalogs:** Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
 - **Z Spot:** In the Madden 27 book, 55 plays that were stored as `L SPOT` are `Z SPOT`. Chicago's copies are Gun Bunch Spread, Gun Bunch Open TE, and Gun Spread. The same correction covers every other team that had the exact `L SPOT` name. `L SPOT N GO` and `ZL SPOT` names were left unchanged. Madden 26 has no `L SPOT` row.
-- **Defense catalogs:** Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). The live window does not deal or recommend a defensive call.
-
-
-### 4. Capture source
-
-`main.js` does not start the OCR sidecar, Capture Bridge, F8, the watch loop, or detector training. `ocr/`, `ocr-sidecar/`, and `capture-bridge/` remain in the repo, and `npm run verify:pc` still runs the JavaScript OCR checks. Any `playcall.onnx` file already under `%APPDATA%\gridiron-play-advisor-pc` is unused by this window. Grammar and calibration notes for that source are in [OCR_DC_GUIDE.md](OCR_DC_GUIDE.md).
+- **Defense catalogs:** Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Those files are still on disk. The window does not show a defensive call.
 
 ---
 
@@ -91,11 +85,13 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        ├── Opening Script (shared/openingScript.js)
        ├── Situational Cards (shared/situationBoard.js)
        ├── Sheet Session (shared/tabletSession.js)
-       └── Gameplan (shared/gameplanModel.js)
+       ├── Gameplan (shared/gameplanModel.js)
+       └── Opponent tendencies (shared/opponentTendency.js)
 ```
 
 - **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`).
-- **Capture source:** `ocr/`, `ocr-sidecar/`, and `capture-bridge/` are still in the repo. The current `main.js` does not require the OCR manager, register capture IPC, or register F8. `npm run dist` still builds the worker and Capture Bridge because those package scripts remain.
+- **Desktop bridge:** `preload.js` loads the offensive and defensive playbooks and reads or writes preferences and the trace log. It does not expose capture, watch, or training methods. `main.js` does not register those channels.
+- **Older modules still loaded:** `index.html` still loads the recommendation, defense-call, penalty, coordinator-report, and result-label scripts. The call sheet does not use them. `npm run verify:pc` still runs tests that call that code.
 - **Data Persistence:** User preferences, matchup plans, and the saved Call Sheet tab stay in Electron `userData` and `localStorage`. A new game does not reuse the previous opening-script list.
 - **Telemetry & Privacy:** Zero cloud telemetry. The call sheet and playbooks stay on this PC. The current window does not capture the screen.
 
@@ -125,11 +121,10 @@ npm start
 To generate a standalone Windows NSIS installer (`.exe`):
 
 ```powershell
-$env:ALLOW_GPL_FFMPEG="true"
 npm run dist
 ```
 
-The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the version in `package.json`. `npm run dist` runs `verify:pc`, builds the OCR worker and Capture Bridge, then packages with electron-builder. The current window does not start that worker. Do not rebuild when that setup file for the current version is already present and you are only publishing it.
+The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the version in `package.json`. `npm run dist` runs `verify:pc`, then packages with electron-builder. Do not rebuild when that setup file for the current version is already present and you are only publishing it.
 
 ---
 
@@ -138,19 +133,15 @@ The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the ver
 Gridiron OC includes a comprehensive regression and domain validation suite. Always run verification before packaging:
 
 ```powershell
-# Run all PC verification suites (core check, gameplan tests, regressions, OCR tests, defensive tests)
+# Run all PC verification suites (core check, gameplan tests, regressions)
 npm test
 # or:
 npm run verify:pc
 
 # Run individual test components
 npm run check:core             # Validate local PC shared modules
-npm run test:gameplan          # Opening script, situational cards, snap grades, and tablet session
-npm run test:regression        # App UI & play-calling regressions
-npm run test:ocr:js            # OCR grammar, confusables, and parser checks
-npm run test:ocr:worker        # Python sidecar unit tests
-npm run test:ocr               # JS OCR checks plus the sidecar suite
-node scripts/smoke-defense-situation.mjs  # DC situation and blitz balance checks
+npm run test:gameplan          # Opening script, situational cards, gameplan, tendencies, tablet session
+npm run test:regression        # App UI and call-sheet regressions
 ```
 
 ---
@@ -165,8 +156,8 @@ Gridiron OC enforces strict local-only execution and repository hygiene practice
   - No prompt data, game telemetry, audio, or video streams are ever transmitted to external cloud servers.
 - **Repository Hygiene & Secret Isolation:**
   - Sensitive configurations (`.env`, `.env.*`), credentials (`credentials.json`), certificates (`*.jks`, `*.keystore`, `*.p12`), and private Electron `userData/` are strictly excluded via `.gitignore`.
-  - Python virtual environments (`ocr-sidecar/.venv/`, `.venv/`) and native build intermediate outputs are permanently ignored.
-  - Internal development records and hardware logs (`session_handoff.md`, `*.log`) remain exclusively local.
+  - Python virtual environments (`.venv/`) and native build intermediate outputs are permanently ignored.
+  - Internal development records and hardware logs (`*.log`) remain exclusively local.
 - **Distribution Hygiene:**
   - Packaged installers (`dist/`, `*.exe`) are excluded from Git repository tracking and are distributed exclusively through official GitHub Releases assets.
 - **Author Identity Privacy:**

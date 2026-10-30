@@ -27,28 +27,4 @@ contextBridge.exposeInMainWorld("desktopApi", {
   readPreferences: () => ipcRenderer.invoke("desktop:preferences-read"),
   writePreferences: (preferences) => ipcRenderer.invoke("desktop:preferences-write", preferences),
   writePreferencesSync: (preferences) => ipcRenderer.sendSync("desktop:preferences-write-sync", preferences),
-  ocrGetStatus: () => ipcRenderer.invoke("desktop:ocr-status"),
-  ocrUpdateConfig: (patch) => ipcRenderer.invoke("desktop:ocr-config-update", patch),
-  ocrListSources: (obs) => ipcRenderer.invoke("desktop:ocr-list-sources", obs),
-  ocrCaptureReference: (args) => ipcRenderer.invoke("desktop:ocr-reference", args),
-  ocrBenchmarkCapture: (args) => ipcRenderer.invoke("desktop:ocr-benchmark", args),
-  ocrSaveProfile: (profile) => ipcRenderer.invoke("desktop:ocr-profile-save", profile),
-  ocrTestProfile: (args) => ipcRenderer.invoke("desktop:ocr-profile-test", args),
-  ocrCapture: (args) => ipcRenderer.invoke("desktop:ocr-capture", args),
-  ocrResetSession: (args) => ipcRenderer.invoke("desktop:ocr-reset-session", args),
-  ocrSetPendingCall: (args) => ipcRenderer.invoke("desktop:ocr-pending-call", args),
-  ocrCorrectCapture: (args) => ipcRenderer.invoke("desktop:ocr-correct", args),
-  ocrUndoLastSnap: () => ipcRenderer.invoke("desktop:ocr-undo-last-snap"),
-  ocrResetOpponent: (args) => ipcRenderer.invoke("desktop:ocr-reset-opponent", args),
-  ocrExportData: () => ipcRenderer.invoke("desktop:ocr-export"),
-  ocrExportDiagnosticPack: () => ipcRenderer.invoke("desktop:ocr-export-diagnostic"),
-  ocrDeleteData: (args) => ipcRenderer.invoke("desktop:ocr-delete", args),
-  ocrSaveTrainingSample: (args) => ipcRenderer.invoke("desktop:ocr-save-training-sample", args),
-  ocrTrainDetector: (args) => ipcRenderer.invoke("desktop:ocr-train-detector", args),
-  onOcrEvent: (callback) => {
-    if (typeof callback !== "function") return () => {};
-    const listener = (_event, payload) => callback(payload);
-    ipcRenderer.on("desktop:ocr-event", listener);
-    return () => ipcRenderer.removeListener("desktop:ocr-event", listener);
-  },
 });
