@@ -301,16 +301,55 @@ function updateMaddenVersionPillButtons(activeVersion){
 }
 
 function openScriptBuilder() {
+  if (state.scriptBuilderPurpose !== "new-game") {
+    const live = (ensureTabletSession().scriptIds || []).slice(0, 15);
+    state.customScriptPlays = live.slice();
+    state.scriptOfferIds = live.slice();
+    state.customScriptLockedIndexes = [];
+    state.scriptBuilderPurpose = "edit";
+  }
   state.customScriptSearch = "";
   if (dom.scriptSearchInput) dom.scriptSearchInput.value = "";
   ensureActivePlan();
   renderScriptBuilder();
   if (dom.scriptBuilderOverlay) openOverlay(dom.scriptBuilderOverlay);
 }
-function closeScriptBuilder() {
+function dismissScriptBuilder() {
+  if (state.scriptBuilderPurpose === "new-game") {
+    const ids = (state.scriptOfferIds || []).slice(0, 15);
+    state.customScriptPlays = ids.slice();
+    state.customScriptIndex = 0;
+    const session = ensureTabletSession();
+    session.scriptIds = ids.slice();
+    session.scriptIndex = 0;
+    state.tabletSession = session;
+  } else {
+    state.customScriptPlays = (state.scriptOfferIds || []).slice();
+  }
+  state.scriptBuilderPurpose = "";
   persistActivePlan();
   if (dom.scriptBuilderOverlay) closeOverlay(dom.scriptBuilderOverlay);
   render();
+}
+function commitScriptBuilder() {
+  let ids = (state.customScriptPlays || []).slice(0, 15);
+  if (!ids.length) ids = (state.scriptOfferIds || []).slice(0, 15);
+  state.customScriptPlays = ids.slice();
+  const session = ensureTabletSession();
+  const changed = ids.join("|") !== (session.scriptIds || []).join("|");
+  session.scriptIds = ids.slice();
+  if (state.scriptBuilderPurpose === "new-game" || changed) session.scriptIndex = 0;
+  else if (session.scriptIndex > ids.length) session.scriptIndex = ids.length;
+  state.customScriptIndex = session.scriptIndex;
+  state.customScriptActive = ids.length > 0;
+  state.tabletSession = session;
+  state.scriptBuilderPurpose = "";
+  persistActivePlan();
+  if (dom.scriptBuilderOverlay) closeOverlay(dom.scriptBuilderOverlay);
+  render();
+}
+function closeScriptBuilder() {
+  dismissScriptBuilder();
 }
 function addPlayToScript(playId) {
   if (!playId) return;
@@ -368,9 +407,9 @@ function clearScript() {
 function isEarlyDownScriptSituation(situationKey){return OpeningScript.isEarlyDownScriptSituation?OpeningScript.isEarlyDownScriptSituation(situationKey):false;}
 function openingScriptOpponentShell(userLearning,opponent){if(!OpeningScript.openingScriptOpponentShell)return null;return OpeningScript.openingScriptOpponentShell(getOpponentScoutingProfile(userLearning,opponent));}
 function openingScriptPlayScore(play,shell){if(!OpeningScript.openingScriptPlayScore)return 0;return OpeningScript.openingScriptPlayScore(play,shell,{coverageMatchupScore,coverageLearning:(item,defense)=>{const coverageStat=state.userLearning?.coverageOutcomes?.byDefense?.[defense]?.families?.[familyOf(item)];return personalLearningComponent(coverageStat,2,1.05,1.35);},personalLearningFromSituation,learningSituations:state.userLearning?.byLearningSituation||{},teamKey:cleanText(state.selectedTeam).toLowerCase()||"unknown",globalLearning:state.userLearning?.global||null});}
-function autoFillScript() {
+function generateOpeningScriptIds(existingPlayIds, lockedIndexes) {
   const teamPlays = state.normalizedPlays.filter(play => play.team === state.selectedTeam && !isHailMaryPlay(play));
-  if (!teamPlays.length || !OpeningScript.fillOpeningScript) return;
+  if (!teamPlays.length || !OpeningScript.fillOpeningScript) return (existingPlayIds || []).slice(0, 15);
   const opponentShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
   const tendencyProfile = currentOpponentProfile();
   const tendencyPlan = Tendency.scriptSlotPlan ? Tendency.scriptSlotPlan(tendencyProfile) : { slotFamilies: [], slotCells: [] };
@@ -381,18 +420,26 @@ function autoFillScript() {
     shell: opponentShell,
     setupPayoff: SETUP_PAYOFF,
     random: Math.random,
-    existingPlayIds: state.customScriptPlays.slice(),
-    lockedIndexes: state.customScriptLockedIndexes || [],
+    existingPlayIds: existingPlayIds || [],
+    lockedIndexes: lockedIndexes || [],
     playScore: openingScriptPlayScore,
     slotFamilies: tendencyPlan.slotFamilies,
     tendencyPlayScore: (play, slot) => Tendency.playResultBoost ? Tendency.playResultBoost(tendencyProfile, tendencyPlan.slotCells[slot], play && play.id) : 0,
   });
-  state.customScriptPlays = filled.playIds.slice(0, 15);
+  return (filled.playIds || []).slice(0, 15);
+}
+function autoFillScript() {
+  const before = state.customScriptPlays.slice();
+  const filled = generateOpeningScriptIds(before, state.customScriptLockedIndexes || []);
+  if (!filled.length) return;
+  state.customScriptPlays = filled;
   state.customScriptIndex = 0;
   state.customScriptActive = true;
   state.customScriptLoggedToHistory = false;
   persistActivePlan();
   const opponentCode = normalizeOpponentTeam(state.selectedOpponent);
+  const tendencyProfile = currentOpponentProfile();
+  const opponentShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
   const tendencyCell = tendencyProfile && Tendency.readiness ? Tendency.readiness(tendencyProfile.cells.early_down) : null;
   setStatus(tendencyCell && tendencyCell.ready && opponentCode
     ? `Opening script fitted to ${opponentCode} ${tendencyCell.primary} on early downs (${tendencyCell.total} snaps).`
@@ -441,12 +488,6 @@ function renderScriptBuilder() {
     dom.scriptCountBadge.textContent = count + " / 15 Plays";
     dom.scriptCountBadge.classList.toggle("is-full", count >= 15);
   }
-  if (dom.scriptToggleActiveBtn) {
-    const active = state.customScriptActive && count > 0;
-    dom.scriptToggleActiveBtn.textContent = active ? "Script: Active (Slot #1)" : "Script: Inactive";
-    dom.scriptToggleActiveBtn.classList.toggle("is-active", active);
-    dom.scriptToggleActiveBtn.disabled = count === 0;
-  }
   const sheetTab = state.gameplanTab === "sheet";
   if (dom.gameplanTabScript) dom.gameplanTabScript.classList.toggle("is-active", !sheetTab);
   if (dom.gameplanTabSheet) dom.gameplanTabSheet.classList.toggle("is-active", sheetTab);
@@ -464,7 +505,8 @@ function renderScriptBuilder() {
         const play = playMap.get(playId);
         const name = play ? maddenCallLabel(play) : playId;
         const meta = play ? cleanText(play.type).toUpperCase() : "Unavailable";
-        const isCurrent = state.customScriptActive && index === state.customScriptIndex;
+        const nextIndex = state.scriptBuilderPurpose === "new-game" ? 0 : (ensureTabletSession().scriptIndex || 0);
+        const isCurrent = index === nextIndex;
         const locked = locks.has(index);
         return '<div class="scriptQueueRow' + (isCurrent ? ' is-current' : '') + '">' +
           '<span class="scriptQueueIndex">#' + (index + 1) + '</span>' +
@@ -570,6 +612,8 @@ async function confirmMatchupModal(){
   applyTheme(state.themeTeam);
   
   closeMatchupModal();
+  if(document.getElementById("tabletRoot"))startTabletGame();
+  else render();
   setStatus(`Matchup ready (${state.maddenVersion || "M27"}): ${TEAM_THEME_META[state.selectedTeam]?.label||state.selectedTeam} vs ${formatOpponentLabel(state.selectedOpponent)}`);
   recordTraceEvent("matchup-setup-confirmed",{
     at:new Date().toISOString(),
@@ -580,8 +624,6 @@ async function confirmMatchupModal(){
     ocrProfileId:selectedProfileId||null,
     ocrProfileName:selectedProfile?.name||null
   });
-  if(document.getElementById("tabletRoot"))startTabletGame();
-  render();
 }
 function populateThemeSelect(){if(!dom.themeSelect)return;dom.themeSelect.innerHTML=[{code:"NFL"},...NFL_TEAMS].map(option=>`<option value="${option.code}">${escapeHtml(TEAM_THEME_META[option.code]?.label||option.code)}</option>`).join("");dom.themeSelect.value=state.themeTeam;}
 function persistThemeSelection(nextThemeTeam){const normalized=cleanText(nextThemeTeam).toUpperCase();const allowed=new Set(["NFL",...NFL_TEAMS.map(team=>team.code)]);state.themeTeam=allowed.has(normalized)?normalized:"NFL";if(dom.themeSelect)dom.themeSelect.value=state.themeTeam;applyTheme(state.themeTeam);savePreferences(true);render();}
@@ -935,11 +977,7 @@ function settlePendingOcSnap(nextSituation){
   state.pendingOutcome=null;
 }
 async function processTranscript(transcript){const parsed=parseSituation(transcript,state);if(state.coordinatorRole===COORDINATOR_ROLE_DC){const pendingPenaltyStamp=state.dcPendingPenalty&&PenaltyCatalog.normalizePenaltyStamp?PenaltyCatalog.normalizePenaltyStamp(state.dcPendingPenalty):null;const isVoidPenalty=pendingPenaltyStamp&&PenaltyCatalog.isVoidSnapPenalty&&PenaltyCatalog.isVoidSnapPenalty(pendingPenaltyStamp);const isSkipLearnPenalty=pendingPenaltyStamp&&pendingPenaltyStamp.effect===PenaltyCatalog.EFFECT_SKIP_LEARN;const loggedId=state.dcAudiblePlayId||state.confirmedDcRecommendationId||state.confirmedDcBasePlay?.id||null;if(isVoidPenalty&&loggedId){const next=[...(state.dcRecentPlays||[])];for(let i=next.length-1;i>=0;i-=1){if(next[i]===loggedId){next.splice(i,1);break;}}state.dcRecentPlays=next;state.dcUsageCommittedForSetKey="";recordTraceEvent("dc-learning-skip",{reason:"penalty_void",playId:loggedId,penaltyId:pendingPenaltyStamp.id,effect:pendingPenaltyStamp.effect,nextDown:parsed.down,nextYardsToGo:parsed.yards,role:"dc"});state.dcPendingPenalty=null;}else if(isSkipLearnPenalty&&loggedId){recordTraceEvent("dc-learning-skip",{reason:"penalty_skip_learn",playId:loggedId,penaltyId:pendingPenaltyStamp.id,effect:pendingPenaltyStamp.effect,nextDown:parsed.down,nextYardsToGo:parsed.yards,role:"dc"});state.dcPendingPenalty=null;}else if(pendingPenaltyStamp){if(loggedId){recordTraceEvent("dc-learning-skip",{reason:"penalty_neutral",playId:loggedId,penaltyId:pendingPenaltyStamp.id,effect:pendingPenaltyStamp.effect,nextDown:parsed.down,nextYardsToGo:parsed.yards,role:"dc"});}state.dcPendingPenalty=null;}}settlePendingOcSnap(parsed);if(state.coordinatorRole!==COORDINATOR_ROLE_DC){resetRecommendationUi();if(state.hasActiveSituation&&state.recommendations[0]?.play?.id){const _dCtx=buildContext();state.playHistory=recordTopRecommendation(state.playHistory,state.recommendations[0].play.id,_dCtx.situationKey,_dCtx.broadSituationKey);savePlayHistory();}}state.down=parsed.down;state.yards=parsed.yards;state.goalToGo=parsed.goalToGo;state.fieldPosition=parsed.fieldPosition;state.transcript=parsed.transcript;state.hasActiveSituation=true;if(state.coordinatorRole!==COORDINATOR_ROLE_DC)resetDefenseLogState();recordTraceEvent("spoken-situation",{at:new Date().toISOString(),down:state.down,yards:state.yards,goalToGo:state.goalToGo,fieldPosition:formatTraceFieldPosition(state.fieldPosition),lastDefenseShown:state.lastDefenseShown,scoreboard:formatScoreboardText(),transcript:state.transcript,role:state.coordinatorRole||COORDINATOR_ROLE_OC});if(state.coordinatorRole===COORDINATOR_ROLE_DC){onGetDcPlays();if(state.autoPlaycallerEnabled)triggerAutoPlaycall(COORDINATOR_ROLE_DC);render();return;}const __aiCtx=await refreshRecommendationsClassic();onGetPlays(__aiCtx);if(state.autoPlaycallerEnabled)triggerAutoPlaycall(COORDINATOR_ROLE_OC);render();}
-function resetOcrSession(reason){state.ocrDcSnapSpot="";
-  const api=window.desktopApi;
-  if(!api?.ocrResetSession)return;
-  api.ocrResetSession({reason,context:{team:state.selectedTeam,opponent:state.selectedOpponent,role:state.coordinatorRole,quarter:state.quarter,userScore:state.userScore,oppScore:state.oppScore}}).catch(error=>recordTraceEvent("ocr-reset-error",{reason,message:cleanText(error?.message||error)}));
-}
+function resetOcrSession(_reason){state.ocrDcSnapSpot="";}
 function resetDriveState(){resetOcrSession("drive_reset");state.pendingOutcome=null;state.dcQbScramble=false;syncOcrQbScramble(false);state.confirmedPlayUsage=null;state.usageCommittedForSetKey="";state.lastSnapDefenseAnswer=null;state.down=1;state.yards=10;state.goalToGo=false;state.fieldPosition=createEmptyFieldPosition();state.transcript="";state.recentPlays=[];state.recentCalls=[];state.driveRecommendationExposure=[];state.driveOutcomeMemory=[];state.lastOcrRecFingerprint="";state.lastOcrRecAt=0;state.scriptIndex=0;state.scriptStep=0;state.hasActiveSituation=false;state.presentedRecommendations=[];state.presentedDcRecommendations=[];clearDcV2PackageState({clearMemory:false});state.presentedOcrExactPlays=[];state.confirmedOcrExactSetKey="";state.confirmedDcRecommendationId=null;state.confirmedDcRecommendationSetKey="";state.dcUsageCommittedForSetKey="";state.confirmedDcBasePlay=null;state.dcAudiblePlayId="";state.dcPendingPenalty=null;state.dcOffenseShowingFormation="";state.dcOffenseShowingSet="";state.dcOffenseShowingExpanded="";state.audiblePickerMode="oc";state.penaltyPickerMode="oc";resetDefenseLogState();resetRecommendationUi();computeRecommendations();recordTraceEvent("new-drive",{at:new Date().toISOString(),team:state.selectedTeam});setStatus("New drive started");render();}
 function shouldAutoSwitchToDcAfterDriveResult(){return false;}
 function clearOcBoardForNextSnap(){
@@ -957,7 +995,7 @@ function clearOcBoardForNextSnap(){
   resetRecommendationUi();
 }
 
-function syncOcrQbScramble(enabled){const api=window.desktopApi;if(!api?.ocrUpdateConfig)return;api.ocrUpdateConfig({context:{team:state.selectedTeam,opponent:normalizeOpponentTeam(state.selectedOpponent)||state.selectedOpponent,role:state.coordinatorRole===COORDINATOR_ROLE_DC?"dc":"oc",quarter:state.quarter,userScore:state.userScore,oppScore:state.oppScore,qbScramble:enabled===true}}).catch(()=>{});}
+function syncOcrQbScramble(_enabled){}
 function applyOcQbScrambleGameState(){state.driveResultMenuOpen=false;if(!state.pendingOutcome?.playId){setStatus("Confirm the pass first, then mark QB Scramble before the next spot");render();return;}state.pendingOutcome={...state.pendingOutcome,qbScramble:true};recordTraceEvent("oc-game-state",{at:new Date().toISOString(),resultId:"qb_scramble",label:"QB Scramble",driveEnding:false,switchToDc:false,pendingPlayId:state.pendingOutcome.playId,opponent:normalizeOpponentTeam(state.selectedOpponent)||null,team:state.selectedTeam||null});clearOcBoardForNextSnap();setStatus("QB Scramble logged — stay on Offense; the next spot scores this play below a completion");render();}
 function applyOcSackGameState(){
   state.driveResultMenuOpen=false;
@@ -1173,9 +1211,8 @@ function backToTeamSelect(){
 function bindEvents(){dom.newDriveBtn?.addEventListener("click",onPressNewDrive);
   document.getElementById("tabletRoot")?.addEventListener("click",onTabletClick);
   dom.scriptBuilderBtn?.addEventListener("click", openScriptBuilder);
-  dom.closeScriptBuilderBtn?.addEventListener("click", closeScriptBuilder);
-  dom.scriptDoneBtn?.addEventListener("click", closeScriptBuilder);
-  dom.scriptToggleActiveBtn?.addEventListener("click", toggleScriptActive);
+  dom.closeScriptBuilderBtn?.addEventListener("click", dismissScriptBuilder);
+  dom.scriptDoneBtn?.addEventListener("click", commitScriptBuilder);
   dom.scriptClearBtn?.addEventListener("click", clearScript);
   dom.scriptAutoFillBtn?.addEventListener("click", autoFillScript);
   dom.scriptSearchInput?.addEventListener("input", event => {
@@ -1292,34 +1329,22 @@ function tabletPlays(side){const book=side==="dc"?state.normalizedDefensivePlays
 function tabletIdentityFamilies(){const profile=RecommendationCore.getTeamIdentityProfile?RecommendationCore.getTeamIdentityProfile(state.selectedTeam):null;return (profile&&profile.families)||{};}
 function tabletCooldownIds(){const ids=[];(state.recentRunScripts||[]).forEach(script=>{(Array.isArray(script)?script:[]).forEach(id=>{if(id)ids.push(id);});});return ids;}
 function ensureTabletSession(){if(!state.tabletSession||!TabletSession.createSession)state.tabletSession=TabletSession.createSession?TabletSession.createSession():{ocBoard:{},dcBoard:{},scriptIds:[],scriptIndex:0,highlighted:[],lastCaptureText:""};if(!state.resultLabels)state.resultLabels=ResultLabels.emptyStore?ResultLabels.emptyStore():{plays:{},looks:{},concepts:{}};return state.tabletSession;}
-function startTabletGame(){const previous=state.tabletSession;if(previous&&Array.isArray(previous.scriptIds)&&previous.scriptIds.length&&Number(previous.scriptIndex)>0){state.recentRunScripts=[...(state.recentRunScripts||[]),previous.scriptIds].slice(-2);saveRecentRunScripts();}state.gameStarted=true;state.autoPlaycallerEnabled=false;state.driveResultMenuOpen=false;state.userOnDefense=false;syncPossession("offense");clearStoredResultLabels();state.tabletSession=TabletSession.startGame?TabletSession.startGame(TabletSession.createSession(),{board:SituationBoard,opening:OpeningScript,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,identityFamilies:tabletIdentityFamilies(),cooldownIds:tabletCooldownIds(),setupPayoff:SETUP_PAYOFF}):ensureTabletSession();render();}
+function startTabletGame(){const previous=state.tabletSession;if(previous&&Array.isArray(previous.scriptIds)&&previous.scriptIds.length&&Number(previous.scriptIndex)>0){state.recentRunScripts=[...(state.recentRunScripts||[]),previous.scriptIds].slice(-2);saveRecentRunScripts();}state.gameStarted=true;state.autoPlaycallerEnabled=false;state.driveResultMenuOpen=false;state.userOnDefense=false;syncPossession("offense");clearStoredResultLabels();state.tabletSession=TabletSession.startGame?TabletSession.startGame(TabletSession.createSession(),{board:SituationBoard,opening:OpeningScript,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,identityFamilies:tabletIdentityFamilies(),cooldownIds:tabletCooldownIds(),setupPayoff:SETUP_PAYOFF}):ensureTabletSession();const offer=generateOpeningScriptIds([],[]);state.customScriptPlays=offer.slice();state.customScriptLockedIndexes=[];state.customScriptIndex=0;state.customScriptActive=offer.length>0;state.customScriptLoggedToHistory=false;state.scriptOfferIds=offer.slice();state.scriptBuilderPurpose="new-game";state.tabletSession.scriptIds=offer.slice();state.tabletSession.scriptIndex=0;render();openScriptBuilder();}
 function confirmTabletSlot(slotId){const session=ensureTabletSession();const side="oc";if(!TabletSession.confirmSlot)return;state.tabletSession=TabletSession.confirmSlot(session,slotId,{board:SituationBoard,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,identityFamilies:tabletIdentityFamilies(),side});render();}
-function confirmTabletScript(){const session=ensureTabletSession();if(!TabletSession.confirmScript)return;state.tabletSession=TabletSession.confirmScript(session);render();}
-function syncPossession(possession){const api=window.desktopApi;if(!api?.ocrUpdateConfig)return;api.ocrUpdateConfig({possession:possession==="defense"?"defense":"offense"}).catch(()=>{});}
+function confirmTabletScript(){const session=ensureTabletSession();if(!TabletSession.confirmScript)return;state.tabletSession=TabletSession.confirmScript(session);if(state.customScriptActive&&state.customScriptPlays.length)state.customScriptIndex=state.tabletSession.scriptIndex;render();}
+function syncPossession(_possession){}
 function setUserOnDefense(onDefense){state.userOnDefense=onDefense===true;if(state.userOnDefense)state.driveResultMenuOpen=false;syncPossession(state.userOnDefense?"defense":"offense");render();}
 function driveResultGivesOpponentTheBall(resultId){const id=cleanText(resultId);if(!id||id==="quarter_expired"||id==="sack"||id==="qb_scramble"||id==="pick_6"||id==="scoop_and_score")return false;const option=DRIVE_RESULT_OPTIONS.find(item=>item.id===id);return !!(option&&option.driveEnding!==false);}
-function renderTabletGameStatePanel(){const hint="Sack and QB Scramble stay on offense. Touchdown, field goal, punt, safety, interception, fumble, and turnover on downs switch to defense and ignore play-call screens. Pick 6, Scoop &amp; Score, and Quarter Expired leave the ball with you.";return "<div class=\"driveResultTitle\">How did the drive end?</div><div class=\"driveResultHint\">"+hint+"</div><div class=\"driveResultGrid\">"+DRIVE_RESULT_OPTIONS.map(option=>"<button class=\"driveResultOption\" type=\"button\" data-tablet-game-state=\""+escapeHtml(option.id)+"\">"+escapeHtml(option.label)+"</button>").join("")+"</div>";}
+function renderTabletGameStatePanel(){const hint="Sack and QB Scramble stay on offense. Touchdown, field goal, punt, safety, interception, fumble, and turnover on downs switch to defense. Pick 6, Scoop &amp; Score, and Quarter Expired leave the ball with you.";return "<div class=\"driveResultTitle\">How did the drive end?</div><div class=\"driveResultHint\">"+hint+"</div><div class=\"driveResultGrid\">"+DRIVE_RESULT_OPTIONS.map(option=>"<button class=\"driveResultOption\" type=\"button\" data-tablet-game-state=\""+escapeHtml(option.id)+"\">"+escapeHtml(option.label)+"</button>").join("")+"</div>";}
 function applyTabletGameState(resultId){const id=cleanText(resultId);const option=DRIVE_RESULT_OPTIONS.find(item=>item.id===id);if(!option||state.userOnDefense)return;state.driveResultMenuOpen=false;const session=ensureTabletSession();const keepsBall=!driveResultGivesOpponentTheBall(id);const scored=id!=="sack"&&id!=="qb_scramble"&&id!=="quarter_expired";if(scored&&session.pending&&session.pending.playId&&ResultLabels.recordResult){const play=(state.normalizedPlays||[]).find(item=>item.id===session.pending.playId);state.resultLabels=ResultLabels.recordResult(state.resultLabels,{opponent:normalizeOpponentTeam(state.selectedOpponent)||state.selectedOpponent,context:state.opponentContext==="human"?"human":"cpu",slotId:session.pending.slotId,playId:session.pending.playId,success:Number(option.successPoints)>0,family:play?familyOf(play):"",lookSide:"defense"});saveResultLabels();session.pending=null;}session.lastCaptureText=option.label+(keepsBall?" · your ball":" · their ball");if(!keepsBall){state.userOnDefense=true;syncPossession("defense");}render();}
-function onTabletClick(event){const possessionBtn=event.target.closest("[data-possession]");if(possessionBtn){setUserOnDefense(possessionBtn.getAttribute("data-possession")==="defense");return;}if(event.target.closest("[data-toggle-game-state]")){if(state.userOnDefense)return;state.driveResultMenuOpen=!state.driveResultMenuOpen;render();return;}const result=event.target.closest("[data-tablet-game-state]");if(result){applyTabletGameState(result.getAttribute("data-tablet-game-state"));return;}const slot=event.target.closest("[data-confirm-slot]");if(slot){confirmTabletSlot(slot.getAttribute("data-confirm-slot"));return;}if(event.target.closest("[data-confirm-script]"))confirmTabletScript();}
+function syncTabletOpeningScript(){if(!(state.customScriptActive&&Array.isArray(state.customScriptPlays)&&state.customScriptPlays.length))return;const session=ensureTabletSession();session.scriptIds=state.customScriptPlays.slice(0,15);if(session.scriptIndex>session.scriptIds.length)session.scriptIndex=session.scriptIds.length;state.customScriptIndex=session.scriptIndex;state.tabletSession=session;}
+function onTabletClick(event){const slot=event.target.closest("[data-confirm-slot]");if(slot){confirmTabletSlot(slot.getAttribute("data-confirm-slot"));return;}if(event.target.closest("[data-confirm-script]"))confirmTabletScript();}
 function applyTabletCapture(situation){if(!situation||typeof situation!=="object")return null;state.coordinatorRole=COORDINATOR_ROLE_OC;const session=ensureTabletSession();const downKnown=situation.downKnown===true||(Number.isFinite(Number(situation.down))&&Number(situation.down)>=1&&Number(situation.yards)>0);const fieldKnown=situation.fieldKnown===true||!!(situation.fieldPosition&&situation.fieldPosition.side&&Number.isFinite(Number(situation.fieldPosition.yardLine)));if(downKnown){state.down=Number(situation.down)||state.down;if(Number(situation.yards)>0)state.yards=Number(situation.yards);state.goalToGo=situation.goalToGo===true;state.hasActiveSituation=true;}if(fieldKnown&&situation.fieldPosition)state.fieldPosition=situation.fieldPosition;if(TabletSession.ingest){const result=TabletSession.ingest(session,{side:"oc",downKnown:downKnown===true,fieldKnown:fieldKnown===true,down:situation.down,yards:situation.yards,goalToGo:situation.goalToGo===true,fieldSide:situation.fieldPosition&&situation.fieldPosition.side,fieldYard:situation.fieldPosition&&situation.fieldPosition.yardLine,previousOffenseName:situation.previousOffensePlayName||"",previousDefenseName:situation.previousDefensePlayName||"",offenseFormation:situation.offenseShowing&&situation.offenseShowing.formation}, {board:SituationBoard,labels:ResultLabels,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,opponent:state.selectedOpponent,context:state.opponentContext,store:state.resultLabels||ResultLabels.emptyStore()});state.tabletSession=result.session;state.resultLabels=result.store;if(result.logged)saveResultLabels();}render();return{down:state.down,yards:state.yards,goalToGo:state.goalToGo,fieldPosition:state.fieldPosition,role:COORDINATOR_ROLE_OC};}
-function renderTablet(){const root=document.getElementById("tabletRoot");if(!root)return;const session=ensureTabletSession();const side="oc";const slots=SituationBoard.slotsFor?SituationBoard.slotsFor(side):[];const board=session.ocBoard||{};const opponent=normalizeOpponentTeam(state.selectedOpponent);const context=state.opponentContext==="human"?"human":"cpu";const summary=ResultLabels.summary?ResultLabels.summary(state.resultLabels,{opponent,context}):{theirOffense:"Not enough yet",theirDefense:"Not enough yet",record:"Not enough yet"};const strip=document.getElementById("tabletStrip");if(strip){const fixed=["<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Opponent</div><div class=\"tabletStripValue\">"+escapeHtml(formatOpponentLabel(opponent)||"Not set")+"</div></div>","<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Control</div><div class=\"tabletStripValue\">"+escapeHtml(context==="human"?"Human":"CPU")+"</div></div>","<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Series</div><div class=\"tabletStripValue\">"+(state.userOnDefense?"Their ball":"Your ball")+"</div></div>"].join("");const live=["<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Their offense</div><div class=\"tabletStripValue\">"+escapeHtml(summary.theirOffense)+"</div></div>","<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Their defense</div><div class=\"tabletStripValue\">"+escapeHtml(summary.theirDefense)+"</div></div>","<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Your record</div><div class=\"tabletStripValue\">"+escapeHtml(summary.record)+"</div></div>","<div class=\"tabletStripBlock\"><div class=\"tabletKicker\">Last capture</div><div class=\"tabletStripValue\">"+escapeHtml(session.lastCaptureText||"Waiting for play-call screen")+"</div></div>"].join("");strip.innerHTML="<div class=\"tabletStripFixed\">"+fixed+"</div><div class=\"tabletStripLive\">"+live+"</div>";}const scriptHost=document.getElementById("tabletScript");if(scriptHost){scriptHost.classList.remove("is-hidden");const scriptId=session.scriptIds&&session.scriptIds[session.scriptIndex];const scriptPlay=scriptId?(state.normalizedPlays||[]).find(play=>play.id===scriptId):null;if(!scriptPlay){scriptHost.innerHTML="<div class=\"tabletScriptEmpty\">Opening script complete.</div>";}else{const rate=ResultLabels.rateFor?ResultLabels.rateFor(state.resultLabels,{opponent,context,slotId:"opening_script",playId:scriptPlay.id}):null;const reason=ResultLabels.reasonFor?ResultLabels.reasonFor(state.resultLabels,{opponent,context,slotId:"opening_script",family:familyOf(scriptPlay),familyLabel:familyOf(scriptPlay).replace(/_/g," "),generalReason:"Opening script.",lookSide:"defense"}):"";scriptHost.innerHTML="<div class=\"tabletScriptKicker\">Opening script "+escapeHtml(String(session.scriptIndex+1))+" / "+escapeHtml(String((session.scriptIds||[]).length||15))+"</div><div class=\"tabletScriptCall\"><div class=\"tabletScriptPath\">"+escapeHtml(cleanText(scriptPlay.formation).toUpperCase())+"</div>"+(cleanText(scriptPlay.set)?"<div class=\"tabletScriptPath\">"+escapeHtml(cleanText(scriptPlay.set).toUpperCase())+"</div>":"")+"<div class=\"tabletScriptPlay\">"+escapeHtml(cleanText(scriptPlay.play_name).toUpperCase())+"</div></div><div class=\"tabletScriptMeta\"><span>"+escapeHtml(rate?rate.percent+"%":"")+"</span><span>"+escapeHtml(reason)+"</span></div><button class=\"tabletRan\" type=\"button\" data-confirm-script=\"1\">Ran it</button>";}}const grid=document.getElementById("tabletGrid");if(grid){const highlighted=new Set(session.highlighted||[]);grid.innerHTML=slots.map(slot=>{const play=board[slot.id];const rate=play&&ResultLabels.rateFor?ResultLabels.rateFor(state.resultLabels,{opponent,context,slotId:slot.id,playId:play.id}):null;const reason=ResultLabels.reasonFor?ResultLabels.reasonFor(state.resultLabels,{opponent,context,slotId:slot.id,family:play?familyOf(play):"",familyLabel:play?familyOf(play).replace(/_/g," "):"",generalReason:SituationBoard.generalReason?SituationBoard.generalReason(slot.id):"",lookSide:"defense"}):"";return "<article class=\"tabletCard"+(highlighted.has(slot.id)?" is-hot":"")+"\"><header>"+(highlighted.has(slot.id)?"<span class=\"tabletHotMark\">Now</span>":"")+escapeHtml(slot.label)+"</header>"+(play?"<div class=\"tabletPath\">"+escapeHtml(cleanText(play.formation).toUpperCase())+"</div>"+(cleanText(play.set)?"<div class=\"tabletPath\">"+escapeHtml(cleanText(play.set).toUpperCase())+"</div>":"")+"<div class=\"tabletPlay\">"+escapeHtml(cleanText(play.play_name).toUpperCase())+"</div>":"<div class=\"tabletPlay\">No play</div>")+"<div class=\"tabletRate\">"+escapeHtml(rate?rate.percent+"%":"")+"</div><p>"+escapeHtml(reason)+"</p>"+(play?"<button type=\"button\" data-confirm-slot=\""+escapeHtml(slot.id)+"\">Ran it</button>":"")+"</article>";}).join("");}const ticker=document.getElementById("tabletTicker");if(ticker)ticker.textContent=session.lastCaptureText||(state.userOnDefense?"On defense. Play-call screens are ignored until you switch back to Your ball.":"Reads the play-call screen when a detector is trained. F8 repeats the read. Neither one changes the cards.");const onDefense=state.userOnDefense===true;const offenseBtn=document.getElementById("tabletOffenseBtn");const defenseBtn=document.getElementById("tabletDefenseBtn");if(offenseBtn){offenseBtn.classList.toggle("is-active",!onDefense);offenseBtn.setAttribute("aria-pressed",onDefense?"false":"true");}if(defenseBtn){defenseBtn.classList.toggle("is-active",onDefense);defenseBtn.setAttribute("aria-pressed",onDefense?"true":"false");}const gameStateBtn=document.getElementById("tabletGameStateBtn");if(gameStateBtn){gameStateBtn.disabled=onDefense;gameStateBtn.textContent=state.driveResultMenuOpen&&!onDefense?"Hide Game State":"Game State";}const gameStatePanel=document.getElementById("tabletGameState");if(gameStatePanel){const open=state.driveResultMenuOpen===true&&state.userOnDefense!==true;gameStatePanel.classList.toggle("hidden",!open);gameStatePanel.innerHTML=open?renderTabletGameStatePanel():"";}}
+function renderTablet(){const root=document.getElementById("tabletRoot");if(!root)return;const session=ensureTabletSession();const side="oc";const slots=SituationBoard.slotsFor?SituationBoard.slotsFor(side):[];const board=session.ocBoard||{};const opponent=normalizeOpponentTeam(state.selectedOpponent);const context=state.opponentContext==="human"?"human":"cpu";const scriptHost=document.getElementById("tabletScript");if(scriptHost){scriptHost.classList.remove("is-hidden");const scriptId=session.scriptIds&&session.scriptIds[session.scriptIndex];const scriptPlay=scriptId?(state.normalizedPlays||[]).find(play=>play.id===scriptId):null;if(!scriptPlay){scriptHost.innerHTML="<div class=\"tabletScriptEmpty\">Opening script complete.</div>";}else{const rate=ResultLabels.rateFor?ResultLabels.rateFor(state.resultLabels,{opponent,context,slotId:"opening_script",playId:scriptPlay.id}):null;const reason=ResultLabels.reasonFor?ResultLabels.reasonFor(state.resultLabels,{opponent,context,slotId:"opening_script",family:familyOf(scriptPlay),familyLabel:familyOf(scriptPlay).replace(/_/g," "),generalReason:"Opening script.",lookSide:"defense"}):"";scriptHost.innerHTML="<div class=\"tabletScriptKicker\">Opening script "+escapeHtml(String(session.scriptIndex+1))+" / "+escapeHtml(String((session.scriptIds||[]).length||15))+"</div><div class=\"tabletScriptCall\"><div class=\"tabletScriptPath\">"+escapeHtml(cleanText(scriptPlay.formation).toUpperCase())+"</div>"+(cleanText(scriptPlay.set)?"<div class=\"tabletScriptPath\">"+escapeHtml(cleanText(scriptPlay.set).toUpperCase())+"</div>":"")+"<div class=\"tabletScriptPlay\">"+escapeHtml(cleanText(scriptPlay.play_name).toUpperCase())+"</div></div><div class=\"tabletScriptMeta\"><span>"+escapeHtml(rate?rate.percent+"%":"")+"</span><span>"+escapeHtml(reason)+"</span></div><button class=\"tabletRan\" type=\"button\" data-confirm-script=\"1\">Ran it</button>";}}const grid=document.getElementById("tabletGrid");if(grid){const highlighted=new Set(session.highlighted||[]);grid.innerHTML=slots.map(slot=>{const play=board[slot.id];const rate=play&&ResultLabels.rateFor?ResultLabels.rateFor(state.resultLabels,{opponent,context,slotId:slot.id,playId:play.id}):null;const reason=ResultLabels.reasonFor?ResultLabels.reasonFor(state.resultLabels,{opponent,context,slotId:slot.id,family:play?familyOf(play):"",familyLabel:play?familyOf(play).replace(/_/g," "):"",generalReason:SituationBoard.generalReason?SituationBoard.generalReason(slot.id):"",lookSide:"defense"}):"";return "<article class=\"tabletCard"+(highlighted.has(slot.id)?" is-hot":"")+"\"><header>"+(highlighted.has(slot.id)?"<span class=\"tabletHotMark\">Now</span>":"")+escapeHtml(slot.label)+"</header>"+(play?"<div class=\"tabletPath\">"+escapeHtml(cleanText(play.formation).toUpperCase())+"</div>"+(cleanText(play.set)?"<div class=\"tabletPath\">"+escapeHtml(cleanText(play.set).toUpperCase())+"</div>":"")+"<div class=\"tabletPlay\">"+escapeHtml(cleanText(play.play_name).toUpperCase())+"</div>":"<div class=\"tabletPlay\">No play</div>")+"<div class=\"tabletRate\">"+escapeHtml(rate?rate.percent+"%":"")+"</div><p>"+escapeHtml(reason)+"</p>"+(play?"<button type=\"button\" data-confirm-slot=\""+escapeHtml(slot.id)+"\">Ran it</button>":"")+"</article>";}).join("");}const ticker=document.getElementById("tabletTicker");if(ticker)ticker.textContent=session.lastCaptureText||"Press Ran it after the play you called.";}
 
 async function init(){
   await loadPersistedState();
-  if(window.desktopApi?.ocrGetStatus){
-    try{
-      const status=await window.desktopApi.ocrGetStatus();
-      state.userOnDefense=status?.config?.possession==="defense";
-    }catch(_error){}
-  }
-  if(window.desktopApi?.onOcrEvent){
-    window.desktopApi.onOcrEvent(event=>{
-      if(event?.type!=="capture:error"||event.code!=="OCR_ON_DEFENSE")return;
-      const session=ensureTabletSession();
-      session.lastCaptureText="On defense — capture paused";
-      render();
-    });
-  }
+  state.userOnDefense=false;
   applyTheme(state.themeTeam);
   populateTeamSelect();
   populateOpponentSelect();

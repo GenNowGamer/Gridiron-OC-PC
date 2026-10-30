@@ -32,6 +32,18 @@ test('config store defaults every feature off and writes atomically', async (t) 
   const persisted = JSON.parse(await fs.readFile(path.join(userData, 'vision-profiles-v1.json'), 'utf8'));
   assert.equal(persisted.featureFlags.capture, true);
   assert.equal((await fs.readdir(userData)).some((name) => name.endsWith('.tmp')), false);
+  await store.replace({
+    ...store.get(),
+    profiles: [{
+      id: 'profile-formation',
+      name: 'Default',
+      regions: [
+        { field: 'down_distance', x: 0, y: 0, width: 0.1, height: 0.1 },
+        { field: 'offense_formation_personnel', x: 0.2, y: 0.2, width: 0.1, height: 0.1 },
+      ],
+    }],
+  });
+  assert.deepEqual(store.get().profiles[0].regions.map((region) => region.field), ['down_distance']);
   await assert.rejects(() => store.setFeatureFlag('unknown', true), /Unknown OCR feature flag/);
 });
 

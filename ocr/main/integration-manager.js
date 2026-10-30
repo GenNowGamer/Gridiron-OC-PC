@@ -774,8 +774,10 @@ class IntegrationOcrManager extends EventEmitter {
     if (!clean(normalized.id)) normalized.id = crypto.randomUUID();
     if (!clean(normalized.name)) throw new Error('Profile name is required.');
     if (Array.isArray(normalized.regions)) {
-      normalized.regions = normalized.regions.filter((region) =>
-        !REMOVED_OCR_FIELDS.has(clean(region.field || region.id)));
+      normalized.regions = normalized.regions.filter((region) => {
+        const id = clean(region.field || region.id);
+        return !REMOVED_OCR_FIELDS.has(id) && id !== 'offense_formation_personnel';
+      });
     }
     const prepared = sidecarProfile(normalized);
     if (!prepared.rois.length || prepared.rois.some((roi) => !roi.id)) throw new Error('At least one labeled ROI is required.');

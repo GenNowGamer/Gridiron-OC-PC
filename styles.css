@@ -2619,7 +2619,7 @@ body {
 .scriptModalActions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   flex-shrink: 0;
   margin-top: 14px;
@@ -2686,41 +2686,14 @@ body {
 .tablet {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   background: transparent;
   color: var(--text);
 }
 
-.tabletStrip {
-  border-right: 1px solid var(--border);
-  background: var(--panel);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.tabletStripFixed,
-.tabletStripLive {
-  display: grid;
-  gap: 12px;
-}
-
-.tabletStripLive {
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-}
-
-.tabletKicker {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--secondary);
-}
-
 .tabletCard header {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #ffffff;
@@ -2735,19 +2708,14 @@ body {
   font-weight: 800;
 }
 
-.tabletStripValue {
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.35;
-  font-weight: 800;
-}
-
 .tabletMain {
+  flex: 1;
   min-width: 0;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 10px;
-  padding: 12px;
+  padding: 12px 8px 8px;
 }
 
 .tabletTop {
@@ -2845,19 +2813,21 @@ body {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   min-height: 0;
+  width: 100%;
 }
 
 .tabletCard {
   background: linear-gradient(180deg, var(--top-play-bg), rgba(255, 255, 255, 0.03));
   color: var(--top-play-text);
   border: 1px solid var(--top-play-border);
-  padding: 8px;
+  padding: 12px 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+  min-height: 0;
 }
 
 .tabletCard.is-hot {
@@ -2906,9 +2876,10 @@ body {
   }
 }
 
-.tabletCard .tabletPlay { font-size: 15px; }
+.tabletCard .tabletPlay { font-size: 17px; }
+.tabletCard .tabletPath { font-size: 13px; }
 
-.tabletRate { font-size: 18px; font-weight: 800; min-height: 1.2em; }
+.tabletRate { font-size: 20px; font-weight: 800; min-height: 1.2em; }
 
 .tabletCard p,
 .tabletScriptMeta {
@@ -2920,15 +2891,18 @@ body {
   font-weight: 800;
 }
 
+.tabletCard p { font-size: 13px; }
+
 .tabletRan,
 .tabletCard button {
   margin-top: auto;
   border: 1px solid var(--border-strong);
   background: var(--secondary);
   color: var(--on-secondary, #101820);
-  padding: 6px 8px;
+  padding: 8px 10px;
   cursor: pointer;
   font-weight: 800;
+  font-size: 14px;
 }
 
 .tabletTicker {

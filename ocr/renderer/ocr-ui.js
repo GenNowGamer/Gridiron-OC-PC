@@ -4,14 +4,14 @@
   const FIELD_DEFINITIONS = [
     ["down_distance", "Down / distance", true],
     ["field_position", "Field position", true],
-    // Kept required in calibration so shared presentation profiles still store the DC crop.
-    // Runtime readiness treats it as DC-only (see situationGate / exactCallGate).
-    ["offense_formation_personnel", "Upcoming Formation / Personnel", true],
+    // Optional. The offensive sheet does not use this crop. A saved box is dropped on load.
+    ["offense_formation_personnel", "Upcoming Formation / Personnel", false],
     ["previous_offense_play", "Previous offensive play", false],
     ["previous_defense_play", "Previous defensive play", false],
     ["calibration_anchor", "Calibration anchor (drift)", false],
   ];
   const REMOVED_OCR_FIELDS = new Set(["quarter_clock", "scores", "quarter", "game_clock"]);
+  const RETIRED_OCR_CROPS = new Set(["offense_formation_personnel"]);
   const MIN_ACCEPTED_FIELD_CONFIDENCE = 0.92;
   // Shared situation fields for both roles. Formation/personnel is DC-only on Madden HUDs.
   const SITUATION_REQUIRED_FIELDS = Object.freeze([
@@ -1185,7 +1185,7 @@
   function buildProfile() {
     const source = selectedSource() || local.activeProfile?.source;
     const regions = local.regions
-      .filter((region) => !REMOVED_OCR_FIELDS.has(text(region.field)))
+      .filter((region) => !REMOVED_OCR_FIELDS.has(text(region.field)) && !RETIRED_OCR_CROPS.has(text(region.field)))
       .map((region) => {
         const {
           screenStatus,
@@ -1361,7 +1361,7 @@
     }
     local.regions = Array.isArray(profile.regions)
       ? profile.regions
-        .filter((region) => !REMOVED_OCR_FIELDS.has(text(region.field || region.id)))
+        .filter((region) => !REMOVED_OCR_FIELDS.has(text(region.field || region.id)) && !RETIRED_OCR_CROPS.has(text(region.field || region.id)))
         .map((region) => {
           const {
             screenStatus,

@@ -2,11 +2,7 @@ const path = require("path");
 const fsSync = require("fs");
 const fs = require("fs/promises");
 const crypto = require("crypto");
-const { spawn } = require("child_process");
-const { app, BrowserWindow, ipcMain, shell, globalShortcut } = require("electron");
-const { IntegrationOcrManager } = require("./ocr/main/integration-manager");
-
-let ocrManager = null;
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 
 function traceDir() {
   return path.join(app.getPath("userData"), "trace-logs");
@@ -28,120 +24,6 @@ function preferencesPath() {
 function appAssetBaseDir() {
   return app.isPackaged ? path.join(process.resourcesPath, "app.asar.unpacked") : __dirname;
 }
-
-function ocrSidecarOptions() {
-  const workerDir = app.isPackaged
-    ? path.join(process.resourcesPath, "ocr-worker")
-    : path.join(__dirname, "ocr-sidecar", "dist", "gridiron-ocr-sidecar");
-  const executable = path.join(workerDir, "gridiron-ocr-sidecar.exe");
-  const frozenOptions = () => ({
-    spawn,
-    command: executable,
-    args: [],
-    spawnOptions: { cwd: workerDir, windowsHide: true },
-    requestTimeoutMs: 12000,
-  });
-  // Packaged installs (or GRIDIRON_OCR_USE_FROZEN=1) use the PyInstaller exe.
-  if ((app.isPackaged || process.env.GRIDIRON_OCR_USE_FROZEN === "1")
-      && fsSync.existsSync(executable)) {
-    return frozenOptions();
-  }
-  // Unpackaged: prefer the sidecar venv so OpenCV/onnx deps resolve, while
-  // still running live Python source (capture-bridge, etc.).
-  const sourceDir = path.join(__dirname, "ocr-sidecar");
-  const venvPython = path.join(sourceDir, ".venv", "Scripts", "python.exe");
-  if (fsSync.existsSync(venvPython)) {
-    return {
-      spawn,
-      command: venvPython,
-      args: ["-m", "ocr_sidecar"],
-      spawnOptions: {
-        cwd: sourceDir,
-        windowsHide: true,
-        env: { ...process.env, PYTHONUNBUFFERED: "1" },
-      },
-      requestTimeoutMs: 12000,
-    };
-  }
-  if (fsSync.existsSync(executable)) {
-    return frozenOptions();
-  }
-  return {
-    spawn,
-    command: "py",
-    args: ["-3.12", "-m", "ocr_sidecar"],
-    spawnOptions: {
-      cwd: sourceDir,
-      windowsHide: true,
-      env: { ...process.env, PYTHONUNBUFFERED: "1" },
-    },
-    requestTimeoutMs: 12000,
-  };
-}
-
-function ocrBridgeOptions() {
-  const bridgeDir = app.isPackaged
-    ? path.join(process.resourcesPath, "capture-bridge")
-    : path.join(__dirname, "capture-bridge", "dist");
-  const executable = path.join(bridgeDir, "GridironCaptureBridge.exe");
-  if (!fsSync.existsSync(executable)) {
-    return null;
-  }
-  return {
-    spawn,
-    command: executable,
-    args: [],
-    spawnOptions: { cwd: bridgeDir, windowsHide: true },
-    requestTimeoutMs: 20000,
-    helloTimeoutMs: 8000,
-  };
-}
-
-async function loadOcrCatalogs() {
-  const readJson = async (fileName) => {
-    try {
-      return JSON.parse(await fs.readFile(path.join(__dirname, fileName), "utf8"));
-    } catch (_error) {
-      return [];
-    }
-  };
-  let version = "M27";
-  try {
-    const prefs = await readPreferencesFile();
-    if (String(prefs?.maddenVersion || "").toUpperCase() === "M26") {
-      version = "M26";
-    }
-  } catch (_err) {}
-
-  const isM27 = version === "M27";
-  const offPath = isM27 ? path.join("data", "madden27", "plays.json") : path.join("data", "madden26", "plays.json");
-  const defPath = isM27 ? path.join("data", "madden27", "defensive_plays.json") : path.join("data", "madden26", "defensive_plays.json");
-
-  const [offensive, defensive] = await Promise.all([
-    readJson(offPath),
-    readJson(defPath),
-  ]);
-
-  const withIds = (items) => (Array.isArray(items) ? items : []).map((item) => ({
-    ...item,
-    id: item.id || [item.team, item.formation, item.set, item.play_name || item.playName]
-      .map((value) => String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-"))
-      .filter(Boolean)
-      .join("|"),
-  }));
-  return { offensive: withIds(offensive), defensive: withIds(defensive) };
-}
-
-function publishOcrEvent(event) {
-  for (const win of BrowserWindow.getAllWindows()) {
-    if (!win.isDestroyed()) win.webContents.send("desktop:ocr-event", event);
-  }
-}
-
-
-
-
-
 
 async function ensureTraceDir() {
   await fs.mkdir(traceDir(), { recursive: true });
@@ -290,49 +172,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ocrManager = new IntegrationOcrManager({
-    userData: app.getPath("userData"),
-    globalShortcut,
-    sidecarOptions: ocrSidecarOptions(),
-    bridgeOptions: ocrBridgeOptions(),
-    loadCatalogs: loadOcrCatalogs,
-    exportDirectory: () => path.join(app.getPath("userData"), "trace-logs"),
-  });
-  ocrManager.on("event", publishOcrEvent);
-
-  ipcMain.handle("desktop:ocr-status", async () => ocrManager.getStatus());
-  ipcMain.handle("desktop:ocr-config-update", async (_event, patch) => ocrManager.updateConfig(patch));
-  ipcMain.handle("desktop:ocr-list-sources", async (_event, obs) => ocrManager.listSources(obs));
-  ipcMain.handle("desktop:ocr-reference", async (_event, args) => ocrManager.captureReference(args));
-  ipcMain.handle("desktop:ocr-benchmark", async (_event, args) => ocrManager.benchmarkCapture(args));
-  ipcMain.handle("desktop:ocr-profile-save", async (_event, profile) => ocrManager.saveProfile(profile));
-  ipcMain.handle("desktop:ocr-profile-test", async (_event, args) => ocrManager.testProfile(args));
-  ipcMain.handle("desktop:ocr-capture", async (_event, args) => ocrManager.capture(args));
-  ipcMain.handle("desktop:ocr-pending-call", async (_event, args) => ocrManager.setPendingCall(args));
-  ipcMain.handle("desktop:ocr-reset-session", async (_event, args = {}) => {
-    const result = ocrManager.resetSession(args);
-    if (args.context) await ocrManager.updateConfig({ context: args.context });
-    return result;
-  });
-  ipcMain.handle("desktop:ocr-correct", async (_event, args) => ocrManager.correctCapture(args));
-  ipcMain.handle("desktop:ocr-undo-last-snap", async () => ocrManager.undoLastSnap());
-  ipcMain.handle("desktop:ocr-reset-opponent", async (_event, args) => ocrManager.resetOpponent(args));
-  ipcMain.handle("desktop:ocr-export", async () => {
-    await ensureTraceDir();
-    return ocrManager.exportData();
-  });
-  ipcMain.handle("desktop:ocr-export-diagnostic", async () => {
-    await ensureTraceDir();
-    return ocrManager.exportDiagnosticPack();
-  });
-  ipcMain.handle("desktop:ocr-delete", async (_event, args) => ocrManager.deleteData(args));
-  ipcMain.handle("desktop:ocr-save-training-sample", async (_event, args) => ocrManager.saveTrainingSample(args));
-  ipcMain.handle("desktop:ocr-train-detector", async (_event, args) => ocrManager.trainDetector(args));
-
   createWindow();
-  ocrManager.initialize().then(publishOcrEvent).catch((error) => {
-    publishOcrEvent({ type: "status", error: error?.message || String(error) });
-  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -341,8 +181,4 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
-});
-
-app.on("before-quit", () => {
-  if (ocrManager) ocrManager.stop().catch(() => {});
 });

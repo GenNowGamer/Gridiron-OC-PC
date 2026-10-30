@@ -19,26 +19,63 @@
     </header>
 
     <main class="tablet" id="tabletRoot">
-      <aside class="tabletStrip" id="tabletStrip" aria-label="Opponent"></aside>
       <section class="tabletMain">
         <div class="tabletTop">
           <div class="tabletToolbar">
-            <div class="tabletPossession" role="group" aria-label="Offense or defense">
-              <button class="tabletPossessionBtn is-active" id="tabletOffenseBtn" type="button" data-possession="offense" aria-pressed="true">Offense</button>
-              <button class="tabletPossessionBtn" id="tabletDefenseBtn" type="button" data-possession="defense" aria-pressed="false">Defense</button>
-            </div>
+            <button class="secondaryBtn" id="scriptBuilderBtn" type="button">Script builder</button>
             <div class="tabletToolbarActions">
-              <button class="secondaryBtn" id="tabletGameStateBtn" type="button" data-toggle-game-state="1">Game State</button>
               <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
             </div>
           </div>
-          <div class="tabletGameState hidden" id="tabletGameState"></div>
         </div>
         <section class="tabletScript" id="tabletScript" aria-label="Opening script"></section>
         <div class="tabletGrid" id="tabletGrid" aria-label="Situational plays"></div>
-        <div class="tabletTicker" id="tabletTicker" role="status">Reads the play-call screen when a detector is trained. F8 repeats the read. Neither one changes the cards.</div>
+        <div class="tabletTicker" id="tabletTicker" role="status">Press Ran it after the play you called.</div>
       </section>
     </main>
+
+  <div class="overlay hidden" id="scriptBuilderOverlay" aria-hidden="true">
+    <div class="overlayCard scriptBuilderCard">
+      <div class="overlayTitleRow">
+        <div>
+          <div class="eyebrow">Offensive Game Plan</div>
+          <div class="overlayTitle">Script builder</div>
+        </div>
+        <button class="overlayCloseBtn" id="closeScriptBuilderBtn" type="button" aria-label="Close script builder">✕</button>
+      </div>
+      <div class="overlaySub" id="scriptBuilderSub">Save &amp; Close loads this sequence onto the call sheet. A new game starts at play 1.</div>
+      <div class="gameplanTabs">
+        <button class="modeBtn is-active" id="gameplanTabScript" type="button">Opening 15</button>
+        <button class="modeBtn" id="gameplanTabSheet" type="button">Call Sheet</button>
+      </div>
+      <div class="scriptBuilderBody">
+        <div class="scriptBuilderPickerCol">
+          <div class="scriptColHead">
+            <span class="scriptColTitle">Offense Navigator</span>
+            <input class="audibleSearch scriptSearch" id="scriptSearchInput" type="search" placeholder="Search formation, set, concept, or play" autocomplete="off" />
+          </div>
+          <div class="scriptPlaybookList" id="scriptPlaybookList"></div>
+        </div>
+        <div class="scriptBuilderQueueCol" id="scriptQueueCol">
+          <div class="scriptColHead">
+            <div class="scriptQueueHeaderRow">
+              <span class="scriptColTitle">Opening Sequence</span>
+              <span class="scriptCountBadge" id="scriptCountBadge">0 / 15 Plays</span>
+            </div>
+            <div class="scriptQueueToolbar">
+              <button class="secondaryBtn scriptToolbarBtn" id="scriptAutoFillBtn" type="button">Auto-Fill 15</button>
+              <button class="secondaryBtn scriptToolbarBtn" id="scriptClearBtn" type="button">Clear</button>
+            </div>
+          </div>
+          <div class="scriptQueueList" id="scriptQueueList"></div>
+        </div>
+        <div class="scriptBuilderQueueCol hidden" id="gameplanSheet"></div>
+      </div>
+      <div class="scriptModalActions">
+        <button class="primaryBtn scriptDoneBtn" id="scriptDoneBtn" type="button">Save &amp; Close</button>
+      </div>
+    </div>
+  </div>
 
   <div class="overlay hidden" id="settingsOverlay" aria-hidden="true">
     <div class="settingsCard">
@@ -65,126 +102,6 @@
       <label class="settingsLabel" for="themeSelect">Theme</label>
       <select id="themeSelect" class="settingsSelect"></select>
 
-      <div class="settingsDivider"></div>
-      <div class="ocrSettingsHead">
-        <div>
-          <div class="eyebrow">Madden OCR</div>
-          <div class="toggleSub">Local capture. Clear reads are logged. A field under 70% is left out.</div>
-        </div>
-        <span class="ocrStatusPill" id="ocrWorkerPill">Checking</span>
-      </div>
-
-      <div class="toggleRow">
-        <div>
-          <div class="toggleTitle">Enable OCR Capture</div>
-          <div class="toggleSub">Registers F8. Logs the snap after it ends. It does not pick a play.</div>
-        </div>
-        <button class="toggleBtn" id="ocrCaptureToggleBtn" type="button" aria-pressed="false">Off</button>
-      </div>
-      <div class="toggleRow">
-        <div>
-          <div class="toggleTitle">Auto-capture play-call screen</div>
-          <div class="toggleSub" id="ocrAutoCaptureSub">Train a detector first.</div>
-        </div>
-        <button class="toggleBtn" id="ocrAutoCaptureToggleBtn" type="button" aria-pressed="false" disabled>Off</button>
-      </div>
-      <div class="toggleRow">
-        <div>
-          <div class="toggleTitle">Training mode</div>
-          <div class="toggleSub" id="ocrTrainingModeSub">Off by default. F8 saves a play-call sample; Save other screen records a negative frame.</div>
-        </div>
-        <button class="toggleBtn" id="ocrTrainingToggleBtn" type="button" aria-pressed="false">Off</button>
-      </div>
-      <div class="settingsActions">
-        <button class="ghostBtn" id="ocrSaveOtherScreenBtn" type="button">Save other screen</button>
-        <button class="ghostBtn" id="ocrTrainDetectorBtn" type="button">Train detector</button>
-      </div>
-      <div class="settingsNote" id="ocrDetectorSummary">Train a detector first.</div>
-      <div class="toggleRow">
-        <div>
-          <div class="toggleTitle">Debug capture</div>
-          <div class="toggleSub">Keeps ROI crops and enriched traces so you can export a diagnostic pack after calibration or in-game captures.</div>
-        </div>
-        <button class="toggleBtn" id="ocrDebugToggleBtn" type="button" aria-pressed="false">Off</button>
-      </div>
-
-      <label class="settingsLabel" for="ocrHotkeyInput">Capture Hotkey</label>
-      <input class="settingsSelect settingsInput" id="ocrHotkeyInput" type="text" value="F8" spellcheck="false" />
-      <div class="settingsActions">
-        <button class="ghostBtn" id="ocrSaveHotkeyBtn" type="button">Register Hotkey</button>
-        <button class="ghostBtn" id="ocrOpenCalibrationBtn" type="button">Calibrate capture</button>
-        <button class="ghostBtn" id="ocrUndoSnapBtn" type="button">Undo Last Snap</button>
-        <button class="ghostBtn" id="ocrResetOpponentBtn" type="button">Reset Opponent</button>
-        <button class="ghostBtn" id="ocrExportDataBtn" type="button">Export OCR Data</button>
-        <button class="ghostBtn" id="ocrExportDiagnosticBtn" type="button">Export Diagnostic Pack</button>
-        <button class="ghostBtn dangerBtn" id="ocrDeleteDataBtn" type="button">Delete OCR Data</button>
-      </div>
-      <div class="settingsNote" id="ocrSettingsSummary">OCR is disabled.</div>
-    </div>
-  </div>
-
-  <div class="overlay hidden" id="ocrCalibrationOverlay" aria-hidden="true">
-    <div class="overlayCard ocrCalibrationCard">
-      <div class="overlayTitleRow">
-        <div>
-          <div class="eyebrow">Madden OCR</div>
-          <div class="overlayTitle">Capture Calibration</div>
-        </div>
-        <button class="overlayCloseBtn" id="ocrCloseCalibrationBtn" type="button" aria-label="Close OCR calibration">✕</button>
-      </div>
-      <div class="overlaySub">Pick a Madden presentation style, calibrate its HUD crops, then switch styles from the dropdown when you play that broadcast look.</div>
-
-      <div class="ocrFormGrid">
-        <label class="ocrWideField"><span>Presentation style</span>
-          <select id="ocrPresentationSelect" class="settingsSelect">
-            <option value="Default Presentation">Default Presentation</option>
-            <option value="Sunday Night Football">Sunday Night Football</option>
-            <option value="Monday Night Football">Monday Night Football</option>
-            <option value="Thursday Night Football">Thursday Night Football</option>
-          </select>
-        </label>
-        <label class="ocrWideField"><span>Saved profile</span><select id="ocrSavedProfileSelect" class="settingsSelect"><option value="">New profile…</option></select></label>
-        <label><span>Profile name</span><input id="ocrProfileName" class="settingsSelect settingsInput" value="Default Presentation" /></label>
-        <label id="ocrSourceKindField"><span>Source kind</span><select id="ocrSourceKind" class="settingsSelect"><option value="all">All</option><option value="capture-card">Capture card</option><option value="window">PC window</option></select></label>
-        <label class="ocrWideField"><span id="ocrSourceSelectLabel">Capture source</span><select id="ocrSourceSelect" class="settingsSelect"></select></label>
-      </div>
-      <div class="settingsActions">
-        <button class="ghostBtn" id="ocrConnectObsBtn" type="button">Refresh sources</button>
-        <button class="ghostBtn" id="ocrReferenceBtn" type="button">Capture Reference</button>
-        <button class="ghostBtn" id="ocrBenchmarkBtn" type="button">Run Capture Sample</button>
-      </div>
-
-      <div class="ocrCalibrationWorkspace">
-        <div class="ocrCanvasWrap" id="ocrCanvasWrap">
-          <canvas id="ocrCalibrationCanvas" width="960" height="540"></canvas>
-          <div class="ocrCanvasEmpty" id="ocrCanvasEmpty">Capture a reference frame to begin.</div>
-          <div id="ocrDrawRect" class="ocrDrawRect hidden" aria-hidden="true"></div>
-        </div>
-        <aside class="ocrRegionTools">
-          <label><span>Field</span><select id="ocrRegionField" class="settingsSelect"></select></label>
-          <label><span>Required</span><select id="ocrRegionRequired" class="settingsSelect"><option value="true">Required</option><option value="false">Optional</option></select></label>
-          <label><span>Threshold</span><select id="ocrThresholdMode" class="settingsSelect"><option value="otsu">Otsu</option><option value="adaptive">Adaptive</option><option value="global">Global</option><option value="none">None</option></select></label>
-          <label><span>Scale</span><input id="ocrRegionScale" class="settingsSelect settingsInput" type="number" min="1" max="6" step="0.5" value="2" /></label>
-          <label><span>Morphology</span><select id="ocrRegionMorphology" class="settingsSelect"><option value="none">None</option><option value="open">Open</option><option value="close">Close</option></select></label>
-          <label class="ocrCheckLabel"><input id="ocrRegionGrayscale" type="checkbox" checked /> Grayscale</label>
-          <label class="ocrCheckLabel"><input id="ocrRegionInvert" type="checkbox" /> Invert</label>
-          <button class="ghostBtn" id="ocrRemoveRegionBtn" type="button">Remove Region</button>
-        </aside>
-      </div>
-
-      <div class="ocrRegionList" id="ocrRegionList"></div>
-      <div class="settingsActions">
-        <button class="ghostBtn" id="ocrTestProfileBtn" type="button">Test Profile</button>
-        <button class="secondaryBtn" id="ocrSaveProfileBtn" type="button">Save Profile</button>
-      </div>
-      <div class="settingsNote" id="ocrCalibrationStatus" role="status" aria-live="polite">Not connected.</div>
-      <div class="ocrDiagnostics" id="ocrDiagnostics">
-        <div class="eyebrow">Capture Diagnostics</div>
-        <div class="ocrTestRow"><strong>Samples</strong><span id="ocrDiagSamples">0</span><span>Waiting</span></div>
-        <div class="ocrTestRow"><strong>Burst latency</strong><span id="ocrDiagLatency">p50 — · p95 —</span><span>Gate ≤700 ms</span></div>
-        <div class="ocrTestRow"><strong>Frames</strong><span id="ocrDiagFrames">No captures</span><span id="ocrDiagGate">Not evaluated</span></div>
-      </div>
-      <div class="ocrTestResults" id="ocrTestResults"></div>
     </div>
   </div>
 
@@ -196,7 +113,7 @@
         </div>
       </div>
       <div class="matchupTitle">Matchup &amp; Broadcast Setup</div>
-      <div class="matchupSub">Select your teams and the broadcast profile. Start Game deals the opening script and the 15 situational cards.</div>
+      <div class="matchupSub">Select your teams. Start Game deals the opening script and the 15 situational cards.</div>
       
       <div class="matchupVsSection">
         <div class="matchupTeamCol">
@@ -238,17 +155,12 @@
         </div>
       </div>
 
-      <div class="matchupPresentationSection">
-        <label class="matchupLabel" for="matchupOcrProfileSelect">PRESENTATION PROFILE (OCR HUD)</label>
-        <select class="matchupSelect" id="matchupOcrProfileSelect" aria-describedby="matchupOcrProfileHint"></select>
-        <div class="matchupProfileHint" id="matchupOcrProfileHint">Choose the calibrated scoreboard layout shown in your Madden session.</div>
-      </div>
-
       <div class="matchupActions">
         <button class="ghostBtn" id="matchupSkipBtn" type="button">Skip For Now</button>
         <button class="micBtn matchupConfirmBtn" id="matchupConfirmBtn" type="button">Start Game</button>
       </div>
     </div>
+  </div>
   </div>
 
   <script src="shared/recommendationCore.js"></script>
@@ -262,17 +174,6 @@
   <script src="shared/situationBoard.js"></script>
   <script src="shared/resultLabels.js"></script>
   <script src="shared/tabletSession.js"></script>
-  <script src="ocr/shared/contracts.js"></script>
-  <script src="ocr/shared/confidenceCalibration.js"></script>
-  <script src="ocr/shared/textCatalogMatcher.js"></script>
-  <script src="ocr/shared/temporalConsensus.js"></script>
-  <script src="ocr/shared/footballStateValidator.js"></script>
-  <script src="ocr/shared/snapLifecycle.js"></script>
-  <script src="ocr/shared/defensiveOutcomeInference.js"></script>
-  <script src="ocr/shared/learningProjection.js"></script>
-  <script src="ocr/shared/learnedAdjustment.js"></script>
-  <script src="ocr/shared/exactPlayRecommendation.js"></script>
   <script src="app.js"></script>
-  <script src="ocr/renderer/ocr-ui.js"></script>
 </body>
 </html>

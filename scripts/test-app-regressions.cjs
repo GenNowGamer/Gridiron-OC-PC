@@ -121,12 +121,13 @@ test('Exact Call sheets remain remembered beyond 40 sheets and clear for a new g
   assert.equal(a.run('getOcrExactVarietyMemory().exposureSheets.length'), 0);
 });
 
-test('renderer drive and end-game actions reset OCR attribution', () => {
+test('renderer drive and end-game actions no longer call OCR', () => {
   const a = app();
   a.run(`const resetReasons=[];window.desktopApi.ocrResetSession=async args=>resetReasons.push(args.reason);
     resetDriveState(); onPressEndGame();`);
-  assert.ok(a.run('resetReasons.includes("drive_reset")'));
-  assert.ok(a.run('resetReasons.includes("end_game")'));
+  assert.equal(a.run('resetReasons.length'), 0);
+  assert.equal(a.run('state.down'), 1);
+  assert.equal(a.run('state.gameStarted'), false);
 });
 
 test('production spoken parser retains field position and goal-to-go', () => {
@@ -842,7 +843,7 @@ test('qb scramble stays on offense and scores a gain below a throw', () => {
   assert.equal(a.run('state.userScore'), 0);
 });
 
-test('defensive qb scramble stays on defense and arms the next capture', () => {
+test('defensive qb scramble stays on defense without arming capture', () => {
   const a = app();
   a.run(`state.coordinatorRole='dc'; state.gameStarted=true; state.selectedTeam='CHI'; state.selectedOpponent='DAL';
     state.confirmedDcBasePlay={id:'cover-3'}; state.confirmedDcRecommendationId='cover-3';
@@ -850,7 +851,7 @@ test('defensive qb scramble stays on defense and arms the next capture', () => {
     applyDcGameState('qb_scramble');`);
   assert.equal(a.run('state.coordinatorRole'), 'dc');
   assert.equal(a.run('state.dcQbScramble'), true);
-  assert.equal(a.run('window.__ocr.context.qbScramble'), true);
+  assert.equal(a.run('window.__ocr'), undefined);
   assert.equal(a.run('state.confirmedDcBasePlay'), null);
 });
 

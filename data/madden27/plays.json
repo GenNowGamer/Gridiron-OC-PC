@@ -4923,7 +4923,7 @@
     "team": "SF",
     "formation": "Gun",
     "set": "Bunch Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -6853,7 +6853,7 @@
     "team": "SF",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -12793,7 +12793,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Bunch Open TE",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -12998,7 +12998,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Bunch Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -15422,7 +15422,7 @@
     "team": "CHI",
     "formation": "Gun",
     "set": "Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -20474,7 +20474,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Bunch Offset",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -21060,7 +21060,7 @@
     "team": "CIN",
     "formation": "Gun",
     "set": "Bunch Trio Open",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -31283,7 +31283,7 @@
     "team": "BUF",
     "formation": "Pistol",
     "set": "Open Flex Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -32187,7 +32187,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Cluster HB Str",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -32933,7 +32933,7 @@
     "team": "BUF",
     "formation": "Gun",
     "set": "Empty Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -41165,7 +41165,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Bunch Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -41613,7 +41613,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Bunch Wide Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -43106,7 +43106,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -43913,7 +43913,7 @@
     "team": "DEN",
     "formation": "Gun",
     "set": "Tight",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -47331,7 +47331,7 @@
     "team": "CLE",
     "formation": "Singleback",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -50566,7 +50566,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -51100,7 +51100,7 @@
     "team": "CLE",
     "formation": "Gun",
     "set": "Bunch Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -59146,7 +59146,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "5WR Tight",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -60042,7 +60042,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Bunch Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -60213,7 +60213,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Cluster HB Str",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -62135,7 +62135,7 @@
     "team": "TB",
     "formation": "Gun",
     "set": "Tight Doubles",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -65404,7 +65404,7 @@
     "team": "ARI",
     "formation": "Singleback",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -69606,7 +69606,7 @@
     "team": "ARI",
     "formation": "Gun",
     "set": "Bunch X Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -78612,7 +78612,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Bunch Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -79361,7 +79361,7 @@
     "team": "LAC",
     "formation": "Gun",
     "set": "Bunch Wide Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -87450,7 +87450,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Bunch Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -88688,7 +88688,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Empty Bunch Y Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -89882,7 +89882,7 @@
     "team": "KC",
     "formation": "Gun",
     "set": "Stack Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -96303,7 +96303,7 @@
     "team": "IND",
     "formation": "Pistol",
     "set": "Wing Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -96531,7 +96531,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Bunch Offset",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -98616,7 +98616,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Empty Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -99387,7 +99387,7 @@
     "team": "IND",
     "formation": "Gun",
     "set": "Split Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -108937,7 +108937,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Empty Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -110486,7 +110486,7 @@
     "team": "WAS",
     "formation": "Gun",
     "set": "Tight",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -112951,7 +112951,7 @@
     "team": "DAL",
     "formation": "Singleback",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -116798,7 +116798,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Bunch Open TE",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -117408,7 +117408,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Bunch Wide",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -119392,7 +119392,7 @@
     "team": "DAL",
     "formation": "Gun",
     "set": "Split Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -124939,7 +124939,7 @@
     "team": "MIA",
     "formation": "Pistol",
     "set": "Wing Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -125361,7 +125361,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -126288,7 +126288,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Bunch Wide Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -126373,7 +126373,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Cluster HB Str",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -127187,7 +127187,7 @@
     "team": "MIA",
     "formation": "Gun",
     "set": "Doubles Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -133068,7 +133068,7 @@
     "team": "PHI",
     "formation": "I Form",
     "set": "Pro",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -135489,7 +135489,7 @@
     "team": "PHI",
     "formation": "Gun",
     "set": "Bunch X Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -144861,7 +144861,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Bunch",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -145174,7 +145174,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Bunch Offset",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -145494,7 +145494,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Bunch Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -146153,7 +146153,7 @@
     "team": "ATL",
     "formation": "Gun",
     "set": "Bunch Wide Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -153018,7 +153018,7 @@
     "team": "NYG",
     "formation": "Pistol",
     "set": "Open Flex Close",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -153298,7 +153298,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Bunch Wide Nasty",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -153447,7 +153447,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Bunch Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -155243,7 +155243,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Spread",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -155544,7 +155544,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Spread Dbl Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"
@@ -155894,7 +155894,7 @@
     "team": "NYG",
     "formation": "Gun",
     "set": "Stack Y-Flex",
-    "play_name": "L SPOT",
+    "play_name": "Z SPOT",
     "type": "PASS",
     "concepts": [
       "Pass"

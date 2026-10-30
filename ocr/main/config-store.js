@@ -1,6 +1,9 @@
 'use strict';
 
 const REMOVED_OCR_FIELDS = new Set(['quarter_clock', 'scores', 'quarter', 'game_clock']);
+// The offensive sheet does not read this crop. Drop a saved box so it is not OCR'd.
+// The detector class with the same name stays in playcall.onnx.
+const RETIRED_OCR_CROPS = new Set(['offense_formation_personnel']);
 
 const DEFAULT_STATE = Object.freeze({
   version: 2,
@@ -38,8 +41,10 @@ function stripRemovedProfileRegions(profiles) {
   return (Array.isArray(profiles) ? profiles : []).map((profile) => {
     const next = clone(profile || {});
     if (Array.isArray(next.regions)) {
-      next.regions = next.regions.filter((region) =>
-        !REMOVED_OCR_FIELDS.has(String(region && (region.field || region.id) || '').trim()));
+      next.regions = next.regions.filter((region) => {
+        const id = String(region && (region.field || region.id) || '').trim();
+        return !REMOVED_OCR_FIELDS.has(id) && !RETIRED_OCR_CROPS.has(id);
+      });
     }
     return next;
   });
@@ -93,6 +98,11 @@ class VersionedConfigStore {
     try {
       const parsed = JSON.parse(await this.fs.readFile(this.filePath, 'utf8'));
       this.state = this._migrate(parsed);
+      const savedProfiles = JSON.stringify(Array.isArray(parsed.profiles) ? parsed.profiles : []);
+      if (savedProfiles.includes('offense_formation_personnel')
+        && !JSON.stringify(this.state.profiles).includes('offense_formation_personnel')) {
+        await this._writeAtomic(this.state);
+      }
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
       this.state = clone(DEFAULT_STATE);
