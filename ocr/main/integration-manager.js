@@ -405,6 +405,7 @@ class IntegrationOcrManager extends EventEmitter {
     this.watchIntervalMs = Number(options.watchIntervalMs) || WATCH_INTERVAL_MS;
     this.watchDebounceMs = Number(options.watchDebounceMs) || WATCH_DEBOUNCE_MS;
     this.watchState = 'idle';
+    this.watchError = '';
     this.watchDebounceAt = 0;
     this._watchTimer = null;
     this._watchInFlight = false;
@@ -489,6 +490,7 @@ class IntegrationOcrManager extends EventEmitter {
         retainDebugFrames: Boolean(state.config.retainDebugFrames),
         trainingMode: Boolean(state.config.trainingMode),
         autoCaptureEnabled: Boolean(state.config.autoCaptureEnabled && detector.trained),
+        possession: state.config.possession === 'defense' ? 'defense' : 'offense',
         ...state.config.capture,
       },
       profiles: state.profiles,
@@ -506,6 +508,7 @@ class IntegrationOcrManager extends EventEmitter {
       watch: {
         active: Boolean(this._watchTimer),
         state: this.watchState,
+        lastError: this.watchError || '',
       },
       lastCapture: this.lastCapture,
     });
@@ -639,6 +642,9 @@ class IntegrationOcrManager extends EventEmitter {
     if (patch.autoCaptureEnabled != null) {
       config.autoCaptureEnabled = patch.autoCaptureEnabled === true
         && fsSync.existsSync(this.detectorModelPath);
+    }
+    if (patch.possession === 'defense' || patch.possession === 'offense') {
+      config.possession = patch.possession;
     }
     await this.store.update({ featureFlags: nextFlags, config });
     await this.debugPack.setEnabled(this.store.get().config.retainDebugFrames === true);
@@ -844,6 +850,13 @@ class IntegrationOcrManager extends EventEmitter {
 
   async capture(args = {}) {
     const state = this.store.get();
+    const reason = clean(args.reason);
+    if (state.config.possession === 'defense' && (reason === 'hotkey' || reason === 'auto_watch')) {
+      throw Object.assign(
+        new Error('On defense. Play-call capture stays off until you switch back to offense.'),
+        { code: 'OCR_ON_DEFENSE' },
+      );
+    }
     if (!state.featureFlags.capture) throw Object.assign(new Error('OCR capture is disabled.'), { code: 'OCR_DISABLED' });
     const profile = this._activeProfile(state);
     if (!profile) throw Object.assign(new Error('No active OCR profile.'), { code: 'OCR_PROFILE_REQUIRED' });
@@ -2210,14 +2223,15 @@ class IntegrationOcrManager extends EventEmitter {
       state.featureFlags.capture
       && state.config.autoCaptureEnabled === true
       && state.config.trainingMode !== true
-      && source
-      && fsSync.existsSync(this.detectorModelPath),
-    );
-  }
+    && source
+    && state.config.possession !== 'defense'
+    && fsSync.existsSync(this.detectorModelPath),
+  );
+}
 
   _syncWatchLoop(state = this.store.get()) {
     if (!this._canRunWatchLoop(state)) {
-      this._stopWatchLoop();
+      this._stopWatchLoop(true);
       return;
     }
     if (this._watchTimer) return;
@@ -2231,7 +2245,7 @@ class IntegrationOcrManager extends EventEmitter {
     }
   }
 
-  _stopWatchLoop() {
+  _stopWatchLoop(clearError = false) {
     if (this._watchTimer) {
       clearInterval(this._watchTimer);
       this._watchTimer = null;
@@ -2239,13 +2253,31 @@ class IntegrationOcrManager extends EventEmitter {
     this._watchInFlight = false;
     this.watchState = 'idle';
     this.watchDebounceAt = 0;
+    if (clearError) this.watchError = '';
+  }
+
+  _noteWatchProbe(error) {
+    const raw = clean(error && error.message);
+    const message = /timed out/i.test(raw)
+      ? 'Auto-capture detector timed out before it could read the screen.'
+      : (raw || 'Play-call detector probe failed.');
+    if (this.watchError === message) return;
+    this.watchError = message;
+    this._emit('status', this.getStatus());
+    this._emit('capture:error', { error: message, code: error && error.code, reason: 'auto_watch' });
+  }
+
+  _clearWatchProbe() {
+    if (!this.watchError) return;
+    this.watchError = '';
+    this._emit('status', this.getStatus());
   }
 
   async _watchTick() {
     if (this._watchInFlight || this.busy) return;
     const state = this.store.get();
     if (!this._canRunWatchLoop(state)) {
-      this._stopWatchLoop();
+      this._stopWatchLoop(true);
       return;
     }
     const profile = this._activeProfile(state);
@@ -2264,11 +2296,22 @@ class IntegrationOcrManager extends EventEmitter {
         modelPath: this.detectorModelPath,
         adapter: state.config.capture.adapter,
         freshFrameTimeoutMs: state.config.capture.freshFrameTimeoutMs,
-      }, { timeoutMs: 4000 });
+      }, { timeoutMs: this.sidecar.requestTimeoutMs || 15000 });
       if (!detected || detected.trained !== true) {
-        this._stopWatchLoop();
+        const detail = clean(detected && (detected.detail || detected.reason));
+        this._noteWatchProbe(new Error(
+          detail
+            ? `Play-call detector failed: ${detail.slice(0, 180)}`
+            : 'Play-call detector is not ready.',
+        ));
+        // A missing model will not recover until config is saved again.
+        // A failed read can be the next frame, so keep probing.
+        if (!detected || clean(detected.reason) !== 'model_load_failed') {
+          this._stopWatchLoop();
+        }
         return;
       }
+      this._clearWatchProbe();
       const playCall = detected.playCall === true;
       const now = this.now();
       if (this.watchState === 'idle') {
@@ -2295,8 +2338,9 @@ class IntegrationOcrManager extends EventEmitter {
         this.watchState = 'idle';
         this.watchDebounceAt = 0;
       }
-    } catch (_error) {
-      // Detector probes must never break the loop or block F8.
+    } catch (error) {
+      // A failed probe must not block F8. Leave the loop running and say why.
+      this._noteWatchProbe(error);
     } finally {
       this._watchInFlight = false;
     }

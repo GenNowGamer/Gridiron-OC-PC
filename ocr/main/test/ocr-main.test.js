@@ -332,13 +332,15 @@ test('watch loop requires trained model, fires one burst per appearance, and all
   const hotkey = new FakeHotkey();
   let now = 1000;
   let playCall = false;
+  let detectError = null;
   const origRequest = sidecar.request.bind(sidecar);
-  sidecar.request = async (method, params) => {
+  sidecar.request = async (method, params, options) => {
     if (method === 'screen.detect') {
-      sidecar.requests.push({ method, params });
+      sidecar.requests.push({ method, params, options });
+      if (detectError) throw detectError;
       return { trained: true, reason: null, boxes: [], playCall };
     }
-    return origRequest(method, params);
+    return origRequest(method, params, options);
   };
   const manager = new IntegrationOcrManager({
     userData,
@@ -384,6 +386,8 @@ test('watch loop requires trained model, fires one burst per appearance, and all
   await manager._watchTick();
   assert.equal(manager.watchState, 'debounce');
   assert.equal(countBursts(), 0);
+  const detectCall = sidecar.requests.findLast((request) => request.method === 'screen.detect');
+  assert.ok(detectCall.options.timeoutMs >= 12000);
 
   now += 260;
   await manager._watchTick();
@@ -405,6 +409,25 @@ test('watch loop requires trained model, fires one burst per appearance, and all
   now += 300;
   await manager._watchTick();
   assert.equal(manager.watchState, 'idle');
+
+  detectError = Object.assign(new Error('Sidecar request timed out: screen.detect'), { code: 'SIDECAR_TIMEOUT' });
+  await manager._watchTick();
+  assert.match(manager.getStatus().watch.lastError, /timed out/i);
+  assert.equal(manager.getStatus().watch.active, true);
+  detectError = null;
+  await manager._watchTick();
+  assert.equal(manager.getStatus().watch.lastError, '');
+
+  await manager.updateConfig({ possession: 'defense' });
+  assert.equal(manager.getStatus().config.possession, 'defense');
+  assert.equal(manager.getStatus().watch.active, false);
+  await assert.rejects(
+    () => manager.capture({ reason: 'hotkey' }),
+    (error) => error && error.code === 'OCR_ON_DEFENSE',
+  );
+  assert.equal(countBursts(), 2);
+  await manager.updateConfig({ possession: 'offense' });
+  assert.equal(manager.getStatus().watch.active, true);
 
   await manager.stop();
 });

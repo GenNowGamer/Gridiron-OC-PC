@@ -233,10 +233,12 @@
     const detectorTrained = detector.trained === true;
     updateToggle(ui.autoCaptureToggle, detectorTrained && local.config.autoCaptureEnabled);
     if (ui.autoCaptureToggle) ui.autoCaptureToggle.disabled = !detectorTrained;
+    const watchError = text(status.watch?.lastError);
     if (ui.autoCaptureSub) {
-      ui.autoCaptureSub.textContent = detectorTrained
-        ? "Reads the play-call screen once per appearance. F8 repeats the read."
-        : "Train a detector first.";
+      ui.autoCaptureSub.textContent = watchError
+        || (detectorTrained
+          ? "Reads the play-call screen once per appearance. F8 repeats the read."
+          : "Train a detector first.");
     }
     if (ui.detectorSummary) {
       const counts = `${Number(detector.playCallSamples) || 0} play-call · ${Number(detector.otherSamples) || 0} other`;
@@ -1760,7 +1762,11 @@
         if (event?.type === "capture:complete" && event.capture) {
           renderCapture(attachLearningSnapshot(event.capture, event));
         }
-        if (event?.type === "capture:error" && ui.status) ui.status.textContent = `Capture failed: ${text(event.error)}`;
+        if (event?.type === "capture:error" && ui.status) {
+          ui.status.textContent = event.code === "OCR_ON_DEFENSE"
+            ? text(event.error)
+            : `Capture failed: ${text(event.error)}`;
+        }
         if (event?.type === "status") refreshState();
       });
     }

@@ -54,80 +54,90 @@ def letterbox(image, size=INPUT_SIZE):
 
 
 def parse_predictions(output, scale, pad_x, pad_y, orig_w, orig_h, size=INPUT_SIZE):
-    """Map a YOLOv8 ONNX output onto top-left normalized boxes."""
+    """Map a YOLOv8 ONNX output onto top-left normalized boxes.
+
+    A 1280-pixel model emits tens of thousands of anchors. Score them as arrays
+    so a live probe finishes inside the sidecar request budget.
+    """
     array = np.asarray(output)
     if array.ndim == 3 and array.shape[0] == 1:
         array = array[0]
-    if array.ndim != 2:
+    if array.ndim != 2 or array.shape[0] == 0:
         return []
     if array.shape[0] >= 5 and array.shape[1] > array.shape[0] and array.shape[1] != 6:
         array = array.T
-    boxes = []
     if array.shape[1] == 6:
-        rows = array
-        for row in rows:
-            x1, y1, x2, y2, score, class_id = [float(value) for value in row[:6]]
-            boxes.append(
-                _box_from_corners(
-                    x1, y1, x2, y2, score, int(class_id),
-                    scale, pad_x, pad_y, orig_w, orig_h, already_input=True,
-                )
-            )
-    else:
-        class_count = array.shape[1] - 4
-        if class_count < 1:
-            return []
-        for row in array:
-            scores = row[4:4 + class_count]
-            class_id = int(np.argmax(scores))
-            confidence = float(scores[class_id])
-            cx, cy, bw, bh = [float(value) for value in row[:4]]
-            if max(abs(cx), abs(cy), abs(bw), abs(bh)) <= 1.5:
-                cx *= size
-                cy *= size
-                bw *= size
-                bh *= size
-            boxes.append(
-                _box_from_corners(
-                    cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2,
-                    confidence, class_id, scale, pad_x, pad_y, orig_w, orig_h,
-                    already_input=True,
-                )
-            )
-    best = {}
-    for box in boxes:
-        if not box or box["confidence"] < SCORE_FLOOR:
-            continue
-        current = best.get(box["field"])
-        if current is None or box["confidence"] > current["confidence"]:
-            best[box["field"]] = box
-    return list(best.values())
+        return _best_boxes(
+            array[:, 5],
+            array[:, 4],
+            array[:, :4],
+            scale, pad_x, pad_y, orig_w, orig_h,
+        )
+    class_count = int(array.shape[1]) - 4
+    if class_count < 1:
+        return []
+    scores = array[:, 4:4 + class_count]
+    class_ids = np.argmax(scores, axis=1)
+    confidence = scores[np.arange(array.shape[0]), class_ids]
+    xywh = array[:, :4].astype(np.float64, copy=True)
+    normalized = np.max(np.abs(xywh), axis=1) <= 1.5
+    if np.any(normalized):
+        xywh[normalized] *= float(size)
+    cx = xywh[:, 0]
+    cy = xywh[:, 1]
+    half_w = xywh[:, 2] / 2
+    half_h = xywh[:, 3] / 2
+    corners = np.stack((cx - half_w, cy - half_h, cx + half_w, cy + half_h), axis=1)
+    return _best_boxes(class_ids, confidence, corners, scale, pad_x, pad_y, orig_w, orig_h)
 
 
-def _box_from_corners(x1, y1, x2, y2, score, class_id, scale, pad_x, pad_y, orig_w, orig_h, already_input):
-    if class_id < 0 or class_id >= len(FIELD_CLASSES):
-        return None
-    if already_input:
-        x1 = (x1 - pad_x) / scale
-        y1 = (y1 - pad_y) / scale
-        x2 = (x2 - pad_x) / scale
-        y2 = (y2 - pad_y) / scale
-    x1 = min(max(x1, 0.0), float(orig_w))
-    y1 = min(max(y1, 0.0), float(orig_h))
-    x2 = min(max(x2, 0.0), float(orig_w))
-    y2 = min(max(y2, 0.0), float(orig_h))
+def _best_boxes(class_ids, confidence, corners, scale, pad_x, pad_y, orig_w, orig_h):
+    """Keep the highest-confidence valid box for each field, in first-seen order."""
+    class_ids = np.trunc(np.asarray(class_ids, dtype=np.float64)).astype(np.int64)
+    confidence = np.asarray(confidence, dtype=np.float64)
+    corners = np.asarray(corners, dtype=np.float64)
+    if class_ids.size == 0 or orig_w < 1 or orig_h < 1:
+        return []
+    scale = float(scale)
+    if scale == 0:
+        return []
+    x1 = np.clip((corners[:, 0] - pad_x) / scale, 0.0, float(orig_w))
+    y1 = np.clip((corners[:, 1] - pad_y) / scale, 0.0, float(orig_h))
+    x2 = np.clip((corners[:, 2] - pad_x) / scale, 0.0, float(orig_w))
+    y2 = np.clip((corners[:, 3] - pad_y) / scale, 0.0, float(orig_h))
     width = x2 - x1
     height = y2 - y1
-    if width < 1 or height < 1 or orig_w < 1 or orig_h < 1:
-        return None
-    return {
-        "field": FIELD_CLASSES[class_id],
-        "x": x1 / orig_w,
-        "y": y1 / orig_h,
-        "width": width / orig_w,
-        "height": height / orig_h,
-        "confidence": float(score),
-    }
+    valid = (
+        (class_ids >= 0)
+        & (class_ids < len(FIELD_CLASSES))
+        & (confidence >= SCORE_FLOOR)
+        & (width >= 1)
+        & (height >= 1)
+    )
+    if not np.any(valid):
+        return []
+    indexes = np.flatnonzero(valid)
+    winners = []
+    for class_index in range(len(FIELD_CLASSES)):
+        chosen = indexes[class_ids[indexes] == class_index]
+        if chosen.size == 0:
+            continue
+        best = int(chosen[int(np.argmax(confidence[chosen]))])
+        winners.append((int(chosen[0]), best, class_index))
+    winners.sort(key=lambda item: item[0])
+    origin_w = float(orig_w)
+    origin_h = float(orig_h)
+    return [
+        {
+            "field": FIELD_CLASSES[class_index],
+            "x": float(x1[index] / origin_w),
+            "y": float(y1[index] / origin_h),
+            "width": float(width[index] / origin_w),
+            "height": float(height[index] / origin_h),
+            "confidence": float(confidence[index]),
+        }
+        for _first, index, class_index in winners
+    ]
 
 
 def play_call_ready(boxes):

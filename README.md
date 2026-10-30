@@ -40,7 +40,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 1. **New Game deals the sheet.** One 15-play opening script and 15 situational cards come from the selected team's offensive playbook.
 2. **Ran it confirms what you called.** On the script, that advances to the next scripted play. On a situational card, only that card is replaced.
-3. **F8 logs the snap that just ended.** Yards come from the change in yard line. Down and distance decide whether that gain was a success. The capture does not change the script or the cards.
+3. **F8 or auto-capture logs the snap that just ended.** Yards come from the change in yard line. Down and distance decide whether that gain was a success. A previous offensive name that matches your playbook is scored even when you did not press **Ran it**. The capture does not change the script or the cards.
 4. **Each situational card rotates its own list.** A play comes back to that card only after every other play that fits the card has already been shown. Team identity does not weight that draw.
 5. **Capture stays on this PC.** OCR and the optional play-call detector run locally. Auto-capture stays off until `playcall.onnx` exists.
 
@@ -58,6 +58,9 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 - **Opening script:** New Game deals 15 plays. Goal Line formation plays are left out of the script. **Ran it** moves to the next play. F8 and auto-capture do not move the script or put a play back.
 - **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. **Ran it** replaces only that card. The replacement is drawn from plays that fit the card and have not been shown there yet this game. Plays already sitting on the other cards are skipped while an unseen play remains. A play can return only after that card's fitting list has been shown once. Goal Line formation plays, such as Goal Line / Normal / PA Sprint, appear only on the Goal Line card.
 - **Situation glow:** A captured down, yard line, or defensive shell lights the matching card with a gold pulse and a Now mark. A down lights its down card. Own 10 or closer lights Backed up. Opponent 20 or closer, outside the goal line, lights Red zone. A real goal-line spot lights Goal Line. Blitz, Man, Cover 1, and Cover 3 light those beater cards. Several cards can glow at once. The plays on the cards do not change.
+- **Offense / Defense:** The toolbar switch starts on **Offense**. **Defense** stops auto-capture and F8 until you switch back. It does not deal defensive cards or score a defensive call. **New Game** returns to **Offense**.
+- **Game State:** On offense, the button records how the drive ended: Touchdown, Field Goal, Sack, QB Scramble, Punt, Safety, Interception, Pick 6, Fumble, Scoop & Score, Turnover on Downs, or Quarter Expired. Touchdown, field goal, punt, safety, interception, fumble, and turnover on downs switch the sheet to **Defense**. Sack, QB Scramble, Pick 6, Scoop & Score, and Quarter Expired leave it on **Offense**. A pending **Ran it** play is graded with that result.
+- **Series strip:** Their offense, their defense, your record, and last capture describe the current game only. They clear when the app starts and when **New Game** is confirmed. They are not saved for the next launch.
 - **Last capture:** The strip shows the logged play, the yards, and success or failure. A new set of downs that is still 1st & 10 uses the yard-line change, so a 10-yard gain that stays 1st & 10 is `+10 · success`. Reading the same play-call screen again does not replace that result with a no-gain failure. A rate for that play, slot, and opponent appears after three results and does not choose the next card.
 - **Play-call detector:** Settings can train a local YOLOv8n model from F8 play-call samples and **Save other screen** negatives. Training needs at least one of each. The model is `playcall.onnx` under the app's user data, not a file in the repo. Auto-capture stays disabled until that file exists, and it also stays off while Training mode is on. The watch loop looks about four times a second, waits 250 ms, and runs one OCR burst per play-call appearance. A screen counts as a play call when down-and-distance and field position are both at least 0.75. F8 still captures immediately. A training failure is one short sentence in Settings. The Ultralytics log is not shown there.
 
@@ -72,7 +75,7 @@ The live window does not recommend or confirm a defensive play. Defensive playbo
 
 ### 3. How a snap is graded
 
-`shared/resultLabels.js` compares the spot saved when you press **Ran it** with the next play-call read.
+`shared/resultLabels.js` compares the previous accepted spot with the next play-call read. **Ran it** saves that spot for the card you confirmed. A capture with no **Ran it** still grades the snap when the previous offensive name matches a play in your book. The first read of a drive has no earlier spot, so it is not graded until the next play-call screen.
 
 - Yards are the change in absolute field position. Own yard line counts up from 0. Opponent yard line counts as `100` minus the number. Midfield is 50. A jump larger than 80 yards is ignored as a misread.
 - Down and distance supply the yards only when one of the yard lines is missing. If the down advances by one, yards are the old distance minus the new distance. If the down returns to 1st from any later down, yards are at least the previous distance.
@@ -111,9 +114,10 @@ The live window does not recommend or confirm a defensive play. Defensive playbo
 2. Select the capture card or the Madden window, calibrate the down-and-distance and field-position boxes, and test the profile.
 3. Press **New Game**. That deals a new opening script and 15 situational cards.
 4. Enable **OCR Capture**. The capture hotkey is **F8**.
-5. Call the script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced. F8 does not do either.
-6. On the next play-call screen, press **F8**. A field is logged only when its read clears 70%. Yards are the change in yard line. The strip shows success or failure. The cards stay as they were.
-7. To use auto-capture, turn **Training mode** on, save play-call samples with F8 and at least one **Save other screen**, then press **Train detector**. After `playcall.onnx` is written, turn Training mode off and turn **Auto-capture play-call screen** on. Restart the app if it was open while training finished.
+5. Call the script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced. F8 does not do either. A play you pick inside Madden can still be scored on the next capture when its name matches your playbook.
+6. On the next play-call screen, press **F8**, or leave auto-capture on. A field is logged only when its read clears 70%. Yards are the change in yard line. The strip shows success or failure. The cards stay as they were.
+7. Press **Defense** when the other team has the ball. Auto-capture and F8 stay off until you press **Offense**. **Game State** does that for a drive-ending result.
+8. To use auto-capture, turn **Training mode** on, save play-call samples with F8 and at least one **Save other screen**, then press **Train detector**. After `playcall.onnx` is written, turn Training mode off and turn **Auto-capture play-call screen** on. Restart the app if it was open while training finished.
 
 <details>
 <summary><b>📸 Click to explore additional Coordinator & Preferences UI Screens</b></summary>
@@ -157,7 +161,7 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
 
 - **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). Settings chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `COVER 3 SKY WK`).
 - **Detector files:** Training writes `playcall.onnx` and the sample set under Electron `userData` (`models\playcall.onnx`, `playcall-dataset`). Those files are not committed. Ultralytics is used only while training. The installed app runs the exported ONNX model.
-- **Data Persistence:** User preferences, team profiles, and persistent scouting history are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`).
+- **Data Persistence:** User preferences and team profiles are saved locally in the standard Electron `userData` directory (`preferences.json`, `localStorage`). The call-sheet reads for their offense, their defense, your record, and last capture are kept only for the current game.
 - **Telemetry & Privacy:** Zero cloud telemetry. All playbooks and screen captures are processed strictly on your local hardware.
 
 ---

@@ -21,8 +21,18 @@
     <main class="tablet" id="tabletRoot">
       <aside class="tabletStrip" id="tabletStrip" aria-label="Opponent"></aside>
       <section class="tabletMain">
-        <div class="tabletToolbar">
-          <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
+        <div class="tabletTop">
+          <div class="tabletToolbar">
+            <div class="tabletPossession" role="group" aria-label="Offense or defense">
+              <button class="tabletPossessionBtn is-active" id="tabletOffenseBtn" type="button" data-possession="offense" aria-pressed="true">Offense</button>
+              <button class="tabletPossessionBtn" id="tabletDefenseBtn" type="button" data-possession="defense" aria-pressed="false">Defense</button>
+            </div>
+            <div class="tabletToolbarActions">
+              <button class="secondaryBtn" id="tabletGameStateBtn" type="button" data-toggle-game-state="1">Game State</button>
+              <button class="secondaryBtn" id="newDriveBtn" type="button">New Game</button>
+            </div>
+          </div>
+          <div class="tabletGameState hidden" id="tabletGameState"></div>
         </div>
         <section class="tabletScript" id="tabletScript" aria-label="Opening script"></section>
         <div class="tabletGrid" id="tabletGrid" aria-label="Situational plays"></div>

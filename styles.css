@@ -2750,9 +2750,56 @@ body {
   padding: 12px;
 }
 
+.tabletTop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .tabletToolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.tabletToolbarActions {
+  display: flex;
+  gap: 8px;
+}
+
+.tabletPossession {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabletPossessionBtn {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 10px 16px;
+  min-width: 110px;
+  cursor: pointer;
+}
+
+.tabletPossessionBtn.is-active {
+  background: var(--secondary);
+  color: var(--on-secondary, #0e1722);
+}
+
+.tabletPossessionBtn[data-possession="defense"].is-active {
+  background: #c45c26;
+  color: #fff;
+}
+
+.tabletGameState {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 12px;
 }
 
 .tabletScript {
