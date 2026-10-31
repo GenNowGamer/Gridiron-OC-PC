@@ -5,22 +5,24 @@
   "use strict";
 
   var OC_SLOTS = [
-    { id: "first_med", label: "1st & med", side: "oc", families: ["inside_zone", "split_zone", "duo_power", "quick_game", "boot", "dive", "iso"] },
-    { id: "second_med", label: "2nd & med", side: "oc", families: ["inside_zone", "duo_power", "quick_game", "curl_flat", "draw", "counter"] },
-    { id: "second_long", label: "2nd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "flood", "draw", "screen"] },
-    { id: "third_med", label: "3rd & med", side: "oc", families: ["quick_game", "man_beat", "curl_flat", "snag_spot", "levels_dig"] },
-    { id: "third_long", label: "3rd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "snag_spot", "man_beat", "flood"] },
-    { id: "fourth_short", label: "4th & short", side: "oc", families: ["duo_power", "inside_zone", "dive", "iso", "rpo"] },
+    { id: "first_med", label: "1st & med", side: "oc", families: ["inside_zone", "split_zone", "duo_power", "quick_game", "boot", "dive", "iso", "wide_zone", "counter", "rpo", "screen", "read_option", "trap"] },
+    { id: "second_med", label: "2nd & med", side: "oc", families: ["inside_zone", "duo_power", "quick_game", "curl_flat", "counter", "smash", "snag_spot"] },
+    { id: "second_long", label: "2nd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "flood", "draw", "screen", "counter", "shot", "verticals"] },
+    { id: "third_med", label: "3rd & med", side: "oc", families: ["quick_game", "curl_flat", "snag_spot", "levels_dig", "smash"] },
+    { id: "third_long", label: "3rd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "snag_spot", "flood", "shot", "verticals", "screen", "man_beat"] },
+    { id: "fourth_short", label: "4th & short", side: "oc", families: ["duo_power", "inside_zone", "dive", "iso", "rpo", "quick_game"] },
     { id: "backed_up", label: "Backed up", side: "oc", families: ["quick_game", "inside_zone", "duo_power", "dive"] },
-    { id: "red_zone", label: "Red zone", side: "oc", families: ["duo_power", "inside_zone", "smash", "snag_spot", "boot", "rpo", "redzone_pass"] },
-    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass"] },
-    { id: "blitz_beater", label: "Blitz beater", side: "oc", families: ["quick_game", "screen", "draw", "inside_zone", "leak"] },
-    { id: "man_beater", label: "Man beater", side: "oc", families: ["man_beat", "quick_game", "snag_spot", "screen"] },
-    { id: "cover3_beater", label: "Cover 3 beater", side: "oc", families: ["flood", "quick_game", "boot", "inside_zone", "curl_flat"] },
-    { id: "shot", label: "Shot", side: "oc", families: ["shot", "verticals"] },
+    { id: "red_zone", label: "Red zone", side: "oc", families: ["duo_power", "inside_zone", "smash", "snag_spot", "boot", "rpo", "redzone_pass", "quick_game", "shot", "verticals", "man_beat", "curl_flat"] },
+    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass", "quick_game", "shot", "verticals"] },
+    { id: "blitz_beater", label: "Blitz beater", side: "oc", families: ["quick_game", "screen", "draw", "man_beat"] },
+    { id: "man_beater", label: "Man beater", side: "oc", families: ["man_beat", "screen", "snag_spot"] },
+    { id: "cover3_beater", label: "Cover 3 beater", side: "oc", families: ["flood", "curl_flat", "quick_game", "snag_spot", "levels_dig", "boot"] },
+    { id: "shot", label: "Shot", side: "oc", families: ["shot", "verticals", "hail_mary"] },
     { id: "quick_game", label: "Quick game", side: "oc", families: ["quick_game", "curl_flat", "snag_spot"] },
-    { id: "play_action", label: "PA / motion", side: "oc", families: ["boot", "flood", "leak", "jet"], types: ["PA"] },
+    { id: "play_action", label: "PA / motion", side: "oc", families: ["boot", "flood", "leak", "jet", "wheel"], types: ["PA"] },
   ];
+
+  var PRIMARY_FAMILY = ["hail_mary", "rpo", "redzone_pass", "screen", "read_option", "trap", "smash", "man_beat", "snag_spot", "verticals", "levels_dig", "flood", "shot", "curl_flat", "wheel", "quick_game", "boot", "leak", "jet", "counter", "duo_power", "split_zone", "wide_zone", "draw", "dive", "iso", "inside_zone"];
 
   var DC_SLOTS = [
     { id: "d_first_10", label: "1st & 10", side: "dc", prefer: ["nickel", "four_three", "three_four"] },
@@ -92,9 +94,113 @@
     return GENERAL_REASONS[clean(slotId)] || "Fits this situation.";
   }
 
-  function familyOfPlay(play, familyOf) {
-    if (typeof familyOf === "function") return clean(familyOf(play));
-    return clean(play && (play.family || play.fam));
+  function familiesOfPlay(play, familyOf) {
+    if (typeof familyOf === "function") {
+      var value = familyOf(play);
+      if (Array.isArray(value)) {
+        return value.map(clean).filter(Boolean);
+      }
+      var one = clean(value);
+      if (one) return [one];
+    }
+    var stored = clean(play && (play.family || play.fam));
+    return stored ? [stored] : [];
+  }
+
+  function textOf(play) {
+    return clean(play && play.play_name).toLowerCase();
+  }
+
+  function conceptList(play) {
+    var concepts = play && play.concepts;
+    if (!Array.isArray(concepts)) return [];
+    return concepts.map(function (value) { return clean(value).toLowerCase(); }).filter(Boolean);
+  }
+
+  function hasTerm(name, concepts, needle) {
+    if (name.indexOf(needle) >= 0) return true;
+    return concepts.some(function (value) { return value.indexOf(needle) >= 0; });
+  }
+
+  function hasAny(name, concepts, needles) {
+    return needles.some(function (needle) { return hasTerm(name, concepts, needle); });
+  }
+
+  function isHailMaryFormation(play) {
+    return (clean(play && play.formation) + " " + clean(play && play.set)).toLowerCase().indexOf("hail mary") >= 0;
+  }
+
+  function isScreenPlay(name, concepts) {
+    var combined = name + " " + concepts.join(" ");
+    var marked = ["screen", "bubble", "tunnel", "smoke", "jailbreak", "slip screen"].some(function (marker) {
+      return combined.indexOf(marker) >= 0;
+    });
+    if (!marked) return false;
+    if (name.indexOf("fake screen") >= 0 || name.indexOf("fk screen") >= 0) return false;
+    return true;
+  }
+
+  function conceptTags(play) {
+    if (!play) return ["quick_game"];
+    if (isHailMaryFormation(play)) return ["hail_mary"];
+    var name = textOf(play);
+    var concepts = conceptList(play);
+    var tags = {};
+    function add(tag) { tags[tag] = true; }
+    function has() {
+      return hasAny(name, concepts, Array.prototype.slice.call(arguments));
+    }
+    var type = clean(play.type).toUpperCase();
+    if (type === "RPO" || has("rpo")) add("rpo");
+    if (has("redzone")) add("redzone_pass");
+    if (isScreenPlay(name, concepts)) add("screen");
+    if (has("jet", "end around", "reverse", "touch pass", "double pass", "dbl pass", "orbit")) add("jet");
+    if (has("boot", "sprint", "waggle", "escape", "slide")) add("boot");
+    if (has("leak")) add("leak");
+    if (type === "RUN") {
+      if (has("read option", "speed option", "read opt", "triple option", "tr option") || (has("option") && !has("rpo"))) add("read_option");
+      if (has("trap", "shovel")) add("trap");
+      if (has("counter", "misdirection", "cross buck", "cntr")) add("counter");
+      if (has("duo", "power", "wrap")) add("duo_power");
+      if (has("split")) add("split_zone");
+      if (has("inside", "cutback")) add("inside_zone");
+      if (has("dive", "plunge", "direct snap", "tush")) add("dive");
+      if (has("draw", "delay", "sluggo")) add("draw");
+      if (has("iso", "punch", "slam", "sting", "sneak", "base", "blast", "lead", "wham", "gut", "belly")) add("iso");
+      if (!tags.inside_zone && !tags.read_option && has("stretch", "slash", "bounce", "off tackle", "off-tackle", "toss", "wide", "pitch", "sweep", "flip", "end around")) add("wide_zone");
+      if (!tags.inside_zone && !tags.wide_zone && !tags.split_zone && has("zone")) add("inside_zone");
+      var runKnown = ["read_option", "trap", "counter", "duo_power", "split_zone", "inside_zone", "wide_zone", "dive", "draw", "iso", "jet", "screen", "rpo"];
+      if (!runKnown.some(function (tag) { return tags[tag]; })) add("inside_zone");
+    } else {
+      if (has("smash")) add("smash");
+      if (has("mesh", "shallow", "drag", "whip", "trail", "angle", "zig", "rub", "texas", "shake", "pivot", "return", "replace", "chase", "boomerang")) add("man_beat");
+      if (has("snag", "spot")) add("snag_spot");
+      if (has("stick", "spacing", "slants", "slant", "bench", "hitch", "choice", "comeback", "scat", "attack", "stop", "shock", "omaha", "buc", "frisco", "dixie", "ernie", "corndog", "willie", "mike", "will")) add("quick_game");
+      if (has("flood", "sail", "hoss", "flag", "salem", "poco", "divide", "arches", "seattle")) add("flood");
+      if (has("four vertical", "four vert", "verticals", "vertical") || /\bverts?\b/.test(name)) add("verticals");
+      if (has("dig", "levels", "drive", "hi lo", "hilo", "double in", "dbl ins") || /\bins\b/.test(name) || /(^|\s)in(\s|$)/.test(name) || has("diag", "middle", "clear")) add("levels_dig");
+      if (has("curl", "swirl", "hook")) add("curl_flat");
+      if (has("dagger", "deep", "post", "shot", "over", "seam", "scissors", "fade", "fork", "mills", "skinny", "sluggo", "g down") || /\bgos?\b/.test(name)) add("shot");
+      if (has("corner") && !tags.smash && !tags.snag_spot && !tags.flood) add("shot");
+      if (has("wheel", "wheel switch") && !tags.man_beat && !tags.flood && !tags.quick_game && !tags.snag_spot) add("wheel");
+      if (has("cross") && !tags.man_beat && !tags.shot && !tags.levels_dig) add(has("inside", "shallow") ? "man_beat" : "shot");
+      if (has("out", "under", "flat", "swing", "lookie", "pop") || /\bopt\b/.test(name)) add("quick_game");
+      if (has("wrap")) add("duo_power");
+      if (has("stretch")) add("wide_zone");
+      if (has("cntr", "counter")) add("counter");
+      var passKnown = ["screen", "smash", "man_beat", "snag_spot", "quick_game", "flood", "curl_flat", "levels_dig", "verticals", "shot", "wheel", "boot", "leak", "jet", "rpo", "redzone_pass", "wide_zone", "duo_power", "counter"];
+      if (!passKnown.some(function (tag) { return tags[tag]; })) add("quick_game");
+    }
+    return Object.keys(tags);
+  }
+
+  function primaryFamily(play) {
+    var tags = conceptTags(play);
+    var index;
+    for (index = 0; index < PRIMARY_FAMILY.length; index += 1) {
+      if (tags.indexOf(PRIMARY_FAMILY[index]) >= 0) return PRIMARY_FAMILY[index];
+    }
+    return tags[0] || "quick_game";
   }
 
   function defensePackage(play) {
@@ -119,10 +225,12 @@
   function offenseFits(play, slot, familyOf) {
     if (!play) return false;
     if (isOffenseGoalLinePlay(play)) return slot.id === "goal_line";
-    var fam = familyOfPlay(play, familyOf);
     var type = clean(play.type).toUpperCase();
     if (slot.types && slot.types.indexOf(type) >= 0) return true;
-    return !!(slot.families && slot.families.indexOf(fam) >= 0);
+    var families = familiesOfPlay(play, familyOf);
+    return families.some(function (fam) {
+      return !!(slot.families && slot.families.indexOf(fam) >= 0);
+    });
   }
 
   function defenseFits(play, slot) {
@@ -313,6 +421,8 @@
     slotById: slotById,
     generalReason: generalReason,
     fits: fits,
+    conceptTags: conceptTags,
+    primaryFamily: primaryFamily,
     dealSlot: dealSlot,
     dealBoard: dealBoard,
     replaceSlot: replaceSlot,

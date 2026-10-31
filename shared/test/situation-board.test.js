@@ -13,7 +13,7 @@ function book() {
     play("inside-a", "inside_zone", "RUN"),
     play("inside-b", "inside_zone", "RUN"),
     play("quick-a", "quick_game", "PASS"),
-    play("shot-a", "shot", "PASS"),
+    play("shot-a", "hail_mary", "PASS"),
     play("boot-a", "boot", "PA"),
   ];
 }
@@ -121,6 +121,37 @@ test("a team identity concept is not more likely to fill a situational card", ()
     identityFamilies: { inside_zone: 3 },
   });
   assert.equal(chosen.id, "inside-a");
+});
+
+test("quick game is not filed as a man beater and inside zone is not filed as a blitz beater", () => {
+  const quick = { id: "stick", play_name: "STICK", type: "PASS", formation: "Gun", set: "Trips", concepts: ["Stick", "Quick Game"] };
+  const inside = { id: "iz", play_name: "INSIDE ZONE", type: "RUN", formation: "Gun", set: "Trips", concepts: ["Inside Zone"] };
+  const tags = function (item) { return Board.conceptTags(item); };
+  assert.equal(Board.fits(quick, Board.slotById("quick_game"), tags), true);
+  assert.equal(Board.fits(quick, Board.slotById("man_beater"), tags), false);
+  assert.equal(Board.fits(quick, Board.slotById("cover3_beater"), tags), true);
+  assert.equal(Board.fits(inside, Board.slotById("first_med"), tags), true);
+  assert.equal(Board.fits(inside, Board.slotById("blitz_beater"), tags), false);
+});
+
+test("read option, trap, and hail mary each fit a situational card", () => {
+  const tags = function (item) { return Board.conceptTags(item); };
+  const read = { id: "read", play_name: "READ OPTION", type: "RUN", formation: "Gun", set: "Trips", concepts: ["Run"] };
+  const trap = { id: "trap", play_name: "0 1 TRAP", type: "RUN", formation: "Gun", set: "Tight", concepts: ["Run"] };
+  const hail = { id: "hail", play_name: "HAIL MARY", type: "PASS", formation: "Hail Mary", set: "Hail Mary", concepts: ["Pass"] };
+  assert.equal(Board.fits(read, Board.slotById("first_med"), tags), true);
+  assert.equal(Board.fits(trap, Board.slotById("first_med"), tags), true);
+  assert.equal(Board.fits(hail, Board.slotById("shot"), tags), true);
+  assert.equal(Board.fits(hail, Board.slotById("first_med"), tags), false);
+  assert.equal(Board.primaryFamily(hail), "hail_mary");
+});
+
+test("a mesh play is not stolen by a later wheel or spot word", () => {
+  const play = { id: "mesh", play_name: "MTN MESH SPOT", type: "PASS", formation: "Gun", set: "Tight Y Off", concepts: ["Mesh"] };
+  const tags = Board.conceptTags(play);
+  assert.equal(tags.includes("man_beat"), true);
+  assert.equal(tags.includes("wheel"), false);
+  assert.equal(Board.fits(play, Board.slotById("man_beater"), function () { return tags; }), true);
 });
 
 test("a success rate on the play does not change the deal", () => {

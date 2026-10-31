@@ -73,7 +73,11 @@
       random: options.random,
       setupPayoff: input.setupPayoff || {},
     }) : { playIds: [] };
-    current.ocBoard = Board.dealBoard(offense, "oc", options);
+    current.ocBoard = Board.dealBoard(offense, "oc", {
+      familyOf: input.situationFamiliesOf || input.familyOf,
+      identityFamilies: options.identityFamilies,
+      random: options.random,
+    });
     current.dcBoard = Board.dealBoard(defense, "dc", options);
     current.slotHistory = {};
     rememberDealt(current.slotHistory, current.ocBoard);
@@ -109,7 +113,7 @@
     var plays = side === "dc" ? input.defensePlays : input.offensePlays;
     if (!session.slotHistory) session.slotHistory = {};
     var nextBoard = Board.replaceSlot(board, slotId, plays || [], {
-      familyOf: input.familyOf,
+      familyOf: side === "oc" && input.situationFamiliesOf ? input.situationFamiliesOf : input.familyOf,
       identityFamilies: input.identityFamilies || {},
       random: input.random || Math.random,
       history: session.slotHistory,

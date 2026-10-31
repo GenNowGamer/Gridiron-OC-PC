@@ -24,6 +24,7 @@ function app() {
     GridironOpeningScript: require('../shared/openingScript'),
     GridironGameplan: require('../shared/gameplanModel'),
     GridironOpponentTendency: require('../shared/opponentTendency'),
+    GridironSituationBoard: require('../shared/situationBoard'),
   });
   const source = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   assert.match(source, /init\(\);\s*$/);
