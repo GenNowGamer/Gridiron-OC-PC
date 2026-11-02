@@ -54,6 +54,29 @@ function deps(extra) {
   }, extra || {});
 }
 
+test("a later play-call style replaces the earlier one and leaves goal line", () => {
+  const input = deps({ random: function () { return 0; } });
+  let session = Session.startGame(Session.createSession(), input);
+  const goalId = session.ocBoard.goal_line && session.ocBoard.goal_line.id;
+  session = Session.applyCallStyle(session, "run_heavy", input);
+  assert.equal(session.callStyle, "run_heavy");
+  assert.equal(session.ocBoard.first_med.type, "RUN");
+  assert.equal(session.ocBoard.goal_line && session.ocBoard.goal_line.id, goalId);
+  const runId = session.ocBoard.first_med.id;
+  session = Session.applyCallStyle(session, "pass_heavy", input);
+  assert.equal(session.callStyle, "pass_heavy");
+  assert.equal(session.ocBoard.first_med.type, "PASS");
+  assert.notEqual(session.ocBoard.first_med.id, runId);
+  assert.equal(session.ocBoard.goal_line.id, goalId);
+  session = Session.applyCallStyle(session, "kill_clock", input);
+  assert.equal(session.callStyle, "kill_clock");
+  assert.equal(session.ocBoard.first_med.type, "RUN");
+  assert.equal(session.ocBoard.goal_line.id, goalId);
+  session = Session.confirmSlot(session, "first_med", input);
+  assert.equal(session.ocBoard.first_med.type, "RUN");
+  assert.equal(session.ocBoard.goal_line.id, goalId);
+});
+
 test("a situational card cycles the plays that fit it before repeating", () => {
   const plays = [0, 1, 2, 3].map(function (index) {
     return { id: "iz-" + index, play_name: "iz-" + index, family: "inside_zone", type: "RUN", formation: "I Form", set: "Pro" };

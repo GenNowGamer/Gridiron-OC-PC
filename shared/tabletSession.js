@@ -25,6 +25,7 @@
       shell: "",
       offenseFormation: "",
       slotHistory: {},
+      callStyle: "default",
     };
   }
 
@@ -73,10 +74,12 @@
       random: options.random,
       setupPayoff: input.setupPayoff || {},
     }) : { playIds: [] };
+    current.callStyle = Board.normalizeCallStyle ? Board.normalizeCallStyle("default") : "default";
     current.ocBoard = Board.dealBoard(offense, "oc", {
       familyOf: input.situationFamiliesOf || input.familyOf,
       identityFamilies: options.identityFamilies,
       random: options.random,
+      style: current.callStyle,
     });
     current.dcBoard = Board.dealBoard(defense, "dc", options);
     current.slotHistory = {};
@@ -117,11 +120,43 @@
       identityFamilies: input.identityFamilies || {},
       random: input.random || Math.random,
       history: session.slotHistory,
+      style: input.style || session.callStyle || "default",
     });
     if (side === "dc") session.dcBoard = nextBoard;
     else session.ocBoard = nextBoard;
     session.pending = { kind: "slot", playId: current.id, slotId: slotId, side: side, spot: copySpot(session.lastSpot) };
     return session;
+  }
+
+  function applyCallStyle(session, style, input) {
+    var Board = input.board;
+    var current = session || createSession();
+    var nextStyle = Board.normalizeCallStyle ? Board.normalizeCallStyle(style) : "default";
+    current.callStyle = nextStyle;
+    if (!current.ocBoard) current.ocBoard = {};
+    if (!current.slotHistory) current.slotHistory = {};
+    var offense = input.offensePlays || [];
+    var exclude = new Set();
+    var goal = current.ocBoard.goal_line;
+    if (goal && goal.id) exclude.add(goal.id);
+    var options = {
+      familyOf: input.situationFamiliesOf || input.familyOf,
+      identityFamilies: input.identityFamilies || {},
+      random: input.random || Math.random,
+      style: nextStyle,
+    };
+    if (Board.slotsFor) {
+      Board.slotsFor("oc").forEach(function (slot) {
+        if (slot.id === "goal_line") return;
+        var play = Board.dealSlot(offense, slot.id, Object.assign({}, options, { excludeIds: Array.from(exclude) }));
+        if (play && play.id) {
+          current.ocBoard[slot.id] = play;
+          exclude.add(play.id);
+          current.slotHistory[slot.id] = [play.id];
+        }
+      });
+    }
+    return current;
   }
 
   function confirmScript(session) {
@@ -277,6 +312,7 @@
   return {
     createSession: createSession,
     startGame: startGame,
+    applyCallStyle: applyCallStyle,
     confirmSlot: confirmSlot,
     confirmScript: confirmScript,
     ingest: ingest,

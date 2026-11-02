@@ -2076,11 +2076,28 @@ body {
   white-space: normal;
 }
 
-.callSheetFillRow {
+.callSheetFillRow,
+.callStyleList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
+}
+
+.callStyleBtn {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.callStyleBtn.is-active {
+  border-color: var(--secondary, #8fb8ff);
+  background: rgba(143, 184, 255, 0.16);
 }
 
 .callSheetFillHint,
@@ -2731,9 +2748,42 @@ body {
   gap: 12px;
 }
 
+.tabletToolbarLead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
 .tabletToolbarActions {
   display: flex;
   gap: 8px;
+}
+
+.callStylePicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callStylePickerLabel {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.callStyleSelect {
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-width: 180px;
+  background: var(--secondary);
+  color: var(--on-secondary, #0e1722);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .tabletPossession {

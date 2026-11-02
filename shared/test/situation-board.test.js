@@ -62,6 +62,36 @@ test("a goal line formation play stays on the goal line card", () => {
   assert.equal(Board.fits(plays[0], Board.slotById("goal_line"), options.familyOf), true);
 });
 
+test("a play-call style changes the other cards and leaves the goal line card alone", () => {
+  const tags = function (item) { return item.family; };
+  const plays = [
+    { id: "stick", play_name: "Stick", type: "PASS", formation: "Gun", set: "Trips", family: "quick_game" },
+    { id: "iz", play_name: "Inside Zone", type: "RUN", formation: "Gun", set: "Trips", family: "inside_zone" },
+    { id: "shot", play_name: "Seam", type: "PASS", formation: "Gun", set: "Trips", family: "shot" },
+    { id: "verts", play_name: "Four Verticals", type: "PASS", formation: "Gun", set: "Trips", family: "verticals" },
+  ];
+  const options = { familyOf: tags, random: function () { return 0; } };
+  assert.equal(Board.dealSlot(plays, "first_med", Object.assign({ style: "default" }, options)).id, "stick");
+  assert.equal(Board.dealSlot(plays, "first_med", Object.assign({ style: "run_heavy" }, options)).id, "iz");
+  assert.equal(Board.dealSlot(plays, "first_med", Object.assign({ style: "pass_heavy" }, options)).id, "stick");
+  assert.equal(Board.dealSlot(plays, "goal_line", Object.assign({ style: "run_heavy" }, options)).id, "stick");
+  assert.equal(Board.fits(plays[3], Board.slotById("goal_line"), tags), false);
+  assert.equal(Board.dealSlot(plays, "shot", Object.assign({ style: "kill_clock" }, options)).id, "shot");
+  assert.equal(Board.dealSlot(plays, "first_med", Object.assign({ style: "balanced" }, options)).id, "iz");
+});
+
+test("a play with verticals in the name stays off the goal line card", () => {
+  const tags = function (item) { return Board.conceptTags(item); };
+  const four = { id: "four", play_name: "Four Verticals", type: "PASS", formation: "Gun", set: "Trips HB WK" };
+  const other = { id: "verts", play_name: "Verticals Y Out", type: "PASS", formation: "Gun", set: "Trips" };
+  assert.equal(Board.fits(four, Board.slotById("goal_line"), tags), false);
+  assert.equal(Board.fits(other, Board.slotById("goal_line"), tags), false);
+  ["shot", "second_long", "third_long"].forEach(function (slotId) {
+    assert.equal(Board.fits(four, Board.slotById(slotId), tags), true);
+    assert.equal(Board.fits(other, Board.slotById(slotId), tags), true);
+  });
+});
+
 test("a slot shows every other fitting play before it repeats one", () => {
   const options = {
     familyOf: function (item) { return item.family; },

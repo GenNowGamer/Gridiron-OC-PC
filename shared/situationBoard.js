@@ -224,6 +224,7 @@
 
   function offenseFits(play, slot, familyOf) {
     if (!play) return false;
+    if (slot.id === "goal_line" && clean(play.play_name).toLowerCase().indexOf("verticals") >= 0) return false;
     if (isOffenseGoalLinePlay(play)) return slot.id === "goal_line";
     var type = clean(play.type).toUpperCase();
     if (slot.types && slot.types.indexOf(type) >= 0) return true;
@@ -256,6 +257,85 @@
     return weight;
   }
 
+  var CALL_STYLES = [
+    { id: "default", label: "Default" },
+    { id: "run_heavy", label: "Run Heavy" },
+    { id: "pass_heavy", label: "Pass Heavy" },
+    { id: "balanced", label: "Balanced" },
+    { id: "quick_game", label: "Quick Game" },
+    { id: "kill_clock", label: "Kill the Clock" },
+    { id: "comeback", label: "Comeback" },
+  ];
+
+  function normalizeCallStyle(style) {
+    var id = clean(style).toLowerCase().replace(/[\s-]+/g, "_");
+    if (id === "killtheclock") id = "kill_clock";
+    if (id === "runheavy") id = "run_heavy";
+    if (id === "passheavy") id = "pass_heavy";
+    if (id === "quickgame") id = "quick_game";
+    var found = CALL_STYLES.some(function (item) { return item.id === id; });
+    return found ? id : "default";
+  }
+
+  function callStyleLabel(style) {
+    var id = normalizeCallStyle(style);
+    var match = CALL_STYLES.filter(function (item) { return item.id === id; })[0];
+    return match ? match.label : "Default";
+  }
+
+  function hasTag(tags, names) {
+    return tags.some(function (tag) { return names.indexOf(tag) >= 0; });
+  }
+
+  function styleMatches(play, style, familyOf) {
+    var tags = familiesOfPlay(play, familyOf);
+    var type = clean(play && play.type).toUpperCase();
+    var runTags = ["inside_zone", "split_zone", "duo_power", "dive", "iso", "wide_zone", "counter", "trap", "read_option", "draw", "rpo"];
+    var quickTags = ["quick_game", "curl_flat", "snag_spot", "screen", "rpo"];
+    var attackTags = ["shot", "verticals", "hail_mary", "flood", "levels_dig", "man_beat", "boot", "smash", "curl_flat", "snag_spot", "screen"];
+    if (style === "run_heavy") return type === "RUN" || type === "RPO" || hasTag(tags, runTags);
+    if (style === "kill_clock") return type === "RUN";
+    if (style === "pass_heavy") return type === "PASS" || type === "PA" || type === "RPO";
+    if (style === "comeback") return (type === "PASS" || type === "PA" || type === "RPO") && (hasTag(tags, attackTags) || type === "PASS" || type === "PA");
+    if (style === "quick_game") return hasTag(tags, quickTags);
+    return true;
+  }
+
+  function isRunish(play, familyOf) {
+    var type = clean(play && play.type).toUpperCase();
+    if (type === "RUN") return true;
+    return hasTag(familiesOfPlay(play, familyOf), ["inside_zone", "split_zone", "duo_power", "dive", "iso", "wide_zone", "counter", "trap", "read_option", "draw"]) && type !== "PASS" && type !== "PA" && type !== "RPO";
+  }
+
+  function styleApplies(slot, style) {
+    return slot && slot.side !== "dc" && slot.id !== "goal_line" && style !== "default";
+  }
+
+  function styledPool(plays, slot, options) {
+    var style = normalizeCallStyle(options && options.style);
+    if (!styleApplies(slot, style) || style === "balanced") return plays;
+    var familyOf = options && options.familyOf;
+    var preferred = plays.filter(function (play) { return styleMatches(play, style, familyOf); });
+    return preferred.length ? preferred : plays;
+  }
+
+  function pickForStyle(pool, slot, options) {
+    var style = normalizeCallStyle(options && options.style);
+    var random = options && options.random;
+    var familyOf = options && options.familyOf;
+    if (!styleApplies(slot, style)) {
+      return pickWeighted(pool, function (play) { return weightOf(play, slot); }, random);
+    }
+    if (style === "balanced") {
+      var runs = pool.filter(function (play) { return isRunish(play, familyOf); });
+      var passes = pool.filter(function (play) { return !isRunish(play, familyOf); });
+      var roll = typeof random === "function" ? random() : Math.random();
+      var side = runs.length && passes.length ? (roll < 0.5 ? runs : passes) : (runs.length ? runs : passes);
+      return pickWeighted(side.length ? side : pool, function () { return 1; }, random);
+    }
+    return pickWeighted(styledPool(pool, slot, options), function () { return 1; }, random);
+  }
+
   function pickWeighted(items, weightFn, random) {
     var total = 0;
     var weights = items.map(function (item) {
@@ -283,11 +363,9 @@
     var slot = slotById(slotId);
     if (!slot) return null;
     var exclude = new Set((options && options.excludeIds) || []);
-    var pool = eligiblePlays(plays, slot, options, exclude);
+    var pool = styledPool(eligiblePlays(plays, slot, options, exclude), slot, options);
     if (!pool.length) return null;
-    var chosen = pickWeighted(pool, function (play) {
-      return weightOf(play, slot);
-    }, options && options.random);
+    var chosen = pickForStyle(pool, slot, options);
     return chosen || null;
   }
 
@@ -325,7 +403,7 @@
     var currentId = current && current.id;
     if (currentId && seenList.indexOf(currentId) < 0) seenList.push(currentId);
     var seen = new Set(seenList);
-    var fitting = fittingPlays(plays, slot, options);
+    var fitting = styledPool(fittingPlays(plays, slot, options), slot, options);
     var unseen = fitting.filter(function (play) {
       return play.id !== currentId && !seen.has(play.id);
     });
@@ -340,9 +418,7 @@
       if (!pool.length) pool = fitting.filter(function (play) { return play.id !== currentId; });
       if (!pool.length) pool = fitting.slice();
     }
-    var play = pool.length ? pickWeighted(pool, function (item) {
-      return weightOf(item, slot);
-    }, options && options.random) : null;
+    var play = pool.length ? pickForStyle(pool, slot, options) : null;
     next[slotId] = play || current || null;
     if (history && play && play.id) {
       var cycle = reset ? [] : seenList.slice();
@@ -423,6 +499,9 @@
     fits: fits,
     conceptTags: conceptTags,
     primaryFamily: primaryFamily,
+    CALL_STYLES: CALL_STYLES,
+    normalizeCallStyle: normalizeCallStyle,
+    callStyleLabel: callStyleLabel,
     dealSlot: dealSlot,
     dealBoard: dealBoard,
     replaceSlot: replaceSlot,

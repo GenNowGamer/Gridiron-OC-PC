@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.30-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.31-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -44,15 +44,16 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 - **Opening script:** The strip above the cards is the script you saved. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
 - **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. They span the width under the script. **Ran it** replaces only that card. The replacement is drawn from plays that fit the card and have not been shown there yet this game. Plays already sitting on the other cards are skipped while an unseen play remains. A play can return only after that card's fitting list has been shown once.
-- **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match. Mesh is read before a later "wheel" or "spot," so Mesh Spot is a man beater. An RPO keeps both the RPO tag and the route. Read option and trap are 1st & med. Hail Mary, Goal Post, and Shot Save Clock are Shot, and those plays stay in the deal. The blitz card is quick game, screens, draws, and mesh. A Goal Line formation, such as Goal Line / Normal / PA Sprint, appears only on the Goal Line card. Every Madden 27 offensive play fits at least one card.
-- **Toolbar:** **Script builder** on the left, **New Game** on the right. There is no Offense / Defense switch, Game State menu, or series strip.
+- **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match. Mesh is read before a later "wheel" or "spot," so Mesh Spot is a man beater. An RPO keeps both the RPO tag and the route. Read option and trap are 1st & med. Hail Mary, Goal Post, and Shot Save Clock are Shot, and those plays stay in the deal. The blitz card is quick game, screens, draws, and mesh. A Goal Line formation, such as Goal Line / Normal / PA Sprint, appears only on the Goal Line card. A play with "verticals" in the name, including Four Verticals, does not appear on the Goal Line card. Those plays still fit Shot, 2nd & long, and 3rd & long. Every Madden 27 offensive play fits at least one card.
+- **Play-call style:** The dropdown to the right of **Script builder** shows the style for this game. The choices are Default, Run Heavy, Pass Heavy, Balanced, Quick Game, Kill the Clock, and Comeback. Default is the normal deal. Run Heavy and Kill the Clock surface runs. Pass Heavy and Comeback surface passes. Quick Game surfaces quick game, curls, snags, screens, and RPOs. Balanced gives a run and a pass an equal chance when both fit the card. Choosing a style reshuffles the other 14 cards immediately, and **Ran it** stays on that style until you pick another one. You can switch as often as you want during the game. A new game starts on Default. Goal Line always stays on the normal card. If a card has no play of the selected style, it keeps a normal play for that card.
+- **Toolbar:** **Script builder** on the left, the play-call style dropdown beside it, and **New Game** on the right. There is no Offense / Defense switch, Game State menu, or series strip.
 
 ### 2. Script builder
 
 - **New game:** The app opens on the matchup screen. **Start Game**, including after **New Game**, generates one fresh 15 and opens the builder on that list. The generator uses the opponent shell, tendencies, locks, and play scores. It is the same fill as **Auto-Fill 15**. Last game's saved opening script is not reused.
 - **Save & Close:** The queue on screen becomes the strip. A new game, or any edit that changes the play list, starts at play 1. Reopening the builder during a game shows the script already on the strip. Saving an unchanged list stays on the current play.
 - **X:** Drops unsaved edits. On a new game the strip still gets the automatic 15 from when the builder opened. During a game, **X** leaves the strip as it was.
-- **Call Sheet tab:** Concepts, backups, notes, and pins can stay saved for the matchup. That tab does not choose the opening script. There is no Active / Inactive switch.
+- **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there reshuffles the situational cards immediately and does not change the opening script. Goal Line stays on the normal card. There is no Active / Inactive switch, and no concept, backup, note, or pin editor.
 
 ### 3. Playbooks
 
@@ -68,8 +69,9 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 2. Press **Start Game**. Script builder opens on a fresh automatic 15. **Skip For Now** closes the matchup and does not open the builder.
 3. Keep that 15, edit it, or press **Auto-Fill 15**. **Save & Close** loads it onto the strip at play 1. **X** drops the edits and still uses the automatic 15 for a new game.
 4. Call a script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced.
-5. **Script builder** during a game edits the script already on the strip. **Save & Close** stays on the current play unless the list of plays changed.
-6. **New Game** returns to the matchup. **Start Game** deals a new automatic 15 and opens the builder again.
+5. Change the play-call style from the dropdown next to **Script builder**, or from the **Call Sheet** tab inside Script builder. The other situational cards reshuffle. Goal Line does not. You can change the style again later in the game.
+6. **Script builder** during a game edits the script already on the strip. **Save & Close** stays on the current play unless the list of plays changed.
+7. **New Game** returns to the matchup. **Start Game** deals a new automatic 15, starts the play-call style on Default, and opens the builder again.
 
 ---
 
@@ -93,7 +95,7 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
 - **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`). `situationBoard.js` turns that name and those concepts into the tags the 15 cards use. `app.js` asks that module for the play's primary family.
 - **Desktop bridge:** `preload.js` loads the offensive and defensive playbooks and reads or writes preferences and the trace log. It does not expose capture, watch, or training methods. `main.js` does not register those channels.
 - **Older modules still loaded:** `index.html` still loads the recommendation, defense-call, penalty, coordinator-report, and result-label scripts. The call sheet does not use them. `npm run verify:pc` still runs tests that call that code.
-- **Data Persistence:** User preferences, matchup plans, and the saved Call Sheet tab stay in Electron `userData` and `localStorage`. A new game does not reuse the previous opening-script list.
+- **Data Persistence:** User preferences and matchup plans stay in Electron `userData` and `localStorage`. The play-call style lasts for the current game. A new game starts on Default and does not reuse the previous opening-script list.
 - **Telemetry & Privacy:** Zero cloud telemetry. The call sheet and playbooks stay on this PC. The current window does not capture the screen.
 
 ---
