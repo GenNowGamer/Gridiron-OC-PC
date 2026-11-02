@@ -214,6 +214,37 @@
       return paCandidates.length ? paCandidates : passes;
     }
 
+    function selectAnchorFormations(plays) {
+      var counts = {};
+      (plays || []).forEach(function (play) {
+        if (!play || isGoalLinePlay(play)) return;
+        var form = cleanText(play.formation);
+        var set = cleanText(play.set);
+        var key = form + " | " + set;
+        if (!counts[key]) counts[key] = { key: key, formation: form, set: set, run: 0, pass: 0, pa: 0, total: 0 };
+        var t = cleanText(play.type).toUpperCase();
+        if (t === "RUN" || t === "RPO") counts[key].run += 1;
+        else if (t === "PA") counts[key].pa += 1;
+        else if (t === "PASS") counts[key].pass += 1;
+        counts[key].total += 1;
+      });
+      var entries = Object.keys(counts).map(function (k) { return counts[k]; });
+      if (!entries.length) return [];
+      var sorted = entries.sort(function (a, b) {
+        var aScore = (a.total < 2 ? -10 : 0) + (a.run >= 1 && (a.pass >= 1 || a.pa >= 1) ? 5 : 0) + a.total * 0.5;
+        var bScore = (b.total < 2 ? -10 : 0) + (b.run >= 1 && (b.pass >= 1 || b.pa >= 1) ? 5 : 0) + b.total * 0.5;
+        return bScore - aScore;
+      });
+      var anchors = [];
+      for (var i = 0; i < sorted.length && anchors.length < 4; i += 1) {
+        if (sorted[i].total >= 2) anchors.push(sorted[i].key);
+      }
+      return anchors;
+    }
+
+    var anchors = selectAnchorFormations(teamPlays);
+    var anchorSet = new Set(anchors);
+
     function place(index, primary, secondary) {
       if (selected[index]) return selected[index];
       scoringSlot = index;
@@ -227,6 +258,18 @@
           biased = narrowed.slice().sort(function (a, b) {
             return preferred.indexOf(familyOf(a)) - preferred.indexOf(familyOf(b)) || cleanText(a.play_name).localeCompare(cleanText(b.play_name));
           });
+        }
+      }
+      if (anchorSet.size && biased && biased.length) {
+        var anchorMatches = biased.filter(function (play) {
+          return anchorSet.has(cleanText(play.formation) + " | " + cleanText(play.set));
+        });
+        if (anchorMatches.length) {
+          var anchorPick = pickPlay(anchorMatches);
+          if (anchorPick) {
+            selected[index] = anchorPick;
+            return selected[index];
+          }
         }
       }
       var play = pickPlay(biased && biased.length ? biased : secondary) || pickPlay(secondary) || pickAny(teamPlays);

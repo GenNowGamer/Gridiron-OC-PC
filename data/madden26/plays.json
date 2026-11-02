@@ -9590,7 +9590,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -21316,7 +21316,7 @@
     "formation": "Strong",
     "set": "Z Close",
     "play_name": "FAKE END AROUND",
-    "type": "PLAY ACTION",
+    "type": "PA",
     "concepts": [
       "Run"
     ],
@@ -43895,7 +43895,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -45533,7 +45533,7 @@
     "formation": "Strong",
     "set": "Z Close",
     "play_name": "FAKE END AROUND",
-    "type": "PLAY ACTION",
+    "type": "PA",
     "concepts": [
       "Pass"
     ],
@@ -82689,7 +82689,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -89103,7 +89103,7 @@
     "formation": "Split",
     "set": "T Tight",
     "play_name": "FK FB TOSS ROLLOUT LT",
-    "type": "PLAY ACTION",
+    "type": "PA",
     "concepts": [
       "Toss"
     ],
@@ -93253,7 +93253,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -99104,7 +99104,7 @@
     "formation": "Pistol",
     "set": "Doubles",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -104068,7 +104068,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],
@@ -115448,7 +115448,7 @@
     "formation": "Pistol",
     "set": "Bunch Te",
     "play_name": "JET TOUCH PASS FK HB",
-    "type": "Pass",
+    "type": "PASS",
     "concepts": [
       "Jet Sweep"
     ],

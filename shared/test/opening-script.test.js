@@ -161,3 +161,32 @@ test("ignoreLearning does not let a shell score choose the play", () => {
   });
   assert.equal(result.playIds[1], "quick-low");
 });
+
+test("opening script clusters into 3-5 anchor formations with complementary plays", () => {
+  const multiBook = [];
+  const forms = ["Singleback | Wing Close", "Gun | Bunch", "Gun | Trips TE", "I Form | Close"];
+  forms.forEach(function (f) {
+    var parts = f.split(" | ");
+    multiBook.push(
+      { id: f + "-run", play_name: "INSIDE ZONE", type: "RUN", family: "inside_zone", formation: parts[0], set: parts[1], concepts: ["Run"] },
+      { id: f + "-pa", play_name: "PA BOOT", type: "PA", family: "boot", formation: parts[0], set: parts[1], concepts: ["Pass"] },
+      { id: f + "-quick", play_name: "SLANTS", type: "PASS", family: "quick_game", formation: parts[0], set: parts[1], concepts: ["Pass"] },
+      { id: f + "-screen", play_name: "SCREEN", type: "PASS", family: "screen", formation: parts[0], set: parts[1], concepts: ["Pass"] }
+    );
+  });
+  const result = Opening.fillOpeningScript({
+    plays: multiBook,
+    familyOf: function (item) { return item.family; },
+    cooldownIds: [],
+    setupPayoff: { inside_zone: ["boot"] },
+    random: function () { return 0; },
+  });
+  assert.equal(result.playIds.length, 15);
+  const playMap = new Map(multiBook.map(function (p) { return [p.id, p]; }));
+  const usedForms = new Set(result.playIds.map(function (id) {
+    const p = playMap.get(id);
+    return p.formation + " | " + p.set;
+  }));
+  assert.equal(usedForms.size <= 4, true);
+});
+

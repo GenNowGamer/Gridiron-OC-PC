@@ -199,3 +199,35 @@ test("a success rate on the play does not change the deal", () => {
   assert.equal(left.id, right.id);
   assert.equal(left.id, "inside-a");
 });
+
+test("comeback is tagged as levels_dig and not quick_game", () => {
+  const play = { id: "cb", play_name: "PA COMEBACK", type: "PA", formation: "Pistol", set: "Full House", concepts: ["Pass"] };
+  const tags = Board.conceptTags(play);
+  assert.equal(tags.includes("levels_dig"), true);
+  assert.equal(tags.includes("quick_game"), false);
+  assert.equal(Board.fits(play, Board.slotById("backed_up"), function () { return tags; }), false);
+});
+
+test("blitz beater excludes play-action passes and deep shots", () => {
+  const paPlay = { id: "pa-read", play_name: "PA READ", type: "PA", formation: "Gun", set: "Tight", concepts: ["Pass"] };
+  const quickPlay = { id: "quick-slant", play_name: "SLANTS", type: "PASS", formation: "Gun", set: "Tight", concepts: ["Pass"] };
+  assert.equal(Board.fits(paPlay, Board.slotById("blitz_beater"), Board.conceptTags), false);
+  assert.equal(Board.fits(quickPlay, Board.slotById("blitz_beater"), Board.conceptTags), true);
+});
+
+test("goal line excludes gun empty and deep vertical routes", () => {
+  const emptyFade = { id: "empty-fade", play_name: "FADE", type: "PASS", formation: "Gun", set: "Empty Base Flex", concepts: ["Pass"] };
+  const gunVerts = { id: "gun-verts", play_name: "FOUR VERTICALS", type: "PASS", formation: "Gun", set: "Bunch", concepts: ["Pass"] };
+  const heavyPower = { id: "heavy-power", play_name: "POWER O", type: "RUN", formation: "Goal Line", set: "Heavy", concepts: ["Run"] };
+  assert.equal(Board.fits(emptyFade, Board.slotById("goal_line"), Board.conceptTags), false);
+  assert.equal(Board.fits(gunVerts, Board.slotById("goal_line"), Board.conceptTags), false);
+  assert.equal(Board.fits(heavyPower, Board.slotById("goal_line"), Board.conceptTags), true);
+});
+
+test("fake screen deep passes resolve to shot primary family", () => {
+  const shotPlay = { id: "pa-shot", play_name: "PA BUBBLE Y OVER", type: "PA", formation: "Gun", set: "Wing", concepts: ["Pass"] };
+  const realScreen = { id: "real-screen", play_name: "HB SLIP SCREEN", type: "PASS", formation: "Gun", set: "Trips", concepts: ["Pass"] };
+  assert.equal(Board.primaryFamily(shotPlay), "shot");
+  assert.equal(Board.primaryFamily(realScreen), "screen");
+});
+

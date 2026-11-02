@@ -13,7 +13,7 @@
     { id: "fourth_short", label: "4th & short", side: "oc", families: ["duo_power", "inside_zone", "dive", "iso", "rpo", "quick_game"] },
     { id: "backed_up", label: "Backed up", side: "oc", families: ["quick_game", "inside_zone", "duo_power", "dive"] },
     { id: "red_zone", label: "Red zone", side: "oc", families: ["duo_power", "inside_zone", "smash", "snag_spot", "boot", "rpo", "redzone_pass", "quick_game", "shot", "verticals", "man_beat", "curl_flat"] },
-    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass", "quick_game", "shot", "verticals"] },
+    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass", "quick_game"] },
     { id: "blitz_beater", label: "Blitz beater", side: "oc", families: ["quick_game", "screen", "draw", "man_beat"] },
     { id: "man_beater", label: "Man beater", side: "oc", families: ["man_beat", "screen", "snag_spot"] },
     { id: "cover3_beater", label: "Cover 3 beater", side: "oc", families: ["flood", "curl_flat", "quick_game", "snag_spot", "levels_dig", "boot"] },
@@ -22,7 +22,7 @@
     { id: "play_action", label: "PA / motion", side: "oc", families: ["boot", "flood", "leak", "jet", "wheel"], types: ["PA"] },
   ];
 
-  var PRIMARY_FAMILY = ["hail_mary", "rpo", "redzone_pass", "screen", "read_option", "trap", "smash", "man_beat", "snag_spot", "verticals", "levels_dig", "flood", "shot", "curl_flat", "wheel", "quick_game", "boot", "leak", "jet", "counter", "duo_power", "split_zone", "wide_zone", "draw", "dive", "iso", "inside_zone"];
+  var PRIMARY_FAMILY = ["hail_mary", "rpo", "redzone_pass", "shot", "verticals", "screen", "read_option", "trap", "smash", "man_beat", "snag_spot", "levels_dig", "flood", "curl_flat", "wheel", "quick_game", "boot", "leak", "jet", "counter", "duo_power", "split_zone", "wide_zone", "draw", "dive", "iso", "inside_zone"];
 
   var DC_SLOTS = [
     { id: "d_first_10", label: "1st & 10", side: "dc", prefer: ["nickel", "four_three", "three_four"] },
@@ -137,6 +137,7 @@
     });
     if (!marked) return false;
     if (name.indexOf("fake screen") >= 0 || name.indexOf("fk screen") >= 0) return false;
+    if (name.indexOf("pa bubble") >= 0 && (name.indexOf("over") >= 0 || name.indexOf("post") >= 0 || name.indexOf("wheel") >= 0 || name.indexOf("go") >= 0 || name.indexOf("seam") >= 0)) return false;
     return true;
   }
 
@@ -175,15 +176,15 @@
       if (has("smash")) add("smash");
       if (has("mesh", "shallow", "drag", "whip", "trail", "angle", "zig", "rub", "texas", "shake", "pivot", "return", "replace", "chase", "boomerang")) add("man_beat");
       if (has("snag", "spot")) add("snag_spot");
-      if (has("stick", "spacing", "slants", "slant", "bench", "hitch", "choice", "comeback", "scat", "attack", "stop", "shock", "omaha", "buc", "frisco", "dixie", "ernie", "corndog", "willie", "mike", "will")) add("quick_game");
+      if (has("stick", "spacing", "slants", "slant", "bench", "hitch", "choice", "scat", "attack", "stop", "shock", "omaha", "buc", "frisco", "dixie", "ernie", "corndog", "willie", "mike", "will")) add("quick_game");
       if (has("flood", "sail", "hoss", "flag", "salem", "poco", "divide", "arches", "seattle")) add("flood");
       if (has("four vertical", "four vert", "verticals", "vertical") || /\bverts?\b/.test(name)) add("verticals");
-      if (has("dig", "levels", "drive", "hi lo", "hilo", "double in", "dbl ins") || /\bins\b/.test(name) || /(^|\s)in(\s|$)/.test(name) || has("diag", "middle", "clear")) add("levels_dig");
+      if (has("dig", "levels", "drive", "hi lo", "hilo", "double in", "dbl ins", "comeback") || /\bins\b/.test(name) || /(^|\s)in(\s|$)/.test(name) || has("diag", "middle", "clear")) add("levels_dig");
       if (has("curl", "swirl", "hook")) add("curl_flat");
       if (has("dagger", "deep", "post", "shot", "over", "seam", "scissors", "fade", "fork", "mills", "skinny", "sluggo", "g down") || /\bgos?\b/.test(name)) add("shot");
       if (has("corner") && !tags.smash && !tags.snag_spot && !tags.flood) add("shot");
       if (has("wheel", "wheel switch") && !tags.man_beat && !tags.flood && !tags.quick_game && !tags.snag_spot) add("wheel");
-      if (has("cross") && !tags.man_beat && !tags.shot && !tags.levels_dig) add(has("inside", "shallow") ? "man_beat" : "shot");
+      if (has("cross") && !tags.screen && !tags.man_beat && !tags.shot && !tags.levels_dig) add(has("inside", "shallow") ? "man_beat" : "shot");
       if (has("out", "under", "flat", "swing", "lookie", "pop") || /\bopt\b/.test(name)) add("quick_game");
       if (has("wrap")) add("duo_power");
       if (has("stretch")) add("wide_zone");
@@ -222,11 +223,63 @@
     return text.indexOf("goal line") >= 0;
   }
 
+  function isHeavyOrCompressedForm(play) {
+    var formText = (clean(play && play.formation) + " " + clean(play && play.set)).toLowerCase();
+    if (formText.indexOf("empty") >= 0) return false;
+    return formText.indexOf("goal line") >= 0 || formText.indexOf("heavy") >= 0 || formText.indexOf("close") >= 0 ||
+      formText.indexOf("tight") >= 0 || formText.indexOf("wing") >= 0 || formText.indexOf("pair") >= 0 ||
+      formText.indexOf("jumbo") >= 0 || formText.indexOf("full house") >= 0 ||
+      clean(play && play.formation) === "I Form" || clean(play && play.formation) === "Strong" || clean(play && play.formation) === "Weak";
+  }
+
+  function isGoalLineConcept(play) {
+    var name = textOf(play);
+    if (name.indexOf("verticals") >= 0 || name.indexOf("four vert") >= 0) return false;
+    var pType = clean(play && play.type).toUpperCase();
+    if (pType === "PA" && (name.indexOf("flat") >= 0 || name.indexOf("cross") >= 0 || name.indexOf("drag") >= 0 || name.indexOf("slide") >= 0 || name.indexOf("boot") >= 0 || name.indexOf("power") >= 0)) return true;
+    return /fade|slant|flat|stick|spacing|hitch|sprint|sneak|tush|power|iso|dive|blast|plunge|punch|wham/.test(name);
+  }
+
+  function hasGoalLineExclusion(play) {
+    var name = textOf(play);
+    return name.indexOf("verticals") >= 0 || name.indexOf("four vert") >= 0 || name.indexOf("comeback") >= 0 ||
+      name.indexOf("deep") >= 0 || name.indexOf("post") >= 0 || name.indexOf("corner") >= 0 ||
+      name.indexOf("hail mary") >= 0 || name.indexOf("shot") >= 0;
+  }
+
   function offenseFits(play, slot, familyOf) {
     if (!play) return false;
-    if (slot.id === "goal_line" && clean(play.play_name).toLowerCase().indexOf("verticals") >= 0) return false;
-    if (isOffenseGoalLinePlay(play)) return slot.id === "goal_line";
+    var name = textOf(play);
     var type = clean(play.type).toUpperCase();
+
+    // Goal line: GL/heavy/compressed formation or compressed concept, no Empty, no deep exclusions
+    if (slot.id === "goal_line") {
+      var formText = (clean(play.formation) + " " + clean(play.set)).toLowerCase();
+      if (formText.indexOf("empty") >= 0) return false;
+      if (hasGoalLineExclusion(play)) return false;
+      if (isOffenseGoalLinePlay(play)) return true;
+      var matchesForm = isHeavyOrCompressedForm(play);
+      var matchesConcept = isGoalLineConcept(play);
+      if (!matchesForm && !matchesConcept) return false;
+    } else if (isOffenseGoalLinePlay(play)) {
+      return false;
+    }
+
+    // Blitz beater: no slow play-action, no deep shots or boots
+    if (slot.id === "blitz_beater") {
+      if (type === "PA" || name.indexOf("pa ") >= 0) return false;
+      var bzTags = familiesOfPlay(play, familyOf);
+      if (bzTags.indexOf("shot") >= 0 || bzTags.indexOf("verticals") >= 0 || bzTags.indexOf("boot") >= 0) return false;
+    }
+
+    // Backed up: no deep drops (shot, verticals, deep comeback/post/corner) and no PA
+    if (slot.id === "backed_up") {
+      if (type === "PA") return false;
+      var buTags = familiesOfPlay(play, familyOf);
+      if (buTags.indexOf("shot") >= 0 || buTags.indexOf("verticals") >= 0 || buTags.indexOf("levels_dig") >= 0) return false;
+      if (name.indexOf("comeback") >= 0 || name.indexOf("post") >= 0 || name.indexOf("corner") >= 0) return false;
+    }
+
     if (slot.types && slot.types.indexOf(type) >= 0) return true;
     var families = familiesOfPlay(play, familyOf);
     return families.some(function (fam) {
@@ -254,6 +307,25 @@
   function weightOf(play, slot) {
     var weight = 1;
     if (slot.side === "dc" && slot.prefer && slot.prefer.indexOf(defensePackage(play)) >= 0) weight += 1;
+    if (slot.id === "first_med") {
+      var t = clean(play && play.type).toUpperCase();
+      if (t === "RUN" || t === "PA" || t === "RPO") weight += 2;
+    }
+    if (slot.id === "backed_up") {
+      var form = clean(play && play.formation).toUpperCase();
+      var ucOrPistol = form === "SINGLEBACK" || form === "I FORM" || form === "STRONG" || form === "WEAK" || form === "PISTOL";
+      var pType = clean(play && play.type).toUpperCase();
+      if (ucOrPistol && (pType === "RUN" || pType === "RPO")) weight += 3;
+      else if (pType === "RUN") weight += 1;
+    }
+    var sv = Array.isArray(play && play.strong_vs) ? play.strong_vs : [];
+    if (sv.length > 0) {
+      var pTypeBeater = clean(play && play.type).toUpperCase();
+      if (slot.id === "man_beater" && (sv.indexOf("Man") >= 0 || sv.indexOf("Cover 1") >= 0)) weight += 1;
+      if (slot.id === "cover3_beater" && sv.indexOf("Cover 3") >= 0) weight += 1;
+      if (slot.id === "shot" && (sv.indexOf("Cover 2") >= 0 || sv.indexOf("Cover 4") >= 0 || sv.indexOf("Tampa 2") >= 0)) weight += 1;
+      if (slot.id === "blitz_beater" && pTypeBeater !== "RUN" && sv.indexOf("Blitz") >= 0) weight += 1;
+    }
     return weight;
   }
 

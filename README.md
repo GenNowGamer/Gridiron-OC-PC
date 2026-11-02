@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.31-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.32-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -42,9 +42,17 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ### 1. Call sheet
 
-- **Opening script:** The strip above the cards is the script you saved. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
+- **Opening script:** The strip above the cards is the script you saved. The script engine automatically clusters the 15 plays into 3–4 anchor formations (multi-play sets with run/pass balance) to replicate NFL "same look, different play" sequencing. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
 - **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. They span the width under the script. **Ran it** replaces only that card. The replacement is drawn from plays that fit the card and have not been shown there yet this game. Plays already sitting on the other cards are skipped while an unseen play remains. A play can return only after that card's fitting list has been shown once.
-- **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match. Mesh is read before a later "wheel" or "spot," so Mesh Spot is a man beater. An RPO keeps both the RPO tag and the route. Read option and trap are 1st & med. Hail Mary, Goal Post, and Shot Save Clock are Shot, and those plays stay in the deal. The blitz card is quick game, screens, draws, and mesh. A Goal Line formation, such as Goal Line / Normal / PA Sprint, appears only on the Goal Line card. A play with "verticals" in the name, including Four Verticals, does not appear on the Goal Line card. Those plays still fit Shot, 2nd & long, and 3rd & long. Every Madden 27 offensive play fits at least one card.
+- **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match:
+  - **1st & med:** Leans authentically into early-down run and play-action concepts (+2 weight boost for run/PA/RPO).
+  - **Blitz beater:** Limited to fast rhythm throws, screens, draws, and mesh. Explicitly bars all play-action passes (`PA`), slow boots, verticals, and deep dropback shots.
+  - **Backed up:** Curated for safety-first execution from inside your own 10-yard line. Bars deep drops (`shot`, `verticals`, deep comebacks, and PA) and prioritizes under-center and pistol runs.
+  - **Goal line:** Requires a heavy or compressed formation (`heavy`, `goal line`, `jumbo`, `wing`, `tight`, `full house`, `close`, `nasty`) or compressed concept (`fade`, `slant`, `flat`, `sprint`, `boot`, `sneak`, `tush`, `power`, `iso`, `dive`, `inside_zone`, `stick`). Bars `Gun Empty` and deep vertical routes.
+  - **Comeback routes:** Classified as intermediate (`levels_dig`), keeping deep comebacks off quick game and backed-up cards.
+  - **Shot vs Screen:** Fake screen shot concepts (such as `PA BUBBLE Y OVER`) resolve to `shot` as their primary family rather than `screen`.
+  - **Beater cards:** Cover 3 and Man beater cards use validated catalog coverage counters, utilizing Madden 27 `strong_vs` indicators as secondary tie-breakers on passing plays.
+  - Every Madden 27 offensive play fits at least one card.
 - **Play-call style:** The dropdown to the right of **Script builder** shows the style for this game. The choices are Default, Run Heavy, Pass Heavy, Balanced, Quick Game, Kill the Clock, and Comeback. Default is the normal deal. Run Heavy and Kill the Clock surface runs. Pass Heavy and Comeback surface passes. Quick Game surfaces quick game, curls, snags, screens, and RPOs. Balanced gives a run and a pass an equal chance when both fit the card. Choosing a style reshuffles the other 14 cards immediately, and **Ran it** stays on that style until you pick another one. You can switch as often as you want during the game. A new game starts on Default. Goal Line always stays on the normal card. If a card has no play of the selected style, it keeps a normal play for that card.
 - **Toolbar:** **Script builder** on the left, the play-call style dropdown beside it, and **New Game** on the right. There is no Offense / Defense switch, Game State menu, or series strip.
 
