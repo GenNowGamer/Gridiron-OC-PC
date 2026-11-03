@@ -63,16 +63,22 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 ![Script Builder Opening 15 Drive Sequence](docs/screenshots/Script_builder_Opening15.png)
 
 - **New game:** The app opens on the matchup screen. **Start Game**, including after **New Game**, opens the builder with an empty opening sequence ready for you to tap **Auto-Fill 15** or manually add plays from the Offense Navigator. When tapped, **Auto-Fill 15** shuffles the eligible playbook, fills each script slot from that deal order (keeping the usual run/pass/setup roles), and prefers plays that were not in the last 1–2 opening scripts (`recentRunScripts` / `cooldownIds`). Exact play IDs stay unique inside the 15 when the book allows it. Opponent shell, tendencies, locks, and play scores still apply inside that unique pool.
+- **Defensive Playbook Scout (`GridironDefensiveScout`):** When tapping **Auto-Fill 15**, a background scout analyzes the selected opponent's defensive architecture across all 32 NFL franchises:
+  - **Base Fronts:** Recognizes 3-4 odd fronts vs. 4-3 even/wide fronts and hybrid packages, biasing the run game toward proper front counters (Power, Duo, and Counter vs. 3-4; Inside Zone, Split Zone, and Trap vs. 4-3).
+  - **Playcalling Identity:** Evaluates opponent tendencies (`Blitz-Heavy`, `Bend-Don't-Break`, `Disguise`, `Aggressive Man`, `Base Zone`, `Aggressive Zone`), promoting fast-rhythm hot reads, screens, and slants against pressure teams while dampening slow-developing shots.
+  - **Coverage Shells & Weaknesses:** Pre-seeds coverage distributions (e.g. Tampa 2, Cover 1 Press, Cover 3 Match) and boosts plays matching the opponent's explicit schematic vulnerabilities (e.g. TE seams vs. Cover 2; double moves/mesh vs. man; flood/crossers vs. match).
+  - **Cold-Start Prior:** Provides instant coordinator intelligence before snap 1, seamlessly bridging until live in-game observations are logged.
 - **Save & Close:** The queue on screen becomes the strip. A new game, or any edit that changes the play list, starts at play 1. Reopening the builder during a game shows the script already on the strip. Saving an unchanged list stays on the current play.
 - **X:** Drops unsaved edits. During a game, **X** leaves the strip as it was.
 - **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there updates the situational cards the same way as the toolbar dropdown and does not change the opening script. Goal Line stays on the normal card. There is no Active / Inactive switch, and no concept, backup, note, or pin editor.
 
   ![Script Builder Call Sheet & Play-Call Styles](docs/screenshots/Script_Builder_Call_Sheet.png)
 
-### 3. Playbooks
+### 3. Playbooks & Architecture
 
 - **Madden 26 and Madden 27 catalogs:** Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
 - **Defense catalogs:** Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Those files are still on disk. The window does not show a defensive call.
+- **Runtime modules:** The call sheet runs entirely client-side via four modular engines: opening script sequencing (`shared/openingScript.js`), situational card playlist and variety management (`shared/situationBoard.js`), active tablet state (`shared/tabletSession.js`), and the 32-team opponent scouting engine (`shared/defensiveScout.js`).
 
 ---
 
@@ -82,7 +88,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 1. The app opens on the matchup screen. Choose your team, the opponent, CPU or Human, and **Madden 26** or **Madden 27**.
 2. Press **Start Game**. Script builder opens with a clean, empty Opening Sequence. **Skip For Now** closes the matchup and does not open the builder.
-3. Press **Auto-Fill 15** for a shuffled unique 15 (avoiding recent-script plays and clustering anchor formations) or pick plays manually from the Offense Navigator. **Save & Close** loads it onto the strip at play 1. **X** drops uncommitted edits.
+3. Press **Auto-Fill 15** for a shuffled unique 15 (leveraging the background Defensive Playbook Scout for opponent-specific counters and clustering anchor formations) or pick plays manually from the Offense Navigator. **Save & Close** loads it onto the strip at play 1. **X** drops uncommitted edits.
 4. Call a script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced.
 5. Change the play-call style from the dropdown next to **Script builder**, or from the **Call Sheet** tab inside Script builder. Cards that still fit stay put; the rest reshuffle for that style without wiping this game’s variety memory. Goal Line does not move. You can change the style again later in the game.
 6. **Script builder** during a game edits the script already on the strip. **Save & Close** stays on the current play unless the list of plays changed.
