@@ -9,6 +9,7 @@ const Tendency=globalThis.GridironOpponentTendency||{};
 const SituationBoard=globalThis.GridironSituationBoard||{};
 const ResultLabels=globalThis.GridironResultLabels||{emptyStore:function(){return{plays:{},looks:{},concepts:{}};},normalizeStore:function(value){return value||{plays:{},looks:{},concepts:{}};},recordResult:function(_store){return _store;},rateFor:function(){return null;},reasonFor:function(){return "";},summary:function(){return{theirOffense:"Not enough yet",theirDefense:"Not enough yet",record:"Not enough yet"};}};
 const TabletSession=globalThis.GridironTabletSession||{};
+const DefensiveScout=globalThis.GridironDefensiveScout||{};
 
 const STORAGE_KEYS={preferences:"goc-desktop-preferences-v3",playHistory:"goc-desktop-play-history-v1",userLearning:"goc-desktop-user-learning-v1",floatingLayout:"goc-desktop-floating-layout-v1",recentRunScripts:"goc-desktop-recent-run-scripts-v1",recentBoardPlays:"goc-desktop-recent-board-plays-v1",gameplans:"goc-desktop-gameplans-v1",opponentTendencies:"goc-desktop-opponent-tendencies-v1",resultLabels:"goc-desktop-result-labels-v1"};
 const APP_DISPLAY_NAME="Gridiron OC";
@@ -415,7 +416,9 @@ function openingScriptPlayScore(play,shell){if(!OpeningScript.openingScriptPlayS
 function generateOpeningScriptIds(existingPlayIds, lockedIndexes) {
   const teamPlays = state.normalizedPlays.filter(play => play.team === state.selectedTeam && !isHailMaryPlay(play));
   if (!teamPlays.length || !OpeningScript.fillOpeningScript) return (existingPlayIds || []).slice(0, 15);
-  const opponentShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
+  const liveShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
+  const scoutProfile = DefensiveScout.getScoutProfile ? DefensiveScout.getScoutProfile(state.selectedOpponent) : null;
+  const opponentShell = liveShell || (scoutProfile && DefensiveScout.scoutShellDistribution ? DefensiveScout.scoutShellDistribution(scoutProfile) : null);
   const tendencyProfile = currentOpponentProfile();
   const tendencyPlan = Tendency.scriptSlotPlan ? Tendency.scriptSlotPlan(tendencyProfile) : { slotFamilies: [], slotCells: [] };
   const filled = OpeningScript.fillOpeningScript({
@@ -429,7 +432,16 @@ function generateOpeningScriptIds(existingPlayIds, lockedIndexes) {
     lockedIndexes: lockedIndexes || [],
     playScore: openingScriptPlayScore,
     slotFamilies: tendencyPlan.slotFamilies,
-    tendencyPlayScore: (play, slot) => Tendency.playResultBoost ? Tendency.playResultBoost(tendencyProfile, tendencyPlan.slotCells[slot], play && play.id) : 0,
+    tendencyPlayScore: (play, slot) => {
+      let boost = 0;
+      if (scoutProfile && DefensiveScout.scorePlayAgainstScout) {
+        boost += DefensiveScout.scorePlayAgainstScout(play, scoutProfile, slot);
+      }
+      if (Tendency.playResultBoost) {
+        boost += Tendency.playResultBoost(tendencyProfile, tendencyPlan.slotCells[slot], play && play.id);
+      }
+      return boost;
+    },
   });
   return (filled.playIds || []).slice(0, 15);
 }
@@ -444,12 +456,15 @@ function autoFillScript() {
   persistActivePlan();
   const opponentCode = normalizeOpponentTeam(state.selectedOpponent);
   const tendencyProfile = currentOpponentProfile();
-  const opponentShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
+  const liveShell = openingScriptOpponentShell(state.userLearning, state.selectedOpponent);
+  const scoutProfile = DefensiveScout.getScoutProfile ? DefensiveScout.getScoutProfile(state.selectedOpponent) : null;
   const tendencyCell = tendencyProfile && Tendency.readiness ? Tendency.readiness(tendencyProfile.cells.early_down) : null;
   setStatus(tendencyCell && tendencyCell.ready && opponentCode
     ? `Opening script fitted to ${opponentCode} ${tendencyCell.primary} on early downs (${tendencyCell.total} snaps).`
-    : opponentShell && opponentCode
-    ? `Opening script fitted to ${opponentCode} early-down looks (${opponentShell.observations} logged).`
+    : liveShell && opponentCode
+    ? `Opening script fitted to ${opponentCode} early-down looks (${liveShell.observations} logged).`
+    : scoutProfile && opponentCode
+    ? `Opening script scouted vs ${opponentCode} (${scoutProfile.identity} • ${scoutProfile.coverageShell}).`
     : "Opening script filled from the standard 15-play sequence.");
   renderScriptBuilder();
 }
