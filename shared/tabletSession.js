@@ -25,6 +25,8 @@
       shell: "",
       offenseFormation: "",
       slotHistory: {},
+      slotDecks: {},
+      gameShowCounts: {},
       callStyle: "default",
     };
   }
@@ -66,6 +68,13 @@
       identityFamilies: input.identityFamilies || {},
       random: input.random || Math.random,
     };
+    var ocOptions = {
+      familyOf: input.situationFamiliesOf || input.familyOf,
+      identityFamilies: options.identityFamilies,
+      random: options.random,
+      style: "default",
+      deferIds: input.deferIds || [],
+    };
     var filled = Opening && Opening.fillOpeningScript ? Opening.fillOpeningScript({
       plays: offense,
       familyOf: input.familyOf,
@@ -75,13 +84,22 @@
       setupPayoff: input.setupPayoff || {},
     }) : { playIds: [] };
     current.callStyle = Board.normalizeCallStyle ? Board.normalizeCallStyle("default") : "default";
-    current.ocBoard = Board.dealBoard(offense, "oc", {
-      familyOf: input.situationFamiliesOf || input.familyOf,
-      identityFamilies: options.identityFamilies,
-      random: options.random,
+    current.gameShowCounts = {};
+    current.slotDecks = {};
+    if (Board.buildSlotDecks) {
+      Object.assign(current.slotDecks, Board.buildSlotDecks(offense, "oc", ocOptions));
+      Object.assign(current.slotDecks, Board.buildSlotDecks(defense, "dc", Object.assign({}, options, { deferIds: input.deferIds || [] })));
+    }
+    current.ocBoard = Board.dealBoard(offense, "oc", Object.assign({}, ocOptions, {
       style: current.callStyle,
-    });
-    current.dcBoard = Board.dealBoard(defense, "dc", options);
+      slotDecks: current.slotDecks,
+      gameShowCounts: current.gameShowCounts,
+    }));
+    current.dcBoard = Board.dealBoard(defense, "dc", Object.assign({}, options, {
+      slotDecks: current.slotDecks,
+      gameShowCounts: current.gameShowCounts,
+      deferIds: input.deferIds || [],
+    }));
     current.slotHistory = {};
     rememberDealt(current.slotHistory, current.ocBoard);
     rememberDealt(current.slotHistory, current.dcBoard);
@@ -115,12 +133,17 @@
     if (!current || !current.id) return session;
     var plays = side === "dc" ? input.defensePlays : input.offensePlays;
     if (!session.slotHistory) session.slotHistory = {};
+    if (!session.slotDecks) session.slotDecks = {};
+    if (!session.gameShowCounts) session.gameShowCounts = {};
     var nextBoard = Board.replaceSlot(board, slotId, plays || [], {
       familyOf: side === "oc" && input.situationFamiliesOf ? input.situationFamiliesOf : input.familyOf,
       identityFamilies: input.identityFamilies || {},
       random: input.random || Math.random,
       history: session.slotHistory,
       style: input.style || session.callStyle || "default",
+      slotDecks: session.slotDecks,
+      gameShowCounts: session.gameShowCounts,
+      deferIds: input.deferIds || [],
     });
     if (side === "dc") session.dcBoard = nextBoard;
     else session.ocBoard = nextBoard;
@@ -135,24 +158,50 @@
     current.callStyle = nextStyle;
     if (!current.ocBoard) current.ocBoard = {};
     if (!current.slotHistory) current.slotHistory = {};
+    if (!current.slotDecks) current.slotDecks = {};
+    if (!current.gameShowCounts) current.gameShowCounts = {};
     var offense = input.offensePlays || [];
-    var exclude = new Set();
-    var goal = current.ocBoard.goal_line;
-    if (goal && goal.id) exclude.add(goal.id);
     var options = {
       familyOf: input.situationFamiliesOf || input.familyOf,
       identityFamilies: input.identityFamilies || {},
       random: input.random || Math.random,
       style: nextStyle,
+      history: current.slotHistory,
+      deferIds: input.deferIds || [],
     };
+    if (Board.reshapeSlotDecksForStyle) {
+      current.slotDecks = Board.reshapeSlotDecksForStyle(current.slotDecks, offense, "oc", options);
+    }
+    var exclude = new Set();
+    var goal = current.ocBoard.goal_line;
+    if (goal && goal.id) exclude.add(goal.id);
     if (Board.slotsFor) {
       Board.slotsFor("oc").forEach(function (slot) {
         if (slot.id === "goal_line") return;
-        var play = Board.dealSlot(offense, slot.id, Object.assign({}, options, { excludeIds: Array.from(exclude) }));
+        var sitting = current.ocBoard[slot.id];
+        var stillFits = sitting && sitting.id && Board.fits(sitting, slot, options.familyOf);
+        var stillStyled = stillFits && (
+          nextStyle === "default" ||
+          nextStyle === "balanced" ||
+          (Board.matchesCallStyle && Board.matchesCallStyle(sitting, nextStyle, options.familyOf))
+        );
+        if (stillStyled) {
+          exclude.add(sitting.id);
+          return;
+        }
+        var prior = Array.isArray(current.slotHistory[slot.id]) ? current.slotHistory[slot.id].slice() : [];
+        var play = Board.dealSlot(offense, slot.id, Object.assign({}, options, {
+          excludeIds: Array.from(exclude),
+          slotDecks: current.slotDecks,
+          gameShowCounts: current.gameShowCounts,
+          seenIds: prior,
+          skipCurrentId: sitting && sitting.id,
+        }));
         if (play && play.id) {
           current.ocBoard[slot.id] = play;
           exclude.add(play.id);
-          current.slotHistory[slot.id] = [play.id];
+          if (prior.indexOf(play.id) < 0) prior.push(play.id);
+          current.slotHistory[slot.id] = prior;
         }
       });
     }

@@ -81,16 +81,66 @@ test("a situational card cycles the plays that fit it before repeating", () => {
   const plays = [0, 1, 2, 3].map(function (index) {
     return { id: "iz-" + index, play_name: "iz-" + index, family: "inside_zone", type: "RUN", formation: "I Form", set: "Pro" };
   });
-  const input = deps({ offensePlays: plays });
+  // random near 1 keeps Fisher-Yates order stable for the assertion
+  const input = deps({ offensePlays: plays, random: function () { return 0.999; } });
   let session = Session.startGame(Session.createSession(), input);
   const seen = [session.ocBoard.first_med.id];
   [1, 2, 3].forEach(function () {
     session = Session.confirmSlot(session, "first_med", input);
     seen.push(session.ocBoard.first_med.id);
   });
-  assert.deepEqual(seen, ["iz-0", "iz-1", "iz-2", "iz-3"]);
+  assert.equal(new Set(seen).size, 4);
+  assert.deepEqual(seen.slice().sort(), ["iz-0", "iz-1", "iz-2", "iz-3"]);
   session = Session.confirmSlot(session, "first_med", input);
-  assert.equal(session.ocBoard.first_med.id, "iz-0");
+  assert.ok(seen.includes(session.ocBoard.first_med.id));
+});
+
+test("each new game shuffles a fresh situational deck order", () => {
+  const plays = [0, 1, 2, 3, 4, 5, 6, 7].map(function (index) {
+    return { id: "iz-" + index, play_name: "iz-" + index, family: "inside_zone", type: "RUN", formation: "I Form", set: "Pro" };
+  });
+  let cursor = 0;
+  const values = [0.1, 0.8, 0.3, 0.9, 0.2, 0.7, 0.4, 0.6, 0.15, 0.85, 0.35, 0.95, 0.25, 0.75, 0.45, 0.55];
+  const input = deps({
+    offensePlays: plays,
+    random: function () {
+      const value = values[cursor % values.length];
+      cursor += 1;
+      return value;
+    },
+  });
+  const first = Session.startGame(Session.createSession(), input);
+  const second = Session.startGame(Session.createSession(), input);
+  assert.ok(first.slotDecks && first.slotDecks.first_med && first.slotDecks.first_med.length >= 4);
+  assert.notDeepEqual(first.slotDecks.first_med, second.slotDecks.first_med);
+});
+
+test("changing call style keeps slot history instead of restarting the cycle", () => {
+  const input = deps({ random: function () { return 0.999; } });
+  let session = Session.startGame(Session.createSession(), input);
+  const beforeHistory = (session.slotHistory.first_med || []).slice();
+  session = Session.confirmSlot(session, "first_med", input);
+  const afterConfirm = (session.slotHistory.first_med || []).slice();
+  assert.ok(afterConfirm.length >= beforeHistory.length);
+  session = Session.applyCallStyle(session, "run_heavy", input);
+  assert.ok(session.ocBoard.first_med.type === "RUN" || session.ocBoard.first_med.type === "RPO");
+  assert.ok((session.slotHistory.first_med || []).length >= afterConfirm.length);
+  assert.ok((session.slotHistory.first_med || []).includes(session.ocBoard.first_med.id));
+});
+
+test("a play is not shown on the board more than twice in one game when the pool allows it", () => {
+  const plays = Array.from({ length: 24 }, function (_item, index) {
+    return { id: "iz-" + index, play_name: "iz-" + index, family: "inside_zone", type: "RUN", formation: "I Form", set: "Pro" };
+  });
+  const input = deps({ offensePlays: plays, random: function () { return 0.999; } });
+  let session = Session.startGame(Session.createSession(), input);
+  for (let step = 0; step < 10; step += 1) {
+    session = Session.confirmSlot(session, "first_med", input);
+  }
+  const counts = session.gameShowCounts || {};
+  Object.keys(counts).forEach(function (id) {
+    assert.ok(Number(counts[id]) <= Board.MAX_GAME_SHOWS, id + " shown " + counts[id] + " times");
+  });
 });
 
 test("a capture after Ran it leaves the opening script and situational cards unchanged", () => {

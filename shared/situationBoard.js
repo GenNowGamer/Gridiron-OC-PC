@@ -408,6 +408,8 @@
     return pickWeighted(styledPool(pool, slot, options), function () { return 1; }, random);
   }
 
+  var MAX_GAME_SHOWS = 2;
+
   function pickWeighted(items, weightFn, random) {
     var total = 0;
     var weights = items.map(function (item) {
@@ -424,6 +426,161 @@
     return items[items.length - 1];
   }
 
+  function shuffleList(items, random) {
+    var list = (Array.isArray(items) ? items : []).slice();
+    var rand = typeof random === "function" ? random : Math.random;
+    var index;
+    for (index = list.length - 1; index > 0; index -= 1) {
+      var swapAt = Math.floor(rand() * (index + 1));
+      var temp = list[index];
+      list[index] = list[swapAt];
+      list[swapAt] = temp;
+    }
+    return list;
+  }
+
+  function playMapById(plays) {
+    var map = {};
+    (Array.isArray(plays) ? plays : []).forEach(function (play) {
+      if (play && play.id) map[play.id] = play;
+    });
+    return map;
+  }
+
+  function showCap(options) {
+    var cap = Number(options && options.maxShows);
+    return Number.isFinite(cap) && cap > 0 ? cap : MAX_GAME_SHOWS;
+  }
+
+  function shownCount(gameShowCounts, playId) {
+    return Number(gameShowCounts && gameShowCounts[playId]) || 0;
+  }
+
+  function bumpShowCount(gameShowCounts, playId) {
+    if (!gameShowCounts || !playId) return;
+    gameShowCounts[playId] = shownCount(gameShowCounts, playId) + 1;
+  }
+
+  function deferIdsToBack(ids, deferIds) {
+    if (!deferIds || !deferIds.length) return ids;
+    var defer = new Set(deferIds.filter(Boolean));
+    if (!defer.size) return ids;
+    var front = [];
+    var back = [];
+    ids.forEach(function (id) {
+      if (defer.has(id)) back.push(id);
+      else front.push(id);
+    });
+    return front.concat(back);
+  }
+
+  function fittingPlays(plays, slot, options) {
+    var familyOf = options && options.familyOf;
+    return (Array.isArray(plays) ? plays : []).filter(function (play) {
+      return play && play.id && fits(play, slot, familyOf);
+    });
+  }
+
+  function buildSlotDecks(plays, side, options) {
+    var random = options && options.random;
+    var deferIds = (options && options.deferIds) || [];
+    var decks = {};
+    slotsFor(side).forEach(function (slot) {
+      var ids = fittingPlays(plays, slot, options).map(function (play) { return play.id; });
+      decks[slot.id] = deferIdsToBack(shuffleList(ids, random), deferIds);
+    });
+    return decks;
+  }
+
+  function reshapeDeckForStyle(deckIds, playsById, slot, options) {
+    var familyOf = options && options.familyOf;
+    var random = options && options.random;
+    var history = options && options.history;
+    var seenList = history && Array.isArray(history[slot.id]) ? history[slot.id] : [];
+    var seen = new Set(seenList);
+    var preferred = [];
+    var other = [];
+    var used = [];
+    (Array.isArray(deckIds) ? deckIds : []).forEach(function (id) {
+      if (seen.has(id)) {
+        used.push(id);
+        return;
+      }
+      var play = playsById[id];
+      if (!play) return;
+      if (styleMatches(play, normalizeCallStyle(options && options.style), familyOf)) preferred.push(id);
+      else other.push(id);
+    });
+    if (!styleApplies(slot, normalizeCallStyle(options && options.style))) {
+      return shuffleList(preferred.concat(other), random).concat(used);
+    }
+    return shuffleList(preferred, random).concat(shuffleList(other, random)).concat(used);
+  }
+
+  function reshapeSlotDecksForStyle(decks, plays, side, options) {
+    var playsById = playMapById(plays);
+    var next = Object.assign({}, decks || {});
+    slotsFor(side).forEach(function (slot) {
+      if (slot.id === "goal_line") return;
+      next[slot.id] = reshapeDeckForStyle(next[slot.id] || [], playsById, slot, options);
+    });
+    return next;
+  }
+
+  function takeNextFromDeck(deckIds, playsById, slot, options) {
+    var exclude = options && options.exclude ? options.exclude : new Set();
+    var others = options && options.others ? options.others : new Set();
+    var seen = options && options.seen ? options.seen : new Set();
+    var gameShowCounts = options && options.gameShowCounts;
+    var cap = showCap(options);
+    var familyOf = options && options.familyOf;
+    var style = normalizeCallStyle(options && options.style);
+    var requireStyle = styleApplies(slot, style);
+    var skipCurrent = options && options.skipCurrentId;
+
+    function candidate(id, allowOverCap, allowSeen, ignoreStyle, allowOthers) {
+      if (!id || id === skipCurrent) return null;
+      if (exclude.has(id)) return null;
+      if (!allowOthers && others.has(id)) return null;
+      if (!allowSeen && seen.has(id)) return null;
+      if (!allowOverCap && shownCount(gameShowCounts, id) >= cap) return null;
+      var play = playsById[id];
+      if (!play || !fits(play, slot, familyOf)) return null;
+      if (!ignoreStyle && requireStyle && !styleMatches(play, style, familyOf)) return null;
+      return play;
+    }
+
+    var index;
+    var play = null;
+    var deck = Array.isArray(deckIds) ? deckIds : [];
+    // [allowOverCap, allowSeen, ignoreStyle, allowOthers]
+    var passes = [
+      [false, false, false, false],
+      [false, false, true, false],
+      [false, false, true, true],
+      [false, true, true, false],
+      [false, true, true, true],
+      [true, false, true, false],
+      [true, false, true, true],
+      [true, true, true, true],
+    ];
+    var pass;
+    for (pass = 0; pass < passes.length; pass += 1) {
+      for (index = 0; index < deck.length; index += 1) {
+        play = candidate(deck[index], passes[pass][0], passes[pass][1], passes[pass][2], passes[pass][3]);
+        if (play) return play;
+      }
+    }
+    return null;
+  }
+
+  function reshuffleSlotDeck(deckIds, plays, slot, options) {
+    var random = options && options.random;
+    var deferIds = (options && options.deferIds) || [];
+    var ids = fittingPlays(plays, slot, options).map(function (play) { return play.id; });
+    return deferIdsToBack(shuffleList(ids, random), deferIds);
+  }
+
   function eligiblePlays(plays, slot, options, exclude) {
     var familyOf = options && options.familyOf;
     return (Array.isArray(plays) ? plays : []).filter(function (play) {
@@ -435,6 +592,22 @@
     var slot = slotById(slotId);
     if (!slot) return null;
     var exclude = new Set((options && options.excludeIds) || []);
+    var decks = options && options.slotDecks;
+    var gameShowCounts = options && options.gameShowCounts;
+    if (decks && Array.isArray(decks[slotId])) {
+      var play = takeNextFromDeck(decks[slotId], playMapById(plays), slot, {
+        exclude: exclude,
+        others: new Set((options && options.otherIds) || []),
+        seen: new Set((options && options.seenIds) || []),
+        skipCurrentId: options && options.skipCurrentId,
+        gameShowCounts: gameShowCounts,
+        familyOf: options && options.familyOf,
+        style: options && options.style,
+        maxShows: options && options.maxShows,
+      });
+      if (play && play.id && gameShowCounts) bumpShowCount(gameShowCounts, play.id);
+      return play || null;
+    }
     var pool = styledPool(eligiblePlays(plays, slot, options, exclude), slot, options);
     if (!pool.length) return null;
     var chosen = pickForStyle(pool, slot, options);
@@ -444,19 +617,29 @@
   function dealBoard(plays, side, options) {
     var board = {};
     var exclude = new Set((options && options.excludeIds) || []);
+    var decks = options && options.slotDecks;
+    var gameShowCounts = options && options.gameShowCounts;
+    var playsById = playMapById(plays);
     slotsFor(side).forEach(function (slot) {
-      var play = dealSlot(plays, slot.id, Object.assign({}, options, { excludeIds: Array.from(exclude) }));
+      var play = null;
+      if (decks && Array.isArray(decks[slot.id])) {
+        play = takeNextFromDeck(decks[slot.id], playsById, slot, {
+          exclude: exclude,
+          others: new Set(),
+          seen: new Set(),
+          gameShowCounts: gameShowCounts,
+          familyOf: options && options.familyOf,
+          style: options && options.style,
+          maxShows: options && options.maxShows,
+        });
+        if (play && play.id && gameShowCounts) bumpShowCount(gameShowCounts, play.id);
+      } else {
+        play = dealSlot(plays, slot.id, Object.assign({}, options, { excludeIds: Array.from(exclude) }));
+      }
       board[slot.id] = play || null;
       if (play && play.id) exclude.add(play.id);
     });
     return board;
-  }
-
-  function fittingPlays(plays, slot, options) {
-    var familyOf = options && options.familyOf;
-    return (Array.isArray(plays) ? plays : []).filter(function (play) {
-      return play && play.id && fits(play, slot, familyOf);
-    });
   }
 
   function replaceSlot(board, slotId, plays, options) {
@@ -475,22 +658,64 @@
     var currentId = current && current.id;
     if (currentId && seenList.indexOf(currentId) < 0) seenList.push(currentId);
     var seen = new Set(seenList);
-    var fitting = styledPool(fittingPlays(plays, slot, options), slot, options);
-    var unseen = fitting.filter(function (play) {
-      return play.id !== currentId && !seen.has(play.id);
-    });
-    var pool = unseen.filter(function (play) { return !others.has(play.id); });
+    var decks = options && options.slotDecks;
+    var gameShowCounts = options && options.gameShowCounts;
+    var play = null;
     var reset = false;
+
+    if (decks && Array.isArray(decks[slotId])) {
+      var playsById = playMapById(plays);
+      play = takeNextFromDeck(decks[slotId], playsById, slot, {
+        exclude: new Set(),
+        others: others,
+        seen: seen,
+        skipCurrentId: currentId,
+        gameShowCounts: gameShowCounts,
+        familyOf: options && options.familyOf,
+        style: options && options.style,
+        maxShows: options && options.maxShows,
+      });
+      if (!play) {
+        reset = true;
+        decks[slotId] = reshuffleSlotDeck(decks[slotId], plays, slot, options);
+        seen = new Set(currentId ? [currentId] : []);
+        seenList = currentId ? [currentId] : [];
+        play = takeNextFromDeck(decks[slotId], playsById, slot, {
+          exclude: new Set(),
+          others: others,
+          seen: seen,
+          skipCurrentId: currentId,
+          gameShowCounts: gameShowCounts,
+          familyOf: options && options.familyOf,
+          style: options && options.style,
+          maxShows: options && options.maxShows,
+        });
+      }
+      if (play && play.id && gameShowCounts) bumpShowCount(gameShowCounts, play.id);
+      next[slotId] = play || current || null;
+      if (history && play && play.id) {
+        var deckCycle = reset ? (currentId ? [currentId] : []) : seenList.slice();
+        if (deckCycle.indexOf(play.id) < 0) deckCycle.push(play.id);
+        history[slotId] = deckCycle;
+      }
+      return next;
+    }
+
+    var fitting = styledPool(fittingPlays(plays, slot, options), slot, options);
+    var unseen = fitting.filter(function (playItem) {
+      return playItem.id !== currentId && !seen.has(playItem.id);
+    });
+    var pool = unseen.filter(function (playItem) { return !others.has(playItem.id); });
     if (!pool.length) pool = unseen.slice();
     if (!pool.length) {
       reset = true;
-      pool = fitting.filter(function (play) {
-        return play.id !== currentId && !others.has(play.id);
+      pool = fitting.filter(function (playItem) {
+        return playItem.id !== currentId && !others.has(playItem.id);
       });
-      if (!pool.length) pool = fitting.filter(function (play) { return play.id !== currentId; });
+      if (!pool.length) pool = fitting.filter(function (playItem) { return playItem.id !== currentId; });
       if (!pool.length) pool = fitting.slice();
     }
-    var play = pool.length ? pickForStyle(pool, slot, options) : null;
+    play = pool.length ? pickForStyle(pool, slot, options) : null;
     next[slotId] = play || current || null;
     if (history && play && play.id) {
       var cycle = reset ? [] : seenList.slice();
@@ -565,6 +790,7 @@
   return {
     OC_SLOTS: OC_SLOTS,
     DC_SLOTS: DC_SLOTS,
+    MAX_GAME_SHOWS: MAX_GAME_SHOWS,
     slotsFor: slotsFor,
     slotById: slotById,
     generalReason: generalReason,
@@ -574,6 +800,10 @@
     CALL_STYLES: CALL_STYLES,
     normalizeCallStyle: normalizeCallStyle,
     callStyleLabel: callStyleLabel,
+    matchesCallStyle: styleMatches,
+    shuffleList: shuffleList,
+    buildSlotDecks: buildSlotDecks,
+    reshapeSlotDecksForStyle: reshapeSlotDecksForStyle,
     dealSlot: dealSlot,
     dealBoard: dealBoard,
     replaceSlot: replaceSlot,

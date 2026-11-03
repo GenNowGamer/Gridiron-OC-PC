@@ -120,6 +120,31 @@ test("a slot shows every other fitting play before it repeats one", () => {
   assert.equal(new Set(shown).size, 4);
 });
 
+test("a session deck deals in shuffled order and defers prior-game ids", () => {
+  const plays = [
+    play("inside-a", "inside_zone", "RUN"),
+    play("inside-b", "inside_zone", "RUN"),
+    play("inside-c", "inside_zone", "RUN"),
+    play("inside-d", "inside_zone", "RUN"),
+  ];
+  const decks = Board.buildSlotDecks(plays, "oc", {
+    familyOf: function (item) { return item.family; },
+    random: function () { return 0.999; },
+    deferIds: ["inside-a", "inside-b"],
+  });
+  assert.deepEqual(decks.first_med.slice(0, 2), ["inside-c", "inside-d"]);
+  assert.deepEqual(decks.first_med.slice(2), ["inside-a", "inside-b"]);
+  const counts = {};
+  const board = Board.dealBoard(plays, "oc", {
+    familyOf: function (item) { return item.family; },
+    slotDecks: decks,
+    gameShowCounts: counts,
+    random: function () { return 0.999; },
+  });
+  assert.equal(board.first_med.id, "inside-c");
+  assert.equal(counts["inside-c"], 1);
+});
+
 test("a play sitting on another card waits while this slot still has an unseen play", () => {
   const options = {
     familyOf: function (item) { return item.family; },
