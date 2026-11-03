@@ -132,7 +132,6 @@ npm install
 npm start
 ```
 
-*Note: `npm start` runs `npm run check:core` before launching Electron.*
 
 ### Building the Windows Installer
 
@@ -142,7 +141,7 @@ To generate a standalone Windows NSIS installer (`.exe`):
 npm run dist
 ```
 
-The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the version in `package.json`. `npm run dist` runs `verify:pc`, then packages with electron-builder. Do not rebuild when that setup file for the current version is already present and you are only publishing it.
+The installer is `dist\Gridiron Play Advisor Setup <version>.exe`, using the version in `package.json`. `npm run dist` packages the standalone installer with electron-builder. Do not rebuild when that setup file for the current version is already present and you are only publishing it.
 
 ---
 

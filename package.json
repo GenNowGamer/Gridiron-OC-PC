@@ -9,13 +9,13 @@
   },
   "scripts": {
     "test": "npm run verify:pc",
-    "start": "npm run check:core && powershell -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
-    "dist": "npm run prepare:dist && electron-builder --win nsis",
+    "start": "powershell -Command \"Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue; electron .\"",
+    "dist": "electron-builder --win nsis",
     "check:core": "node ./scripts/check-pc-core.mjs",
     "test:regression": "node --test ./scripts/test-app-regressions.cjs",
     "test:gameplan": "node --test ./shared/test/*.test.js",
     "verify:pc": "npm run check:core && npm run test:gameplan && npm run test:regression",
-    "prepare:dist": "npm run verify:pc"
+    "dist:verify": "npm run verify:pc && electron-builder --win nsis"
   },
   "build": {
     "appId": "com.gridiron.playadvisor.pc",
@@ -40,7 +40,6 @@
       }
     ],
     "extraResources": [],
-    "afterPack": "./scripts/after-pack-win-icon.mjs",
     "win": {
       "icon": "assets/icon.ico",
       "target": "nsis",
