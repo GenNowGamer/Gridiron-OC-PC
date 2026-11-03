@@ -42,6 +42,8 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ### 1. Call sheet
 
+![Offensive Call Sheet Workspace](docs/screenshots/Offense_Call_Sheet.png)
+
 - **Opening script:** The strip above the cards is the script you saved. Auto-Fill / Start Game shuffle the eligible book, fill the usual run/pass/setup slots from that deal order with unique play IDs when possible, and defer IDs from the last 1–2 scripts. The engine also clusters into 3–4 anchor formations (multi-play sets with run/pass balance) for NFL "same look, different play" sequencing. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
 - **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. They span the width under the script. **Ran it** replaces only that card from that card’s per-game shuffled playlist. Plays already sitting on the other cards are skipped while another unused fit remains. Across the whole board, a play is not surfaced more than twice in one game while other fits remain (`MAX_GAME_SHOWS = 2` in `shared/situationBoard.js`). When a card’s unused list is exhausted, that card reshuffles its fitting pool for another pass.
 - **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match:
@@ -58,10 +60,14 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ### 2. Script builder
 
+![Script Builder Opening 15 Drive Sequence](docs/screenshots/Script_builder_Opening15.png)
+
 - **New game:** The app opens on the matchup screen. **Start Game**, including after **New Game**, generates one fresh 15 and opens the builder on that list. The generator shuffles the eligible playbook, fills each script slot from that deal order (keeping the usual run/pass/setup roles), and prefers plays that were not in the last 1–2 opening scripts (`recentRunScripts` / `cooldownIds`). Exact play IDs stay unique inside the 15 when the book allows it. Opponent shell, tendencies, locks, and play scores still apply inside that unique pool. It is the same fill as **Auto-Fill 15**.
 - **Save & Close:** The queue on screen becomes the strip. A new game, or any edit that changes the play list, starts at play 1. Reopening the builder during a game shows the script already on the strip. Saving an unchanged list stays on the current play.
 - **X:** Drops unsaved edits. On a new game the strip still gets the automatic 15 from when the builder opened. During a game, **X** leaves the strip as it was.
 - **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there updates the situational cards the same way as the toolbar dropdown and does not change the opening script. Goal Line stays on the normal card. There is no Active / Inactive switch, and no concept, backup, note, or pin editor.
+
+  ![Script Builder Call Sheet & Play-Call Styles](docs/screenshots/Script_Builder_Call_Sheet.png)
 
 ### 3. Playbooks
 
@@ -72,6 +78,8 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ## How to Use Gridiron OC
 
+![Matchup and Broadcast Setup Dialog](docs/screenshots/Matchup_&_Broadcast_Setup_Menu.png)
+
 1. The app opens on the matchup screen. Choose your team, the opponent, CPU or Human, and **Madden 26** or **Madden 27**.
 2. Press **Start Game**. Script builder opens on a fresh automatic 15. **Skip For Now** closes the matchup and does not open the builder.
 3. Keep that 15, edit it, or press **Auto-Fill 15** for another shuffled unique 15 (still avoiding recent-script plays when it can). **Save & Close** loads it onto the strip at play 1. **X** drops the edits and still uses the automatic 15 for a new game.
@@ -79,6 +87,9 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 5. Change the play-call style from the dropdown next to **Script builder**, or from the **Call Sheet** tab inside Script builder. Cards that still fit stay put; the rest reshuffle for that style without wiping this game’s variety memory. Goal Line does not move. You can change the style again later in the game.
 6. **Script builder** during a game edits the script already on the strip. **Save & Close** stays on the current play unless the list of plays changed.
 7. **New Game** returns to the matchup. **Start Game** deals a new automatic opening script (shuffled, unique, deferring last scripts), builds a fresh shuffled playlist for each situational card (deferring plays shown last game), starts the play-call style on Default, and opens the builder again.
+8. **Settings (Desktop Preferences):** Click **Settings** in the top right to switch your active playbook, opponent scouting profile, Madden version, or visual theme on the fly without restarting.
+
+![Desktop Preferences Settings Modal](docs/screenshots/Settings.png)
 
 ---
 
