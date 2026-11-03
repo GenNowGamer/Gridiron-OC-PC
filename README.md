@@ -105,14 +105,11 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
 [ Call sheet (app.js, index.html) ]
        ├── Opening Script (shared/openingScript.js)
        ├── Situational Cards (shared/situationBoard.js)
-       ├── Sheet Session (shared/tabletSession.js)
-       ├── Gameplan (shared/gameplanModel.js)
-       └── Opponent tendencies (shared/opponentTendency.js)
+       └── Sheet Session (shared/tabletSession.js)
 ```
 
 - **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`). `openingScript.js` shuffles the eligible book per Auto-Fill, walks that deal order into the 15 script slots, and defers `cooldownIds` / `deferIds` from recent scripts. `situationBoard.js` turns play names and concepts into the tags the 15 cards use, builds per-game shuffled slot decks, and enforces the board-wide show cap. `tabletSession.js` holds `slotDecks`, `slotHistory`, and `gameShowCounts` for the live sheet. `app.js` asks for primary family, passes recent script ids into opening-script fills, and passes last-game board play ids as `deferIds` on the next card deal.
 - **Desktop bridge:** `preload.js` loads the offensive and defensive playbooks and reads or writes preferences and the trace log. It does not expose capture, watch, or training methods. `main.js` does not register those channels.
-- **Older modules still loaded:** `index.html` still loads the recommendation, defense-call, penalty, coordinator-report, and result-label scripts. The call sheet does not use them. `npm run verify:pc` still runs tests that call that code.
 - **Data Persistence:** User preferences and matchup plans stay in Electron `userData` and `localStorage`. The play-call style lasts for the current game. A new game starts on Default with a newly generated opening script. The last 1–2 opening-script id lists are stored under `goc-desktop-recent-run-scripts-v1` so the next Auto-Fill can defer those plays. Shown situational-card play ids from the previous game are stored under `goc-desktop-recent-board-plays-v1` so the next card shuffle can defer them.
 - **Telemetry & Privacy:** Zero cloud telemetry. The call sheet and playbooks stay on this PC. The current window does not capture the screen.
 
