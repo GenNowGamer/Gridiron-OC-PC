@@ -98,13 +98,40 @@
     return text.indexOf("goal line") >= 0;
   }
 
+  function shuffleList(items, random) {
+    var list = (Array.isArray(items) ? items : []).slice();
+    var rand = typeof random === "function" ? random : Math.random;
+    var index;
+    for (index = list.length - 1; index > 0; index -= 1) {
+      var swapAt = Math.floor(rand() * (index + 1));
+      var temp = list[index];
+      list[index] = list[swapAt];
+      list[swapAt] = temp;
+    }
+    return list;
+  }
+
+  function deferIdsToBack(plays, deferIds) {
+    if (!deferIds || !deferIds.length) return plays;
+    var defer = new Set(deferIds.filter(Boolean));
+    if (!defer.size) return plays;
+    var front = [];
+    var back = [];
+    plays.forEach(function (play) {
+      if (play && defer.has(play.id)) back.push(play);
+      else front.push(play);
+    });
+    return front.concat(back);
+  }
+
   function fillOpeningScript(params) {
     var options = params || {};
     var teamPlays = (Array.isArray(options.plays) ? options.plays : []).filter(function (play) {
-      return play && !isGoalLinePlay(play);
+      return play && play.id && !isGoalLinePlay(play);
     });
     var familyOf = options.familyOf || function () { return ""; };
-    var cooldownIds = new Set((options.cooldownIds || []).filter(Boolean));
+    var cooldownList = (options.cooldownIds || options.deferIds || []).filter(Boolean);
+    var cooldownIds = new Set(cooldownList);
     var shell = options.shell || null;
     var setupPayoff = options.setupPayoff || {};
     var random = options.random || Math.random;
@@ -122,6 +149,11 @@
     var scoreDeps = options.scoreDeps || {};
     var slotFamilies = Array.isArray(options.slotFamilies) ? options.slotFamilies : [];
     var scoringSlot = 0;
+    var dealOrder = deferIdsToBack(shuffleList(teamPlays, random), cooldownList);
+    var deckOrder = new Map();
+    dealOrder.forEach(function (play, index) {
+      if (play && play.id) deckOrder.set(play.id, index);
+    });
 
     locked.forEach(function (index) {
       var play = byId.get(existing[index]);
@@ -137,23 +169,44 @@
       return base;
     }
 
+    function deckRank(play) {
+      if (!play || !play.id || !deckOrder.has(play.id)) return Number.MAX_SAFE_INTEGER;
+      return deckOrder.get(play.id);
+    }
+
+    function pickByDeck(pool) {
+      if (!pool || !pool.length) return null;
+      var ordered = pool.slice().sort(function (a, b) {
+        return deckRank(a) - deckRank(b) || cleanText(a.play_name).localeCompare(cleanText(b.play_name));
+      });
+      return ordered[0] || null;
+    }
+
     function chooseFrom(candidatePool, allowCooldown, allowReuse) {
       if (!candidatePool || !candidatePool.length) return null;
       var fresh = candidatePool.filter(function (play) {
-        return play && !usedIds.has(play.id) && !cooldownIds.has(play.id);
+        return play && play.id && !usedIds.has(play.id) && !cooldownIds.has(play.id);
+      });
+      var deferred = candidatePool.filter(function (play) {
+        return play && play.id && !usedIds.has(play.id) && cooldownIds.has(play.id);
       });
       var unused = candidatePool.filter(function (play) {
-        return play && !usedIds.has(play.id);
+        return play && play.id && !usedIds.has(play.id);
       });
-      var available = fresh.length ? fresh : (allowCooldown ? unused : []);
-      if (!available.length && allowReuse) available = candidatePool.filter(Boolean);
+      var available = fresh.length ? fresh : [];
+      if (!available.length && allowCooldown) available = deferred.length ? deferred : unused;
+      if (!available.length && allowReuse) {
+        available = candidatePool.filter(function (play) {
+          return play && play.id;
+        });
+      }
       if (!available.length) return null;
       var pool = available;
       if (options.ignoreLearning !== true && shell && shell.distribution && shell.distribution.entries && shell.distribution.entries.length && available.length > 1) {
         var ranked = available.map(function (play) {
           return { play: play, score: playScore(play) };
         }).sort(function (a, b) {
-          return b.score - a.score || cleanText(a.play.play_name).localeCompare(cleanText(b.play.play_name));
+          return b.score - a.score || deckRank(a.play) - deckRank(b.play) || cleanText(a.play.play_name).localeCompare(cleanText(b.play.play_name));
         });
         var best = ranked[0].score;
         pool = ranked.filter(function (item) {
@@ -162,7 +215,7 @@
           return item.play;
         });
       }
-      var chosen = pool[Math.floor(random() * pool.length)];
+      var chosen = pickByDeck(pool);
       if (!chosen) return null;
       usedIds.add(chosen.id);
       return chosen;
@@ -170,6 +223,10 @@
 
     function pickPlay(candidatePool) {
       return chooseFrom(candidatePool, false, false);
+    }
+
+    function pickDeferred(candidatePool) {
+      return chooseFrom(candidatePool, true, false);
     }
 
     function pickAny(candidatePool) {
@@ -272,7 +329,11 @@
           }
         }
       }
-      var play = pickPlay(biased && biased.length ? biased : secondary) || pickPlay(secondary) || pickAny(teamPlays);
+      var play = pickPlay(biased && biased.length ? biased : secondary)
+        || pickPlay(secondary)
+        || pickDeferred(biased && biased.length ? biased : secondary)
+        || pickDeferred(secondary)
+        || pickAny(teamPlays);
       if (play) selected[index] = play;
       return selected[index];
     }
@@ -314,6 +375,7 @@
     isEarlyDownScriptSituation: isEarlyDownScriptSituation,
     openingScriptOpponentShell: openingScriptOpponentShell,
     openingScriptPlayScore: openingScriptPlayScore,
+    shuffleList: shuffleList,
     fillOpeningScript: fillOpeningScript,
   };
 });

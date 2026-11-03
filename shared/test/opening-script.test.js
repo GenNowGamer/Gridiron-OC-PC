@@ -155,11 +155,71 @@ test("ignoreLearning does not let a shell score choose the play", () => {
     cooldownIds: [],
     shell: shell,
     setupPayoff: {},
-    random: function () { return 0; },
+    // near-1 keeps Fisher-Yates order so deck walk hits quick-low before quick-high
+    random: function () { return 0.999; },
     ignoreLearning: true,
     playScore: function (item) { return item.id === "quick-high" ? 5 : 0; },
   });
   assert.equal(result.playIds[1], "quick-low");
+});
+
+test("each auto-fill shuffles a fresh script order", () => {
+  const big = [];
+  for (let i = 0; i < 40; i += 1) {
+    big.push(play("iz-" + i, "RUN", "inside_zone", "Singleback"));
+    big.push(play("qg-" + i, "PASS", "quick_game", "Gun"));
+    big.push(play("wz-" + i, "RUN", "wide_zone", "Gun"));
+    big.push(play("boot-" + i, "PA", "boot", "Singleback"));
+    big.push(play("shot-" + i, "PASS", "shot", "Gun"));
+    big.push(play("scr-" + i, "PASS", "screen", "Gun"));
+    big.push(play("cntr-" + i, "RUN", "counter", "Gun"));
+    big.push(play("dig-" + i, "PASS", "levels_dig", "Gun"));
+  }
+  let cursor = 0;
+  const values = [0.11, 0.82, 0.33, 0.91, 0.24, 0.67, 0.48, 0.05, 0.73, 0.56, 0.19, 0.88, 0.41, 0.62, 0.27, 0.94];
+  function nextRandom() {
+    const value = values[cursor % values.length];
+    cursor += 1;
+    return value;
+  }
+  const first = Opening.fillOpeningScript({
+    plays: big,
+    familyOf: function (item) { return item.family; },
+    cooldownIds: [],
+    setupPayoff: { inside_zone: ["boot"] },
+    random: nextRandom,
+  });
+  const second = Opening.fillOpeningScript({
+    plays: big,
+    familyOf: function (item) { return item.family; },
+    cooldownIds: [],
+    setupPayoff: { inside_zone: ["boot"] },
+    random: nextRandom,
+  });
+  assert.equal(first.playIds.length, 15);
+  assert.equal(second.playIds.length, 15);
+  assert.equal(new Set(first.playIds).size, 15);
+  assert.equal(new Set(second.playIds).size, 15);
+  assert.notDeepEqual(first.playIds, second.playIds);
+});
+
+test("recent script ids are deferred until fresh fits for a slot run out", () => {
+  const plays = book().concat([
+    play("inside-c", "RUN", "inside_zone", "Singleback"),
+    play("inside-d", "RUN", "inside_zone", "Singleback"),
+  ]);
+  const cooled = ["inside-a", "inside-b"];
+  const result = Opening.fillOpeningScript({
+    plays: plays,
+    familyOf: function (item) { return item.family; },
+    cooldownIds: cooled,
+    setupPayoff: { inside_zone: ["boot"] },
+    random: function () { return 0.999; },
+  });
+  assert.equal(result.playIds.includes("inside-a"), false);
+  assert.equal(result.playIds.includes("inside-b"), false);
+  assert.ok(result.playIds.includes("inside-c") || result.playIds.includes("inside-d") || result.playIds.includes("dive-a"));
+  assert.equal(new Set(result.playIds).size, 15);
 });
 
 test("opening script clusters into 3-5 anchor formations with complementary plays", () => {

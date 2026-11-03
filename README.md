@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.34-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.35-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -31,7 +31,7 @@ The current window does not start screen capture, F8, the watch loop, or detecto
 
 The live window is an offensive call sheet. It does not recommend a play and it does not call a defense.
 
-1. **Start Game opens the Script builder.** The 15 plays in the builder are the opening script. They are generated once for that game. Skip For Now does not open the builder and does not start the game.
+1. **Start Game opens the Script builder.** The 15 plays in the builder are the opening script. They are generated once for that game from a shuffled unique deal that prefers plays not used in the last 1–2 scripts. Skip For Now does not open the builder and does not start the game.
 2. **Save & Close loads that list onto the strip.** A new game starts at play 1. **X** drops unsaved edits. On a new game, the strip still receives the automatic 15 from when the builder opened. An empty queue falls back to that same automatic 15.
 3. **Ran it confirms what you called.** On the script, that advances to the next scripted play. On a situational card, only that card is replaced.
 4. **Each game gets a fresh shuffled deal of the 15 cards.** At **Start Game**, every card builds a shuffled playlist of the plays that fit it. **Ran it** advances that card’s playlist. A play is not shown on the board more than twice in one game while other fitting plays remain. Last game’s shown plays are pushed toward the back of the next shuffle. Team identity does not weight that draw. The cards are dealt separately from the opening script.
@@ -42,7 +42,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ### 1. Call sheet
 
-- **Opening script:** The strip above the cards is the script you saved. The script engine automatically clusters the 15 plays into 3–4 anchor formations (multi-play sets with run/pass balance) to replicate NFL "same look, different play" sequencing. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
+- **Opening script:** The strip above the cards is the script you saved. Auto-Fill / Start Game shuffle the eligible book, fill the usual run/pass/setup slots from that deal order with unique play IDs when possible, and defer IDs from the last 1–2 scripts. The engine also clusters into 3–4 anchor formations (multi-play sets with run/pass balance) for NFL "same look, different play" sequencing. **Ran it** moves to the next play. Goal Line formation plays are left out of the script.
 - **15 situational cards:** 1st & med, 2nd & med, 2nd & long, 3rd & med, 3rd & long, 4th & short, Backed up, Red zone, Goal line, Blitz beater, Man beater, Cover 3 beater, Shot, Quick game, and PA / motion. They span the width under the script. **Ran it** replaces only that card from that card’s per-game shuffled playlist. Plays already sitting on the other cards are skipped while another unused fit remains. Across the whole board, a play is not surfaced more than twice in one game while other fits remain (`MAX_GAME_SHOWS = 2` in `shared/situationBoard.js`). When a card’s unused list is exhausted, that card reshuffles its fitting pool for another pass.
 - **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match:
   - **1st & med:** Early-down families (inside zone, split zone, duo/power, quick game, boot, dive, iso, wide zone, counter, RPO, screen, read option, trap).
@@ -58,7 +58,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 ### 2. Script builder
 
-- **New game:** The app opens on the matchup screen. **Start Game**, including after **New Game**, generates one fresh 15 and opens the builder on that list. The generator uses the opponent shell, tendencies, locks, and play scores. It is the same fill as **Auto-Fill 15**. Last game's saved opening script is not reused.
+- **New game:** The app opens on the matchup screen. **Start Game**, including after **New Game**, generates one fresh 15 and opens the builder on that list. The generator shuffles the eligible playbook, fills each script slot from that deal order (keeping the usual run/pass/setup roles), and prefers plays that were not in the last 1–2 opening scripts (`recentRunScripts` / `cooldownIds`). Exact play IDs stay unique inside the 15 when the book allows it. Opponent shell, tendencies, locks, and play scores still apply inside that unique pool. It is the same fill as **Auto-Fill 15**.
 - **Save & Close:** The queue on screen becomes the strip. A new game, or any edit that changes the play list, starts at play 1. Reopening the builder during a game shows the script already on the strip. Saving an unchanged list stays on the current play.
 - **X:** Drops unsaved edits. On a new game the strip still gets the automatic 15 from when the builder opened. During a game, **X** leaves the strip as it was.
 - **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there updates the situational cards the same way as the toolbar dropdown and does not change the opening script. Goal Line stays on the normal card. There is no Active / Inactive switch, and no concept, backup, note, or pin editor.
@@ -75,11 +75,11 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 
 1. The app opens on the matchup screen. Choose your team, the opponent, CPU or Human, and **Madden 26** or **Madden 27**.
 2. Press **Start Game**. Script builder opens on a fresh automatic 15. **Skip For Now** closes the matchup and does not open the builder.
-3. Keep that 15, edit it, or press **Auto-Fill 15**. **Save & Close** loads it onto the strip at play 1. **X** drops the edits and still uses the automatic 15 for a new game.
+3. Keep that 15, edit it, or press **Auto-Fill 15** for another shuffled unique 15 (still avoiding recent-script plays when it can). **Save & Close** loads it onto the strip at play 1. **X** drops the edits and still uses the automatic 15 for a new game.
 4. Call a script play or a situational card in Madden, then press **Ran it** on that tile. The script advances, or that one card is replaced.
 5. Change the play-call style from the dropdown next to **Script builder**, or from the **Call Sheet** tab inside Script builder. Cards that still fit stay put; the rest reshuffle for that style without wiping this game’s variety memory. Goal Line does not move. You can change the style again later in the game.
 6. **Script builder** during a game edits the script already on the strip. **Save & Close** stays on the current play unless the list of plays changed.
-7. **New Game** returns to the matchup. **Start Game** deals a new automatic 15, builds a fresh shuffled playlist for each situational card (deferring plays shown last game), starts the play-call style on Default, and opens the builder again.
+7. **New Game** returns to the matchup. **Start Game** deals a new automatic opening script (shuffled, unique, deferring last scripts), builds a fresh shuffled playlist for each situational card (deferring plays shown last game), starts the play-call style on Default, and opens the builder again.
 
 ---
 
@@ -100,10 +100,10 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
        └── Opponent tendencies (shared/opponentTendency.js)
 ```
 
-- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`). `situationBoard.js` turns that name and those concepts into the tags the 15 cards use, builds per-game shuffled slot decks, and enforces the board-wide show cap. `tabletSession.js` holds `slotDecks`, `slotHistory`, and `gameShowCounts` for the live sheet. `app.js` asks that module for the play's primary family and passes last-game board play ids as `deferIds` on the next deal.
+- **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`). `openingScript.js` shuffles the eligible book per Auto-Fill, walks that deal order into the 15 script slots, and defers `cooldownIds` / `deferIds` from recent scripts. `situationBoard.js` turns play names and concepts into the tags the 15 cards use, builds per-game shuffled slot decks, and enforces the board-wide show cap. `tabletSession.js` holds `slotDecks`, `slotHistory`, and `gameShowCounts` for the live sheet. `app.js` asks for primary family, passes recent script ids into opening-script fills, and passes last-game board play ids as `deferIds` on the next card deal.
 - **Desktop bridge:** `preload.js` loads the offensive and defensive playbooks and reads or writes preferences and the trace log. It does not expose capture, watch, or training methods. `main.js` does not register those channels.
 - **Older modules still loaded:** `index.html` still loads the recommendation, defense-call, penalty, coordinator-report, and result-label scripts. The call sheet does not use them. `npm run verify:pc` still runs tests that call that code.
-- **Data Persistence:** User preferences and matchup plans stay in Electron `userData` and `localStorage`. The play-call style lasts for the current game. A new game starts on Default and does not reuse the previous opening-script list. Shown situational-card play ids from the previous game are stored under `goc-desktop-recent-board-plays-v1` so the next shuffle can defer them.
+- **Data Persistence:** User preferences and matchup plans stay in Electron `userData` and `localStorage`. The play-call style lasts for the current game. A new game starts on Default with a newly generated opening script. The last 1–2 opening-script id lists are stored under `goc-desktop-recent-run-scripts-v1` so the next Auto-Fill can defer those plays. Shown situational-card play ids from the previous game are stored under `goc-desktop-recent-board-plays-v1` so the next card shuffle can defer them.
 - **Telemetry & Privacy:** Zero cloud telemetry. The call sheet and playbooks stay on this PC. The current window does not capture the screen.
 
 ---
