@@ -1,7 +1,7 @@
 # Gridiron OC (PC)
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.35-green.svg)](#testing--quality-verification)
+[![Version](https://img.shields.io/badge/Version-0.1.36-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
@@ -47,7 +47,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 - **What fits a card:** `shared/situationBoard.js` tags each play from its name and concepts, and a play can sit on every card those tags match:
   - **1st & med:** Early-down families (inside zone, split zone, duo/power, quick game, boot, dive, iso, wide zone, counter, RPO, screen, read option, trap).
   - **Blitz beater:** Limited to fast rhythm throws, screens, draws, and mesh. Explicitly bars all play-action passes (`PA`), slow boots, verticals, and deep dropback shots.
-  - **Backed up:** Curated for safety-first execution from inside your own 10-yard line. Bars deep drops (`shot`, `verticals`, deep comebacks, and PA) and prioritizes under-center and pistol runs when ranking legacy draws.
+  - **Backed up:** Curated for safety-first execution from inside your own 10-yard line. Bars deep drops (`shot`, `verticals`, deep comebacks, and PA) and prioritizes under-center and pistol runs when ranking plays.
   - **Goal line:** Requires a heavy or compressed formation (`heavy`, `goal line`, `jumbo`, `wing`, `tight`, `full house`, `close`, `nasty`) or compressed concept (`fade`, `slant`, `flat`, `sprint`, `boot`, `sneak`, `tush`, `power`, `iso`, `dive`, `inside_zone`, `stick`). Bars `Gun Empty` and deep vertical routes.
   - **Comeback routes:** Classified as intermediate (`levels_dig`), keeping deep comebacks off quick game and backed-up cards.
   - **Shot vs Screen:** Fake screen shot concepts (such as `PA BUBBLE Y OVER`) resolve to `shot` as their primary family rather than `screen`.
@@ -66,7 +66,6 @@ The live window is an offensive call sheet. It does not recommend a play and it 
 ### 3. Playbooks
 
 - **Madden 26 and Madden 27 catalogs:** Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
-- **Z Spot:** In the Madden 27 book, 55 plays that were stored as `L SPOT` are `Z SPOT`. Chicago's copies are Gun Bunch Spread, Gun Bunch Open TE, and Gun Spread. The same correction covers every other team that had the exact `L SPOT` name. `L SPOT N GO` and `ZL SPOT` names were left unchanged. Madden 26 has no `L SPOT` row.
 - **Defense catalogs:** Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Those files are still on disk. The window does not show a defensive call.
 
 ---

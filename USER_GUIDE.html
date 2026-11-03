@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gridiron OC — Tactical Field Guide & Operator's Manual</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+    :root {
+      --bg: #070d14;
+      --card-bg: #0e1724;
+      --card-alt: #132032;
+      --border: #1f324d;
+      --border-accent: #2a6cff;
+      --primary: #2a6cff;
+      --primary-light: #5991ff;
+      --cyan: #00d2ff;
+      --gold: #ffb703;
+      --red: #ff3366;
+      --green: #00e676;
+      --text: #e6eef8;
+      --text-muted: #94a9c7;
+      --text-dim: #5c7294;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 7mm 9mm 8mm 9mm;
+      @bottom-right {
+        content: counter(page);
+        font-family: 'Chakra Petch', sans-serif;
+        font-size: 8pt;
+        color: #5c7294;
+      }
+      @bottom-left {
+        content: "GRIDIRON OC // TACTICAL FIELD MANUAL";
+        font-family: 'Chakra Petch', sans-serif;
+        font-size: 7.5pt;
+        letter-spacing: 1px;
+        color: #5c7294;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 7.8pt;
+      line-height: 1.31;
+      -webkit-font-smoothing: antialiased;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    .doc-page {
+      height: 281mm;
+      max-height: 281mm;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+      padding-bottom: 1mm;
+    }
+
+    .doc-page:last-child {
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+
+    /* Page 1: Cover */
+    .cover-page {
+      padding: 8mm 8mm;
+      justify-content: space-between;
+      background: radial-gradient(circle at 85% 20%, rgba(42, 108, 255, 0.28), transparent 45%),
+                  radial-gradient(circle at 10% 80%, rgba(0, 210, 255, 0.16), transparent 45%),
+                  #070d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .cover-page::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--cyan), var(--gold));
+    }
+
+    .cover-badge-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .tactical-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(42, 108, 255, 0.18);
+      border: 1px solid var(--border-accent);
+      border-radius: 4px;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--cyan);
+      text-transform: uppercase;
+    }
+
+    .sec-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      color: var(--text-dim);
+    }
+
+    .cover-hero {
+      margin-top: 5mm;
+      margin-bottom: 3mm;
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 5mm;
+    }
+
+    .brand-icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 14px;
+      border: 2px solid var(--border-accent);
+      box-shadow: 0 0 30px rgba(42, 108, 255, 0.45);
+    }
+
+    .cover-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 34pt;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary-light) 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 3px;
+    }
+
+    .cover-sub {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 12.5pt;
+      letter-spacing: 2.5px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      margin-bottom: 4mm;
+    }
+
+    .cover-desc {
+      font-size: 9.5pt;
+      color: var(--text-muted);
+      max-width: 640px;
+      line-height: 1.5;
+    }
+
+    .cover-pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 5mm;
+    }
+
+    .pillar-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--primary);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .pillar-num {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8.5pt;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .pillar-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 9.6pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .pillar-text {
+      font-size: 7.8pt;
+      color: var(--text-muted);
+      line-height: 1.36;
+    }
+
+    .cover-meta {
+      border-top: 1px solid var(--border);
+      padding-top: 3.5mm;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 7.5pt;
+      color: var(--text-dim);
+    }
+
+    /* Headings */
+    h2 {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 10.3pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #ffffff;
+      margin-top: 1.2mm;
+      margin-bottom: 0.7mm;
+      padding-bottom: 0.5mm;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2::before {
+      content: "//";
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.8pt;
+    }
+
+    h3 {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 8.4pt;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-top: 1mm;
+      margin-bottom: 0.4mm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      margin-bottom: 0.9mm;
+      color: var(--text);
+      font-size: 7.7pt;
+    }
+
+    ul {
+      margin-left: 14px;
+      margin-bottom: 0.9mm;
+      font-size: 7.6pt;
+      color: var(--text-muted);
+    }
+
+    li {
+      margin-bottom: 0.4mm;
+    }
+
+    strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Callouts */
+    .callout {
+      background: var(--card-bg);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+      padding: 3.5px 7.5px;
+      margin: 0.8mm 0 1.1mm 0;
+    }
+
+    .callout.info {
+      border-left-color: var(--cyan);
+      background: rgba(0, 210, 255, 0.06);
+    }
+
+    .callout.success {
+      border-left-color: var(--green);
+      background: rgba(0, 230, 118, 0.06);
+    }
+
+    .callout-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.2pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 1px;
+    }
+
+    .callout-body {
+      font-size: 7pt;
+      color: var(--text-muted);
+      line-height: 1.25;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8mm 0 1.1mm 0;
+      font-size: 7.1pt;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #111a26;
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7pt;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 2.5px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 2.2px 6px;
+      border-bottom: 1px solid rgba(31, 50, 77, 0.6);
+      color: var(--text-muted);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Steppers */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5px;
+      margin: 0.7mm 0 1.1mm 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 7px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2.5px 6px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 6.7pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7.2pt;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1px;
+    }
+
+    .step-desc {
+      font-size: 6.8pt;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 6.5pt;
+      padding: 1px 3px;
+      background: #182638;
+      border: 1px solid #2d4566;
+      border-radius: 3px;
+      color: var(--cyan);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    /* SCREENSHOT SHOWCASE & VISUAL CALLOUT ARROW SYSTEM */
+    .annotated-shot-card {
+      background: #09101b;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 0.8mm 0 1.1mm 0;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.5);
+    }
+
+    .shot-header {
+      background: #101a27;
+      padding: 2.8px 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 7pt;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .shot-header .badge-tag {
+      background: rgba(42, 108, 255, 0.25);
+      border: 1px solid var(--primary);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #fff;
+      font-size: 6.4pt;
+    }
+
+    .shot-viewport {
+      position: relative;
+      width: 100%;
+      background: #000;
+      line-height: 0;
+    }
+
+    .shot-viewport img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .shot-callouts {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .shot-callouts rect,
+    .shot-callouts line {
+      fill: none;
+      stroke: var(--cyan);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .shot-callouts .gold rect,
+    .shot-callouts .gold line { stroke: var(--gold); }
+
+    .shot-callouts .green rect,
+    .shot-callouts .green line { stroke: var(--green); }
+
+    .shot-callouts .red rect,
+    .shot-callouts .red line { stroke: var(--red); }
+
+    .shot-callouts .purple rect,
+    .shot-callouts .purple line { stroke: #c084fc; }
+
+    .callout-badge {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--cyan);
+      color: #070d14;
+      font-family: 'Chakra Petch', sans-serif;
+      font-weight: 700;
+      font-size: 6.4pt;
+      line-height: 1;
+      box-shadow: 0 0 8px rgba(0, 210, 255, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+      z-index: 3;
+      border: 1px solid #fff;
+      pointer-events: none;
+    }
+
+    .callout-badge.gold {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 183, 3, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    .callout-badge.green {
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(0, 230, 118, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    .callout-badge.red {
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 0 8px rgba(255, 51, 102, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    .callout-badge.purple {
+      background: #c084fc;
+      color: #070d14;
+      box-shadow: 0 0 8px rgba(192, 132, 252, 1), 0 0 0 1.5px rgba(7, 13, 20, 0.95);
+    }
+
+    /* Callout Arrow Annotation Legend */
+    .callout-arrow-legend {
+      padding: 2.8px 6px;
+      background: #0b1420;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px;
+    }
+
+    .callout-arrow-legend.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .callout-arrow-legend.cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .callout-arrow-legend.cols-5 {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      font-size: 6.4pt;
+      line-height: 1.16;
+      color: var(--text-muted);
+    }
+
+    .legend-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--cyan);
+      color: #070d14;
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 6.1pt;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .legend-badge.gold {
+      background: var(--gold);
+    }
+
+    .legend-badge.green {
+      background: var(--green);
+    }
+
+    .legend-badge.red {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .legend-badge.purple {
+      background: #c084fc;
+      color: #070d14;
+    }
+
+    .legend-label {
+      font-weight: 700;
+      color: #ffffff;
+      font-family: 'Chakra Petch', sans-serif;
+      text-transform: uppercase;
+      font-size: 6.4pt;
+    }
+
+    .arrow-indicator {
+      display: inline-block;
+      margin-left: 2px;
+      margin-right: 2px;
+      font-weight: 900;
+      color: var(--cyan);
+    }
+
+    .arrow-indicator.gold {
+      color: var(--gold);
+    }
+
+    .arrow-indicator.green {
+      color: var(--green);
+    }
+
+    .arrow-indicator.red {
+      color: var(--red);
+    }
+
+    .arrow-indicator.purple {
+      color: #c084fc;
+    }
+
+    .chip {
+      font-size: 6.4pt;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .chip.cyan {
+      background: rgba(0, 210, 255, 0.15);
+      border-color: rgba(0, 210, 255, 0.35);
+      color: var(--cyan);
+    }
+
+    .chip.gold {
+      background: rgba(255, 183, 3, 0.15);
+      border-color: rgba(255, 183, 3, 0.35);
+      color: var(--gold);
+    }
+
+    .chip.green {
+      background: rgba(0, 230, 118, 0.15);
+      border-color: rgba(0, 230, 118, 0.35);
+      color: var(--green);
+    }
+
+    .chip.red {
+      background: rgba(255, 51, 102, 0.15);
+      border-color: rgba(255, 51, 102, 0.35);
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       PAGE 1: COVER
+       ========================================== -->
+  <div class="doc-page cover-page">
+    <div class="cover-badge-row">
+      <div class="tactical-badge">
+        <span>★</span> COACH TABLET OPERATING SYSTEM // v0.1.36
+      </div>
+      <div class="sec-badge">LOCAL EXECUTION // ZERO TELEMETRY</div>
+    </div>
+
+    <div class="cover-hero">
+      <div class="brand-mark">
+        <img src="assets/icon.png" alt="Gridiron OC Logo" class="brand-icon" />
+        <div>
+          <div class="cover-title">GRIDIRON OC</div>
+          <div class="cover-sub">Tactical Field Guide &amp; Operator's Manual</div>
+        </div>
+      </div>
+      <p class="cover-desc">
+        The ultimate sideline companion and tactical offensive call sheet for <strong>Madden NFL 26</strong> and <strong>Madden NFL 27</strong>. Designed for real-time play-clock execution, Gridiron OC features an anchor-clustered 15-play opening script generator, 15 dynamic situational play decks, real-time play-calling styles, and complete zero-cloud desktop isolation.
+      </p>
+
+      <div class="cover-pillars">
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 01</div>
+          <div class="pillar-title">Zero-Cloud Engine</div>
+          <div class="pillar-text">
+            100% private, local execution. No video capture, no OCR overhead, and zero performance drag on your PC or gaming monitor. 32,000+ authentic NFL plays run locally at 0ms latency.
+          </div>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 02</div>
+          <div class="pillar-title">Live Call Sheet</div>
+          <div class="pillar-text">
+            One saved 15-play opening script and 15 situational cards. <strong>Ran it</strong> advances the scripted drive or deals a fresh play from that situation's shuffled per-game playlist.
+          </div>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-num">PILLAR 03</div>
+          <div class="pillar-title">Script Builder &amp; Styles</div>
+          <div class="pillar-text">
+            Opening script auto-filler with anchor formation clustering ("same look, different play"), plus 7 dynamic play-calling styles (Default, Run Heavy, Pass Heavy, Balanced, Quick Game, Kill Clock, Comeback).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-family:'Chakra Petch',sans-serif;font-size:8.5pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:2mm;">
+        TACTICAL SYSTEM SPECIFICATIONS
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Specification</th>
+            <th>Madden NFL 26 Environment</th>
+            <th>Madden NFL 27 Environment</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Offensive Playbooks</strong></td>
+            <td>13,793 plays (32 NFL team books, RUN / PASS / PA / RPO)</td>
+            <td>19,105 plays (32 NFL authentic team books, RUN / PASS / PA / RPO)</td>
+          </tr>
+          <tr>
+            <td><strong>Situational Cards</strong></td>
+            <td>15 curated tactical cards spanning down, distance, &amp; counters</td>
+            <td>100% catalog fit: every play fits at least one situational card</td>
+          </tr>
+          <tr>
+            <td><strong>Scripting Engine</strong></td>
+            <td>15-play script with 3–4 anchor formation clustering</td>
+            <td>Unique shuffled deal avoiding last 1–2 script cooldown IDs</td>
+          </tr>
+          <tr>
+            <td><strong>Ingest Architecture</strong></td>
+            <td>Companion Tablet Mode (Clean manual "Ran it" execution)</td>
+            <td>Zero background screen recording / Zero OCR CPU load</td>
+          </tr>
+          <tr>
+            <td><strong>Variety Rules</strong></td>
+            <td>Max 2 shows per play across board per game</td>
+            <td>Automatic deferral of previous game's surfaced plays</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cover-meta">
+      <span>GRIDIRON OC // DESKTOP BETA v0.1.36</span>
+      <span>PLATFORM: WINDOWS 10 / 11 (ELECTRON)</span>
+      <span>CLASSIFIED // COACH TABLET FIELD MANUAL</span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAGE 2: SETUP & MATCHUP MENU
+       ========================================== -->
+  <div class="doc-page">
+    <h2>1. HARDWARE &amp; SYSTEM REQUIREMENTS</h2>
+    <p>
+      Gridiron OC is built as a pure, responsive coach tablet designed for real-time play-clock operation. It runs alongside Madden on a secondary monitor, laptop, or split-screen window without consuming gameplay resources.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Subsystem</th>
+          <th>Minimum Specification</th>
+          <th>Recommended Setup</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Operating System</strong></td>
+          <td>Windows 10 64-bit (Build 19041+)</td>
+          <td>Windows 11 64-bit with dual-monitor configuration</td>
+        </tr>
+        <tr>
+          <td><strong>Display / Layout</strong></td>
+          <td>1280 x 720 HD display</td>
+          <td>1920 x 1080 Full HD (tablet console fits full width seamlessly)</td>
+        </tr>
+        <tr>
+          <td><strong>Capture Overhead</strong></td>
+          <td>0% CPU / 0% GPU (No screen capture / No OCR)</td>
+          <td>Runs entirely in background memory (&lt;120MB RAM footprint)</td>
+        </tr>
+        <tr>
+          <td><strong>Data Storage</strong></td>
+          <td>Local SSD storage for playbook JSON catalogs</td>
+          <td>Zero external server dependency; 100% offline functionality</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <div class="callout-title">ℹ️ COMPANION TABLET ARCHITECTURE</div>
+      <div class="callout-body">
+        Gridiron OC operates as an active sideline coach tablet without background screen capture, video OCR, or hotkey hooks. The call sheet and playbooks stay entirely on your local PC.
+      </div>
+    </div>
+
+    <h2>2. FIRST-TIME SETUP: MATCHUP &amp; BROADCAST MENU</h2>
+    <p>
+      Whenever you launch Gridiron OC or click <strong>New Game</strong>, the <strong>Matchup &amp; Broadcast Setup</strong> menu appears. Configure your team and game settings, then press <strong>Start Game</strong> to generate a fresh opening script and deal the 15 situational decks.
+    </p>
+
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // MATCHUP &amp; BROADCAST PRESENTATION SETUP</div>
+        <span class="badge-tag">MODAL DIALOG</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="docs/screenshots/Matchup_&_Broadcast_Setup_Menu.png" alt="Matchup and Broadcast Setup Dialog" />
+        <svg class="shot-callouts" viewBox="0 0 1109 764" preserveAspectRatio="none" aria-hidden="true">
+          <!-- 1: Your Team Select -->
+          <g><rect x="252" y="295" width="246" height="46" rx="8"/><line x1="252" y1="318" x2="235" y2="318"/></g>
+          <!-- 2: Opponent Select -->
+          <g class="gold"><rect x="557" y="295" width="246" height="46" rx="8"/><line x1="803" y1="318" x2="820" y2="318"/></g>
+          <!-- 3: Opponent Context (CPU / Human) -->
+          <g class="green"><rect x="238" y="380" width="578" height="70" rx="10"/><line x1="238" y1="415" x2="220" y2="415"/></g>
+          <!-- 4: Madden Game Version -->
+          <g class="purple"><rect x="238" y="474" width="578" height="70" rx="10"/><line x1="238" y1="509" x2="220" y2="509"/></g>
+          <!-- 5: Start Game Button -->
+          <g class="red"><rect x="660" y="562" width="156" height="49" rx="10"/><line x1="816" y1="586" x2="834" y2="586"/></g>
+        </svg>
+        <span class="callout-badge" style="left:20.2%;top:41.6%">❶</span>
+        <span class="callout-badge gold" style="left:74.8%;top:41.6%">❷</span>
+        <span class="callout-badge green" style="left:18.9%;top:54.3%">❸</span>
+        <span class="callout-badge purple" style="left:18.9%;top:66.6%">❹</span>
+        <span class="callout-badge red" style="left:76.1%;top:76.7%">❺</span>
+      </div>
+      <div class="callout-arrow-legend cols-5">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Your Team</span> <span class="arrow-indicator">➔</span>
+            <span>Selects active 32-team offensive catalog &amp; schemes.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Opponent</span> <span class="arrow-indicator gold">➔</span>
+            <span>Establishes opponent tendencies, defensive shells, &amp; locks.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Opponent Context</span> <span class="arrow-indicator green">➔</span>
+            <span>Toggles between CPU franchise logic and Human player tendencies.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge purple">❹</span>
+          <div>
+            <span class="legend-label">Madden Version</span> <span class="arrow-indicator purple">➔</span>
+            <span>Switches between M26 (13,793 plays) and M27 (19,105 plays).</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❺</span>
+          <div>
+            <span class="legend-label">Start Game</span> <span class="arrow-indicator red">➔</span>
+            <span>Deals 15 situational decks and launches Script builder.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">SELECT YOUR PLAYBOOK &amp; OPPONENT</div>
+          <div class="step-desc">Pick your team to load all authentic formations, sets, and plays. Pick the opponent to align situational scouting intelligence.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">SET CONTEXT &amp; CATALOG VERSION</div>
+          <div class="step-desc">Select <strong>CPU</strong> or <strong>Human</strong> opponent, then choose the <strong>Madden 26</strong> or <strong>Madden 27</strong> authentic team catalog.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">START GAME &amp; SCRIPT GENERATION</div>
+          <div class="step-desc">Press <strong>Start Game</strong> to generate a unique 15-play opening script with anchor clustering and open the Script builder. (Skip For Now dismisses setup without starting a new game).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAGE 3: WORKSPACE ANATOMY
+       ========================================== -->
+  <div class="doc-page">
+    <h2>3. OFFENSIVE CALL SHEET WORKSPACE ANATOMY</h2>
+    <p>
+      The live window is your complete offensive call sheet. At a single glance, you have your 15-play scripted drive across the top strip and 15 situational play cards spanning down, distance, red zone, and coverage counters below.
+    </p>
+
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // LIVE TABLET CALL SHEET CONSOLE</div>
+        <span class="badge-tag">PRIMARY WORKSPACE</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="docs/screenshots/Offense_Call_Sheet.png" alt="Offense Call Sheet Workspace" />
+        <svg class="shot-callouts" viewBox="0 0 1912 1006" preserveAspectRatio="none" aria-hidden="true">
+          <!-- 1: Toolbar (Script Builder + Play-Call Style) -->
+          <g><rect x="4" y="65" width="430" height="49" rx="8"/><line x1="219" y1="65" x2="219" y2="48"/></g>
+          <!-- 2: Opening Script Strip -->
+          <g class="gold"><rect x="4" y="118" width="1904" height="146" rx="8"/><line x1="25" y1="190" x2="10" y2="190"/></g>
+          <!-- 3: 15 Situational Cards Grid -->
+          <g class="green"><rect x="4" y="270" width="1904" height="680" rx="10"/><line x1="25" y1="310" x2="10" y2="310"/></g>
+          <!-- 4: "Ran it" Action Button: Exactly centered over the "Ran it" text on card 1 -->
+          <g class="red"><rect x="135" y="464" width="108" height="38" rx="6"/><line x1="243" y1="483" x2="270" y2="483"/></g>
+          <!-- 5: New Game Button -->
+          <g class="purple"><rect x="1762" y="66" width="146" height="47" rx="8"/><line x1="1762" y1="89" x2="1744" y2="89"/></g>
+        </svg>
+        <span class="callout-badge" style="left:11.5%;top:4.8%">❶</span>
+        <span class="callout-badge gold" style="left:1.4%;top:18.9%">❷</span>
+        <span class="callout-badge green" style="left:1.4%;top:30.8%">❸</span>
+        <span class="callout-badge red" style="left:14.8%;top:48.0%">❹</span>
+        <span class="callout-badge purple" style="left:90.3%;top:8.8%">❺</span>
+      </div>
+      <div class="callout-arrow-legend cols-5">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Toolbar Controls</span> <span class="arrow-indicator">➔</span>
+            <span>Opens Script builder &amp; toggles 7 dynamic play-call styles.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Opening Script Strip</span> <span class="arrow-indicator gold">➔</span>
+            <span>15-play sequence clustered into 3–4 anchor formations.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Situational Grid</span> <span class="arrow-indicator green">➔</span>
+            <span>15 tactical cards covering all down, distance, &amp; coverage needs.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Ran It Execution</span> <span class="arrow-indicator red">➔</span>
+            <span>Advances opening script or draws fresh card from slot deck.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge purple">❺</span>
+          <div>
+            <span class="legend-label">New Game Reset</span> <span class="arrow-indicator purple">➔</span>
+            <span>Returns to matchup screen and deals fresh game decks.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>Opening Script Strip Architecture</h3>
+        <p>
+          The horizontal strip across the top holds the 15 scripted plays you committed from the Script builder:
+        </p>
+        <ul>
+          <li><strong>Active Play Highlighting:</strong> The current play card is prominently highlighted with a cyan border, active play number badge, formation, set, play name, and concept badges.</li>
+          <li><strong>Sequential Execution:</strong> Clicking <strong>Ran it</strong> on the active play card moves to the next scripted play.</li>
+          <li><strong>Formation Clustering:</strong> Scripted plays are sequenced in groups of 2–7 plays from the same anchor formation ("same look, different play"), letting you read how defenses react to specific personnel.</li>
+          <li><strong>Safe In-Game Edits:</strong> You can open Script builder mid-game to tweak remaining plays; saving keeps your current play index.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>15 Situational Cards Grid Architecture</h3>
+        <p>
+          The lower matrix displays 15 distinct situational cards spanning the field:
+        </p>
+        <ul>
+          <li><strong>Down &amp; Distance:</strong> 1st &amp; med, 2nd &amp; med, 2nd &amp; long, 3rd &amp; med, 3rd &amp; long, 4th &amp; short.</li>
+          <li><strong>Field Territory:</strong> Backed up (&lt;10 yd line), Red zone (&lt;20 yd line), Goal line (heavy sets/compressed).</li>
+          <li><strong>Coverage &amp; Pressure Counters:</strong> Blitz beater (screens/mesh/quick), Man beater, Cover 3 beater.</li>
+          <li><strong>Scheme Specials:</strong> Shot (verticals/deep shots), Quick game (3-step rhythm), PA / motion (play-action/jet).</li>
+          <li><strong>Per-Slot Playlist:</strong> Clicking <strong>Ran it</strong> replaces <em>only that card</em> from that card's per-game shuffled deck without altering other cards.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.3pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1.2mm;margin-bottom:0.8mm;">
+      CONSOLE TOOLBAR CONTROLS &amp; OPERATIONAL PHILOSOPHY
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Control Element</th>
+          <th>Location</th>
+          <th>Tactical Function</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Script Builder Button</strong></td>
+          <td>Top Left Toolbar</td>
+          <td>Opens the Offensive Game Plan modal to inspect or edit opening sequence slots and review playbook formations.</td>
+        </tr>
+        <tr>
+          <td><strong>Play-Call Style Dropdown</strong></td>
+          <td>Top Toolbar Center</td>
+          <td>Instantly toggles active call sheet style (Default, Run Heavy, Pass Heavy, Balanced, Quick Game, Kill Clock, Comeback).</td>
+        </tr>
+        <tr>
+          <td><strong>New Game Button</strong></td>
+          <td>Top Right Toolbar</td>
+          <td>Terminates the current drive session, resets game show counts, and opens Matchup Setup for a new opponent.</td>
+        </tr>
+        <tr>
+          <td><strong>Desktop Settings Button</strong></td>
+          <td>Top Right Header</td>
+          <td>Opens Desktop Preferences to swap active playbook catalog, opponent, or UI theme without ending the game.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <div class="callout-title">💡 THE COACH TABLET PHILOSOPHY: DECISION-SUPPORT OVER AUTOMATION</div>
+      <div class="callout-body">
+        The live window is an offensive call sheet. It does not dictate a single mandatory play and does not automate play selection. Instead, it arms the offensive coordinator with structured, authentic options organized by situation, personnel, and defensive counters, leaving execution firmly in your hands.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAGE 4: SCRIPT BUILDER - OPENING 15
+       ========================================== -->
+  <div class="doc-page">
+    <h2>4. SCRIPT BUILDER: OPENING 15 SEQUENCING &amp; ANCHOR CLUSTERING</h2>
+    <p>
+      Pressing <strong>Start Game</strong> or clicking <strong>Script builder</strong> opens the Offensive Game Plan modal. The <strong>Opening 15</strong> tab gives you full control over your script with intelligent auto-filling, search, and formation clustering.
+    </p>
+
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // SCRIPT BUILDER: OPENING 15 SEQUENCING</div>
+        <span class="badge-tag">GAMEPLAN BUILDER</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="docs/screenshots/Script_builder_Opening15.png" alt="Script Builder Opening 15 Tab" />
+        <svg class="shot-callouts" viewBox="0 0 1373 859" preserveAspectRatio="none" aria-hidden="true">
+          <!-- 1: Mode Tabs -->
+          <g><rect x="188" y="184" width="228" height="50" rx="8"/><line x1="302" y1="184" x2="302" y2="168"/></g>
+          <!-- 2: Offense Navigator -->
+          <g class="gold"><rect x="194" y="260" width="480" height="424" rx="8"/><line x1="194" y1="320" x2="175" y2="320"/></g>
+          <!-- 3: Opening Sequence Queue -->
+          <g class="green"><rect x="689" y="260" width="482" height="424" rx="8"/><line x1="1171" y1="320" x2="1190" y2="320"/></g>
+          <!-- 4: Auto-Fill 15 & Clear Toolbar -->
+          <g class="purple"><rect x="700" y="302" width="296" height="34" rx="6"/><line x1="848" y1="302" x2="848" y2="286"/></g>
+          <!-- 5: Save & Close Action -->
+          <g class="red"><rect x="1028" y="708" width="145" height="46" rx="8"/><line x1="1173" y1="731" x2="1192" y2="731"/></g>
+        </svg>
+        <span class="callout-badge" style="left:22.0%;top:19.6%">❶</span>
+        <span class="callout-badge gold" style="left:12.7%;top:37.3%">❷</span>
+        <span class="callout-badge green" style="left:88.2%;top:37.3%">❸</span>
+        <span class="callout-badge purple" style="left:61.8%;top:33.3%">❹</span>
+        <span class="callout-badge red" style="left:88.4%;top:85.1%">❺</span>
+      </div>
+      <div class="callout-arrow-legend cols-5">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Mode Tabs</span> <span class="arrow-indicator">➔</span>
+            <span>Switch between Opening 15 sequencing and Call Sheet styles.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Offense Navigator</span> <span class="arrow-indicator gold">➔</span>
+            <span>Real-time search and expandable formation tree explorer.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Opening Queue</span> <span class="arrow-indicator green">➔</span>
+            <span>15-play ordered list showing slot role, formation, &amp; play info.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge purple">❹</span>
+          <div>
+            <span class="legend-label">Auto-Fill &amp; Clear</span> <span class="arrow-indicator purple">➔</span>
+            <span>Generates unique anchor-clustered deals or clears queue.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❺</span>
+          <div>
+            <span class="legend-label">Save &amp; Close</span> <span class="arrow-indicator red">➔</span>
+            <span>Commits sequence to live strip at play 1 (✕ cancels edits).</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <h3>Anchor Formation Clustering Engine</h3>
+        <p>
+          Real NFL offensive coordinators do not jump randomly between 13 different formations in the opening drive. Gridiron OC clusters the 15-play script into <strong>3 to 4 anchor formations</strong>:
+        </p>
+        <ul>
+          <li><strong>Same Look, Different Play:</strong> Automatically pairs complementary plays from the same personnel grouping (e.g. Inside Zone + PA Boot + Quick Slants + Bubble Screen from Gun Bunch Open TE).</li>
+          <li><strong>Cluster Depth:</strong> Allocates 2 to 7 plays per anchor formation, giving you authentic diagnostic ability against defensive alignments.</li>
+          <li><strong>Cooldown Protection:</strong> Auto-Fill avoids plays used in your last 1–2 opening scripts (<kbd>cooldownIds</kbd>), guaranteeing fresh plays every game.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Offense Navigator &amp; Manual Editing</h3>
+        <p>
+          Fine-tune every slot in your opening sequence with granular controls:
+        </p>
+        <ul>
+          <li><strong>Instant Search:</strong> Filter the entire team catalog by formation (e.g. "Gun Bunch"), set ("Spread"), concept ("Duo"), or exact play name (e.g. "Inside Zone Split").</li>
+          <li><strong>One-Click Add:</strong> Click any play in the navigator to append it to your opening sequence.</li>
+          <li><strong>Reordering &amp; Deletion:</strong> Move plays up or down in the queue to structure your ideal opening cadence, or delete unwanted plays.</li>
+          <li><strong>Fallback Safety:</strong> If you close with an empty queue, the engine automatically falls back to the generated 15.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.3pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1.2mm;margin-bottom:0.8mm;">
+      OPENING SCRIPT CADENCE &amp; STRATEGIC ROLE DISTRIBUTION
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Script Stage</th>
+          <th>Slot Roles</th>
+          <th>Primary Offensive Objective &amp; Concept Mix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Phase 1: Rhythm (Plays 1–3)</strong></td>
+          <td>Base Run, Quick Game, Screen</td>
+          <td>Establish early ground rhythm and quick 3-step timing throws. Diagnostic reads on defensive front.</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 2: Conflict (Plays 4–6)</strong></td>
+          <td>Play-Action, Counter, Duo</td>
+          <td>Leverage established run looks with heavy play-action boots, split zone, or backside counters.</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 3: Intermediate (Plays 7–10)</strong></td>
+          <td>Levels, Digs, Mesh, RPO</td>
+          <td>Attack linebackers with intermediate spacing and option reads. Test Cover 3 and man separation.</td>
+        </tr>
+        <tr>
+          <td><strong>Phase 4: Climax (Plays 11–15)</strong></td>
+          <td>Vertical Shots, Red Zone, Jet Motion</td>
+          <td>Take calculated deep downfield shots and transition into condensed high-leverage scoring sets.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==========================================
+       PAGE 5: SCRIPT BUILDER - CALL SHEET STYLES
+       ========================================== -->
+  <div class="doc-page">
+    <h2>5. SCRIPT BUILDER: CALL SHEET TAB &amp; PLAY-CALL STYLES</h2>
+    <p>
+      The <strong>Call Sheet</strong> tab inside Script builder (and the toolbar dropdown on the main console) lets you choose from <strong>7 tactical play-call styles</strong>. Selecting a style re-tunes your situational cards on the fly without wiping game memory.
+    </p>
+
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // SCRIPT BUILDER: CALL SHEET STRATEGY TAB</div>
+        <span class="badge-tag">STYLE SELECTOR</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="docs/screenshots/Script_Builder_Call_Sheet.png" alt="Script Builder Call Sheet Tab" />
+        <svg class="shot-callouts" viewBox="0 0 1374 851" preserveAspectRatio="none" aria-hidden="true">
+          <!-- 1: Call Sheet Tab Active -->
+          <g><rect x="304" y="172" width="112" height="52" rx="8"/><line x1="360" y1="172" x2="360" y2="156"/></g>
+          <!-- 2: Offense Navigator -->
+          <g class="gold"><rect x="192" y="258" width="480" height="424" rx="8"/><line x1="192" y1="320" x2="174" y2="320"/></g>
+          <!-- 3: Play-Call Style Selection Matrix -->
+          <g class="green"><rect x="688" y="258" width="482" height="424" rx="8"/><line x1="1170" y1="320" x2="1188" y2="320"/></g>
+          <!-- 4: Save & Close Button -->
+          <g class="red"><rect x="1026" y="706" width="146" height="46" rx="8"/><line x1="1172" y1="729" x2="1190" y2="729"/></g>
+        </svg>
+        <span class="callout-badge" style="left:26.2%;top:18.3%">❶</span>
+        <span class="callout-badge gold" style="left:12.7%;top:37.6%">❷</span>
+        <span class="callout-badge green" style="left:88.1%;top:37.6%">❸</span>
+        <span class="callout-badge red" style="left:88.3%;top:85.7%">❹</span>
+      </div>
+      <div class="callout-arrow-legend cols-4">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Call Sheet Tab</span> <span class="arrow-indicator">➔</span>
+            <span>Switches Script builder to offensive play-calling style selection.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Playbook Reference</span> <span class="arrow-indicator gold">➔</span>
+            <span>Browse personnel groupings while adjusting tactical game plan.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Style Selection</span> <span class="arrow-indicator green">➔</span>
+            <span>Choose from 7 play-call philosophies to steer situational cards.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❹</span>
+          <div>
+            <span class="legend-label">Save &amp; Close</span> <span class="arrow-indicator red">➔</span>
+            <span>Applies new style to the live call sheet and closes builder.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.3pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1mm;margin-bottom:0.8mm;">
+      THE 7 TACTICAL PLAY-CALL STYLES
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Style</th>
+          <th>Tactical Bias</th>
+          <th>Situational Card Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="chip cyan">Default</span></td>
+          <td>Standard deal</td>
+          <td>Normal balanced situational distribution per your playbook identity.</td>
+        </tr>
+        <tr>
+          <td><span class="chip green">Run Heavy</span></td>
+          <td>Ground attack</td>
+          <td>Forces ground plays (inside zone, power, duo, counter, toss) onto every fitting card.</td>
+        </tr>
+        <tr>
+          <td><span class="chip gold">Pass Heavy</span></td>
+          <td>Aerial attack</td>
+          <td>Prioritizes intermediate, deep, and spread concepts across ambiguous down-and-distance cards.</td>
+        </tr>
+        <tr>
+          <td><span class="chip cyan">Balanced</span></td>
+          <td>True 50/50 split</td>
+          <td>Gives run and pass plays an equal chance when both fit the card, preventing scheme rut.</td>
+        </tr>
+        <tr>
+          <td><span class="chip gold">Quick Game</span></td>
+          <td>High percentage</td>
+          <td>Surfaces rapid 3-step rhythm passes, curls, snags, wide receiver screens, and RPOs.</td>
+        </tr>
+        <tr>
+          <td><span class="chip green">Kill the Clock</span></td>
+          <td>Clock management</td>
+          <td>Prioritizes inside runs and ball-control concepts to burn game clock and protect leads.</td>
+        </tr>
+        <tr>
+          <td><span class="chip red">Comeback</span></td>
+          <td>Urgent yardage</td>
+          <td>Surfaces downfield vertical shots, deep digs, seams, and sideline-stopping intermediate concepts.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="two-col" style="margin-top:1mm;">
+      <div>
+        <h3>Slot Dynamics During Style Shifts</h3>
+        <p>
+          Selecting a play-call style updates situational cards dynamically while preserving continuity:
+        </p>
+        <ul>
+          <li><strong>Fitting Cards Stay Put:</strong> If a currently displayed play already conforms to the newly chosen style, it remains on screen without unnecessary visual disruption.</li>
+          <li><strong>Non-Fitting Cards Reshuffle:</strong> Only cards that violate the newly selected style draw a replacement play from that slot's per-game playlist.</li>
+          <li><strong>Fallback Safeguard:</strong> If a situational slot has no play matching the chosen style, it retains its normal valid play.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Persistent Game Memory &amp; Show Counts</h3>
+        <p>
+          Switching styles does <strong>not</strong> wipe your active game history:
+        </p>
+        <ul>
+          <li><strong>Show Count Integrity:</strong> The board-wide <kbd>MAX_GAME_SHOWS = 2</kbd> limit continues to track all called and displayed plays seamlessly.</li>
+          <li><strong>Independent From Opening Script:</strong> Changing play-call styles alters only situational cards; your opening script strip remains untouched.</li>
+          <li><strong>Infinite Adjustability:</strong> Switch styles as often as desired as game momentum swings (e.g. from Balanced in Q1 to Kill Clock in Q4).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAGE 6: SITUATIONAL LOGIC & RULES
+       ========================================== -->
+  <div class="doc-page">
+    <h2>6. SITUATIONAL CARD LOGIC, TAGGING &amp; DIVERSITY RULES</h2>
+    <p>
+      Every card on the call sheet is backed by deep automated tagging in <kbd>shared/situationBoard.js</kbd>. Plays are categorized by family, concepts, and formation constraints to ensure authentic NFL play availability on every snap.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Situational Card</th>
+          <th>Tagging &amp; Personnel Requirements</th>
+          <th>Explicit Exclusions &amp; Weight Tuning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1st &amp; Med</strong></td>
+          <td>Inside/split zone, duo, power, dive, iso, wide zone, counter, RPO, screens, trap.</td>
+          <td>+2 priority boost for RUN, PA, and RPO; mirrors authentic NFL early-down distribution.</td>
+        </tr>
+        <tr>
+          <td><strong>2nd &amp; Med / Long</strong></td>
+          <td>Zone runs, intermediate crossers, digs, bootlegs, option concepts.</td>
+          <td>Balances ground game with 8–14 yard intermediate conversion opportunities.</td>
+        </tr>
+        <tr>
+          <td><strong>3rd &amp; Med / Long</strong></td>
+          <td>Intermediate spacing, mesh, sticks, corner routes, sail, deep comebacks.</td>
+          <td>Requires primary conversion concepts beyond line to gain; bars dive runs on 3rd &amp; long.</td>
+        </tr>
+        <tr>
+          <td><strong>4th &amp; Short</strong></td>
+          <td>Power O, fullback dive, QB sneak, tush push, inside zone, quick slant, flat.</td>
+          <td>Strictly high-percentage conversion designs; bars deep drops, slow screens, and shots.</td>
+        </tr>
+        <tr>
+          <td><strong>Backed Up</strong></td>
+          <td>Inside own 10-yard line: conservative runs, quick slants, maximum protection.</td>
+          <td><strong>Bars deep drops</strong>, deep comebacks, slow PA, and shot plays; +3 weight on pistol/under-center runs.</td>
+        </tr>
+        <tr>
+          <td><strong>Red Zone</strong></td>
+          <td>Inside opponent 20: condensed routes, fades, flats, rub concepts, goal line RPOs.</td>
+          <td>Filters out 25+ yard vertical stems; prioritizes high-leverage red zone concepts.</td>
+        </tr>
+        <tr>
+          <td><strong>Goal Line</strong></td>
+          <td>Heavy/compressed sets (Heavy, Jumbo, Wing, Tight, Full House, Close, Nasty).</td>
+          <td><strong>Pruned to 183 plays</strong> (from 340); strictly bars Gun Empty and deep vertical routes.</td>
+        </tr>
+        <tr>
+          <td><strong>Blitz Beater</strong></td>
+          <td>Fast rhythm throws, wide receiver screens, halfback draws, and mesh.</td>
+          <td><strong>Bars all Play-Action (PA)</strong>, slow rollout boots, and deep shots that invite sacks.</td>
+        </tr>
+        <tr>
+          <td><strong>Man Beater</strong></td>
+          <td>Crossers, drags, slants, corners, pivots, wheel routes, double moves.</td>
+          <td>Uses Madden 27 <kbd>strong_vs</kbd> indicators as secondary tie-breakers on passing plays.</td>
+        </tr>
+        <tr>
+          <td><strong>Cover 3 Beater</strong></td>
+          <td>Seams, four verticals, flood, deep crossers, curl/flat combos.</td>
+          <td>Calibrated with validated catalog coverage counters and M27 <kbd>strong_vs</kbd> tie-breakers.</td>
+        </tr>
+        <tr>
+          <td><strong>Shot</strong></td>
+          <td>Deep posts, go routes, slugo, scissors, fake screen shots (e.g. PA Bubble Y Over).</td>
+          <td>Fake screen deep passes resolve to <strong>shot</strong> instead of screen family.</td>
+        </tr>
+        <tr>
+          <td><strong>Quick Game</strong></td>
+          <td>3-step drops: slants, hitches, stick, flats, spacing, quick screens, RPOs.</td>
+          <td>Deep comeback routes reclassified as <kbd>levels_dig</kbd>, keeping them off quick game.</td>
+        </tr>
+        <tr>
+          <td><strong>PA / Motion</strong></td>
+          <td>Under-center play-action, bootlegs, orbit motion, jet sweep fakes.</td>
+          <td>Requires authentic play-action fakes or pre-snap shift motion tags.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="two-col" style="margin-top:1mm;">
+      <div>
+        <h3>Board-Wide Freshness &amp; Variety Limits</h3>
+        <p>
+          Gridiron OC enforces strict variety rules across every single game:
+        </p>
+        <ul>
+          <li><strong>Shuffled Slot Playlists:</strong> At <strong>Start Game</strong>, each of the 15 situational cards generates a shuffled per-game playlist from all plays fitting that card.</li>
+          <li><strong>Max 2 Shows Per Game:</strong> Across the entire board, no individual play appears more than twice (<kbd>MAX_GAME_SHOWS = 2</kbd>) while any other fitting play remains.</li>
+          <li><strong>No Duplicate Cards:</strong> Plays currently visible on another card are skipped while an unused fit remains.</li>
+          <li><strong>Last Game Deferral:</strong> Plays shown in the previous game are pushed to the back of the shuffle (<kbd>deferIds</kbd>).</li>
+        </ul>
+      </div>
+      <div>
+        <h3>100% Playbook Coverage Guarantee</h3>
+        <p>
+          Every single play in your team playbook is tactically accessible:
+        </p>
+        <ul>
+          <li><strong>Madden 27 Offensive Fit:</strong> All 19,105 offensive plays across all 32 team catalogs fit into at least one situational card.</li>
+          <li><strong>Madden 26 Offensive Fit:</strong> All 13,793 plays are fully mapped and normalized.</li>
+          <li><strong>Exhaustion Reshuffle:</strong> When a card's unused plays are exhausted, that card reshuffles its fitting pool for another pass.</li>
+          <li><strong>Pure Variety:</strong> Team identity does not artificially lock out plays; the entire playbook is ready to be called.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.3pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1.1mm;margin-bottom:0.7mm;">
+      MADDEN 27 COVERAGE &amp; PRESSURE COUNTER INTEGRATION
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Defensive Look</th>
+          <th>Catalog Indicator (<kbd>strong_vs</kbd>)</th>
+          <th>Secondary Tie-Breaker Scoring</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Man / Cover 1</strong></td>
+          <td>Man, Cover 1</td>
+          <td>+1 priority on Man Beater passing plays (drags, crossers, slants, corners).</td>
+        </tr>
+        <tr>
+          <td><strong>Cover 3 Sky / Match</strong></td>
+          <td>Cover 3</td>
+          <td>+1 priority on Cover 3 Beater passing plays (flood, four verts, seam streaks).</td>
+        </tr>
+        <tr>
+          <td><strong>Split Safety (Cover 2 / 4)</strong></td>
+          <td>Cover 2, Cover 4, Tampa 2</td>
+          <td>+1 priority on Shot cards (deep post shots between safeties, honey hole throws).</td>
+        </tr>
+        <tr>
+          <td><strong>Aggressive Blitz / Zero</strong></td>
+          <td>Blitz</td>
+          <td>+1 priority on Blitz Beaters (strictly non-run: screens, fast slants, mesh).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==========================================
+       PAGE 7: SETTINGS & PLAYBOOK ARCHITECTURE
+       ========================================== -->
+  <div class="doc-page">
+    <h2>7. DESKTOP PREFERENCES (SETTINGS MODAL)</h2>
+    <p>
+      Clicking the <strong>Settings</strong> button in the top right corner opens the <strong>Desktop Preferences</strong> modal. Adjust your active playbook, opponent, game version, and visual theme without restarting the application.
+    </p>
+
+    <div class="annotated-shot-card">
+      <div class="shot-header">
+        <div>AUTHENTIC UI // DESKTOP PREFERENCES &amp; SYSTEM SETTINGS</div>
+        <span class="badge-tag">SETTINGS OVERLAY</span>
+      </div>
+      <div class="shot-viewport">
+        <img src="docs/screenshots/Settings.png" alt="Settings Desktop Preferences Dialog" />
+        <svg class="shot-callouts" viewBox="0 0 1087 701" preserveAspectRatio="none" aria-hidden="true">
+          <!-- 1: Your Playbook -->
+          <g><rect x="264" y="222" width="503" height="43" rx="8"/><line x1="264" y1="243" x2="246" y2="243"/></g>
+          <!-- 2: Opponent -->
+          <g class="gold"><rect x="264" y="301" width="503" height="43" rx="8"/><line x1="264" y1="322" x2="246" y2="322"/></g>
+          <!-- 3: Madden Version -->
+          <g class="green"><rect x="264" y="380" width="503" height="43" rx="8"/><line x1="264" y1="401" x2="246" y2="401"/></g>
+          <!-- 4: Theme Select -->
+          <g class="purple"><rect x="264" y="459" width="503" height="43" rx="8"/><line x1="264" y1="480" x2="246" y2="480"/></g>
+          <!-- 5: Close Button: Exactly centered over the "Close" button in the modal header -->
+          <g class="red"><rect x="698" y="141" width="67" height="38" rx="6"/><line x1="765" y1="160" x2="795" y2="160"/></g>
+        </svg>
+        <span class="callout-badge" style="left:21.7%;top:34.7%">❶</span>
+        <span class="callout-badge gold" style="left:21.7%;top:45.9%">❷</span>
+        <span class="callout-badge green" style="left:21.7%;top:57.2%">❸</span>
+        <span class="callout-badge purple" style="left:21.7%;top:68.5%">❹</span>
+        <span class="callout-badge red" style="left:74.5%;top:22.8%">❺</span>
+      </div>
+      <div class="callout-arrow-legend cols-5">
+        <div class="legend-item">
+          <span class="legend-badge">❶</span>
+          <div>
+            <span class="legend-label">Your Playbook</span> <span class="arrow-indicator">➔</span>
+            <span>Selects active offensive playbook from 32 NFL clubs.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge gold">❷</span>
+          <div>
+            <span class="legend-label">Opponent</span> <span class="arrow-indicator gold">➔</span>
+            <span>Sets defensive tendency and coverage profile intelligence.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge green">❸</span>
+          <div>
+            <span class="legend-label">Madden Version</span> <span class="arrow-indicator green">➔</span>
+            <span>Toggle between M27 Authentic and M26 Original catalogs.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge purple">❹</span>
+          <div>
+            <span class="legend-label">Desktop Theme</span> <span class="arrow-indicator purple">➔</span>
+            <span>Select tactical dark theme or team-specific aesthetic styling.</span>
+          </div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge red">❺</span>
+          <div>
+            <span class="legend-label">Close Button</span> <span class="arrow-indicator red">➔</span>
+            <span>Saves preferences immediately to local storage and dismisses.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>8. AUTHENTIC PLAYBOOK ARCHITECTURE &amp; CATALOG FIDELITY</h2>
+    <p>
+      The Gridiron OC database houses comprehensive authentic playbooks covering every NFL franchise, organized to mirror real-world coordinator call sheets and in-game Madden HUD playbooks:
+    </p>
+
+    <div class="two-col">
+      <div>
+        <h3>32-Team Playbook Structure &amp; Personnel</h3>
+        <p>
+          Each team catalog organizes plays by authentic NFL personnel packages and formations:
+        </p>
+        <ul>
+          <li><strong>Formation Families:</strong> Singleback, I Form, Pistol, Shotgun (Gun), and Compressed sets (Wing, Tight, Bunch, Heavy).</li>
+          <li><strong>Scheme Concepts:</strong> Zone runs (Inside/Split/Wide Zone), Gap schemes (Power, Counter, Duo, Trap), Quick timing (Slants, Sticks, Screens, RPOs), Intermediate spacing (Mesh, Digs, Crossers), and Vertical Shots.</li>
+          <li><strong>Complete Play Availability:</strong> Every single play across all 32 team playbooks is fully mapped and callable on the live call sheet.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Catalog Selection &amp; In-Game Alignment</h3>
+        <p>
+          Seamless transition between Madden title versions and authentic play art:
+        </p>
+        <ul>
+          <li><strong>Madden 27 Catalog:</strong> 19,105 offensive plays across 32 authentic team books with true in-game formation and play nomenclature.</li>
+          <li><strong>Madden 26 Catalog:</strong> 13,793 offensive plays from the classic M26 catalog, normalized across all play types and concepts.</li>
+          <li><strong>In-Game HUD Alignment:</strong> Formations, sets, and play titles match the in-game Madden play-call menu for fast, intuitive sideline execution.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-title">✓ TEST-VERIFIED REGRESSION SUITE &amp; LOCAL PERFORMANCE</div>
+      <div class="callout-body">
+        All situational card fits, anchor clustering routines, and catalog lookups are protected by 53 gameplan domain tests and 42 desktop regression tests with a 100% pass rate. Playbooks are loaded synchronously from local disk into memory for instantaneous 0ms filtering and zero network latency.
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAGE 8: MATCHDAY WORKFLOWS & REFERENCE
+       ========================================== -->
+  <div class="doc-page">
+    <h2>9. STEP-BY-STEP MATCHDAY OPERATIONAL WORKFLOW</h2>
+    <p>
+      Follow this streamlined tactical workflow to manage your offense smoothly during game day:
+    </p>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">MATCHUP INITIALIZATION</div>
+          <div class="step-desc">Launch Gridiron OC. On Matchup overlay, select team playbook, opponent, CPU/Human context, and Madden 27 catalog. Click <strong>Start Game</strong>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">OPENING SCRIPT REVIEW &amp; CLUSTERING</div>
+          <div class="step-desc">Script builder opens on an automatic 15 clustered into 3–4 anchor formations. Keep the deal, press <strong>Auto-Fill 15</strong>, or substitute plays. Click <strong>Save &amp; Close</strong>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">DRIVE EXECUTION: SCRIPT CADENCE</div>
+          <div class="step-desc">Execute plays from the opening script strip. After calling each play in Madden, click <strong>Ran it</strong> on the active script card to advance to the next scripted play.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">SITUATIONAL CALLS &amp; CARD CYCLING</div>
+          <div class="step-desc">On key downs (3rd &amp; Long, Red Zone, Blitz Beater), call the displayed play on that card, then click <strong>Ran it</strong> on that tile. That card draws its next unique play.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">DYNAMIC TACTICAL SHIFTS &amp; NEW GAME</div>
+          <div class="step-desc">Need to burn clock or come from behind? Switch style to <strong>Kill the Clock</strong> or <strong>Comeback</strong>. When game ends, click <strong>New Game</strong> to reset.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.2pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1.1mm;margin-bottom:0.7mm;">
+      IN-GAME SITUATIONAL DECISION MATRIX
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Game Situation</th>
+          <th>Recommended Call Sheet Tile</th>
+          <th>Tactical Objective &amp; Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1st &amp; 10</strong></td>
+          <td>Active Opening Script or 1st &amp; Med Card</td>
+          <td>Establish early-down ground rhythm (+2 RUN/PA/RPO bonus) or execute planned script sequence.</td>
+        </tr>
+        <tr>
+          <td><strong>2nd &amp; Long (7+ yds)</strong></td>
+          <td>2nd &amp; Long or Quick Game Card</td>
+          <td>Intermediate crossers and rhythm boundary throws to recover manageable 3rd down distance.</td>
+        </tr>
+        <tr>
+          <td><strong>3rd &amp; Medium (3–6 yds)</strong></td>
+          <td>3rd &amp; Med or Man Beater Card</td>
+          <td>High-percentage chain movers: shallow crossers, option routes, and spacing concepts.</td>
+        </tr>
+        <tr>
+          <td><strong>4th &amp; Short (1–2 yds)</strong></td>
+          <td>4th &amp; Short Card</td>
+          <td>Maximum conversion percentage: QB sneak, tush push, fullback dive, or inside zone.</td>
+        </tr>
+        <tr>
+          <td><strong>Backed Up (&lt;10 yd line)</strong></td>
+          <td>Backed Up Card</td>
+          <td>Deep drops and slow boots strictly barred; pistol and under-center runs favored (+3 weight).</td>
+        </tr>
+        <tr>
+          <td><strong>Red Zone (&lt;20 yd line)</strong></td>
+          <td>Red Zone or Goal Line Card</td>
+          <td>Condensed spacing, boundary rub concepts, back-shoulder fades, and compressed heavy sets.</td>
+        </tr>
+        <tr>
+          <td><strong>Heavy Blitz Look</strong></td>
+          <td>Blitz Beater Card</td>
+          <td>Fast rhythm throws, wide receiver screens, draws, and mesh; slow play-action strictly barred.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="font-family:'Chakra Petch',sans-serif;font-size:8.2pt;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-top:1.1mm;margin-bottom:0.7mm;">
+      OPERATOR ACTIONS &amp; TROUBLESHOOTING REFERENCE
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operator Action</th>
+          <th>System Behavior &amp; Variety Guarantee</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Click "Ran it" on Script Card</strong></td>
+          <td>Advances active script index (+1); maintains anchor formation grouping across remaining drive sequence.</td>
+        </tr>
+        <tr>
+          <td><strong>Click "Ran it" on Situational Card</strong></td>
+          <td>Replaces <em>only that card</em> from its per-game playlist; logs snap without altering other 14 situational tiles.</td>
+        </tr>
+        <tr>
+          <td><strong>Play Doesn't Repeat Immediately</strong></td>
+          <td>Variety protection: <kbd>MAX_GAME_SHOWS = 2</kbd> ensures all other fitting plays rotate before a play appears a 3rd time.</td>
+        </tr>
+        <tr>
+          <td><strong>Click "Save &amp; Close" vs "✕"</strong></td>
+          <td>Save &amp; Close commits opening script at play 1 and updates styles. "✕" discards unsaved changes safely.</td>
+        </tr>
+        <tr>
+          <td><strong>Zero-Capture Operational Model</strong></td>
+          <td>Zero CPU/GPU screen capture overhead; 100% offline local execution; zero network telemetry.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="two-col" style="margin-top:0.8mm;">
+      <div>
+        <h3>Persistence &amp; Storage</h3>
+        <ul>
+          <li><strong>Script Cooldowns:</strong> <kbd>goc-desktop-recent-run-scripts-v1</kbd> in localStorage.</li>
+          <li><strong>Card Deferrals:</strong> <kbd>goc-desktop-recent-board-plays-v1</kbd> in localStorage.</li>
+          <li><strong>Preferences:</strong> Stored in Electron <kbd>userData</kbd>.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Quality Verification Commands</h3>
+        <ul>
+          <li><kbd>npm run check:core</kbd>: Validates playbook syntax &amp; schemas.</li>
+          <li><kbd>npm run test:gameplan</kbd>: 53 domain tests (clustering, tagging).</li>
+          <li><kbd>npm run test:regression</kbd>: 42 desktop app regression tests.</li>
+          <li><kbd>npm run verify:pc</kbd>: Full end-to-end verification gate.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cover-meta" style="margin-top:auto;">
+      <span>GRIDIRON OC // FIELD MANUAL v0.1.36</span>
+      <span>END OF DOCUMENTATION</span>
+      <span>PAGE 8 OF 8</span>
+    </div>
+  </div>
+
+</body>
+</html>
