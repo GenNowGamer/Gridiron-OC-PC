@@ -351,6 +351,11 @@ function commitScriptBuilder() {
   state.tabletSession = session;
   state.scriptBuilderPurpose = "";
   persistActivePlan();
+  if (ids.length >= 10) {
+    const existing = (state.recentRunScripts || []).filter(s => Array.isArray(s) && s.length && s.join("|") !== ids.join("|"));
+    state.recentRunScripts = [...existing, ids.slice()].slice(-2);
+    saveRecentRunScripts();
+  }
   if (dom.scriptBuilderOverlay) closeOverlay(dom.scriptBuilderOverlay);
   render();
 }
@@ -424,7 +429,10 @@ function generateOpeningScriptIds(existingPlayIds, lockedIndexes) {
   const filled = OpeningScript.fillOpeningScript({
     plays: teamPlays,
     familyOf,
-    cooldownIds: (state.recentRunScripts || []).flat().filter(Boolean),
+    cooldownIds: [
+      ...(state.recentRunScripts || []).flat(),
+      ...((existingPlayIds || []).filter((id, idx) => id && !(new Set(lockedIndexes || [])).has(idx)))
+    ].filter(Boolean),
     shell: opponentShell,
     setupPayoff: SETUP_PAYOFF,
     random: Math.random,
@@ -1331,7 +1339,7 @@ function tabletPlays(side){const book=side==="dc"?state.normalizedDefensivePlays
 function tabletIdentityFamilies(){const profile=RecommendationCore.getTeamIdentityProfile?RecommendationCore.getTeamIdentityProfile(state.selectedTeam):null;return (profile&&profile.families)||{};}
 function tabletCooldownIds(){const ids=[];(state.recentRunScripts||[]).forEach(script=>{(Array.isArray(script)?script:[]).forEach(id=>{if(id)ids.push(id);});});return ids;}
 function ensureTabletSession(){if(!state.tabletSession||!TabletSession.createSession)state.tabletSession=TabletSession.createSession?TabletSession.createSession():{ocBoard:{},dcBoard:{},scriptIds:[],scriptIndex:0,highlighted:[],lastCaptureText:""};if(!state.resultLabels)state.resultLabels=ResultLabels.emptyStore?ResultLabels.emptyStore():{plays:{},looks:{},concepts:{}};return state.tabletSession;}
-function startTabletGame(){const previous=state.tabletSession;if(previous&&Array.isArray(previous.scriptIds)&&previous.scriptIds.length&&Number(previous.scriptIndex)>0){state.recentRunScripts=[...(state.recentRunScripts||[]),previous.scriptIds].slice(-2);saveRecentRunScripts();}rememberBoardPlaysFromSession(previous);state.gameStarted=true;state.autoPlaycallerEnabled=false;state.driveResultMenuOpen=false;state.userOnDefense=false;syncPossession("offense");clearStoredResultLabels();state.tabletSession=TabletSession.startGame?TabletSession.startGame(TabletSession.createSession(),{board:SituationBoard,opening:OpeningScript,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,situationFamiliesOf,identityFamilies:tabletIdentityFamilies(),cooldownIds:tabletCooldownIds(),deferIds:tabletDeferIds(),setupPayoff:SETUP_PAYOFF}):ensureTabletSession();state.customScriptPlays=[];state.customScriptLockedIndexes=[];state.customScriptIndex=0;state.customScriptActive=false;state.customScriptLoggedToHistory=false;state.scriptOfferIds=[];state.scriptBuilderPurpose="new-game";state.tabletSession.scriptIds=[];state.tabletSession.scriptIndex=0;persistActivePlan();render();openScriptBuilder();}
+function startTabletGame(){const previous=state.tabletSession;if(previous&&Array.isArray(previous.scriptIds)&&previous.scriptIds.length){const prevIds=previous.scriptIds.slice(0,15);const existing=(state.recentRunScripts||[]).filter(s=>Array.isArray(s)&&s.length&&s.join("|")!==prevIds.join("|"));state.recentRunScripts=[...existing,prevIds].slice(-2);saveRecentRunScripts();}rememberBoardPlaysFromSession(previous);state.gameStarted=true;state.autoPlaycallerEnabled=false;state.driveResultMenuOpen=false;state.userOnDefense=false;syncPossession("offense");clearStoredResultLabels();state.tabletSession=TabletSession.startGame?TabletSession.startGame(TabletSession.createSession(),{board:SituationBoard,opening:OpeningScript,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,situationFamiliesOf,identityFamilies:tabletIdentityFamilies(),cooldownIds:tabletCooldownIds(),deferIds:tabletDeferIds(),setupPayoff:SETUP_PAYOFF}):ensureTabletSession();state.customScriptPlays=[];state.customScriptLockedIndexes=[];state.customScriptIndex=0;state.customScriptActive=false;state.customScriptLoggedToHistory=false;state.scriptOfferIds=[];state.scriptBuilderPurpose="new-game";state.tabletSession.scriptIds=[];state.tabletSession.scriptIndex=0;persistActivePlan();render();openScriptBuilder();}
 function confirmTabletSlot(slotId){const session=ensureTabletSession();const side="oc";if(!TabletSession.confirmSlot)return;state.tabletSession=TabletSession.confirmSlot(session,slotId,{board:SituationBoard,offensePlays:tabletPlays("oc"),defensePlays:tabletPlays("dc"),familyOf,situationFamiliesOf,identityFamilies:tabletIdentityFamilies(),side});render();}
 function confirmTabletScript(){const session=ensureTabletSession();if(!TabletSession.confirmScript)return;state.tabletSession=TabletSession.confirmScript(session);if(state.customScriptActive&&state.customScriptPlays.length)state.customScriptIndex=state.tabletSession.scriptIndex;render();}
 function syncPossession(_possession){}

@@ -271,7 +271,7 @@
       return paCandidates.length ? paCandidates : passes;
     }
 
-    function selectAnchorFormations(plays) {
+    function selectAnchorFormations(plays, randFn) {
       var counts = {};
       (plays || []).forEach(function (play) {
         if (!play || isGoalLinePlay(play)) return;
@@ -292,14 +292,24 @@
         var bScore = (b.total < 2 ? -10 : 0) + (b.run >= 1 && (b.pass >= 1 || b.pa >= 1) ? 5 : 0) + b.total * 0.5;
         return bScore - aScore;
       });
+      var viable = sorted.filter(function (e) {
+        return e.total >= 2 && (e.run >= 1 || e.pass >= 1 || e.pa >= 1);
+      });
+      if (!viable.length) viable = sorted.filter(function (e) { return e.total >= 2; });
+      if (!viable.length) viable = sorted;
+      if (viable.length <= 4) {
+        return viable.map(function (e) { return e.key; });
+      }
+      var candidatePool = viable.slice(0, Math.min(viable.length, 8));
+      var shuffled = shuffleList(candidatePool, randFn);
       var anchors = [];
-      for (var i = 0; i < sorted.length && anchors.length < 4; i += 1) {
-        if (sorted[i].total >= 2) anchors.push(sorted[i].key);
+      for (var i = 0; i < shuffled.length && anchors.length < 4; i += 1) {
+        anchors.push(shuffled[i].key);
       }
       return anchors;
     }
 
-    var anchors = selectAnchorFormations(teamPlays);
+    var anchors = selectAnchorFormations(teamPlays, random);
     var anchorSet = new Set(anchors);
 
     function place(index, primary, secondary) {
