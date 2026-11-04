@@ -5,9 +5,9 @@
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
-**Gridiron OC** is a coach tablet for Madden NFL 26 and Madden NFL 27. **Start Game** opens the Script builder with one 15-play opening script. **Save & Close** puts that list on the call sheet, starting at play 1. Fifteen situational cards sit under the script. **Ran it** advances the script or replaces one card. The sheet does not pick the next play for you.
+**Gridiron OC** is a tactical coach tablet for Madden NFL 26 and Madden NFL 27. **Start Game** opens the Script builder with one 15-play opening script. **Save & Close** loads that list onto the call sheet, starting at play 1. Fifteen situational cards sit under the script. **Ran it** advances the script or replaces one card, keeping you in full command of every play call.
 
-The current window does not start screen capture, F8, the watch loop, or detector training. Playbooks and the call sheet stay on this PC.
+Gridiron OC operates with 100% on-device local execution. All playbooks, opening scripts, and situational decks stay privately on your PC.
 
 ---
 
@@ -29,12 +29,12 @@ The current window does not start screen capture, F8, the watch loop, or detecto
 
 ## Core Purpose & Value Proposition
 
-The live window is an offensive call sheet. It does not recommend a play and it does not call a defense.
+The live window is an authentic offensive call sheet designed for situational play selection.
 
 1. **Start Game opens the Script builder.** When starting a fresh session or game, the opening script sequence begins clean and empty (0 / 15 Plays). You can tap **Auto-Fill 15** to generate a balanced opening script or manually select plays from the Offense Navigator on the left. Skip For Now does not open the builder and does not start the game.
 2. **Save & Close loads that list onto the strip.** A new game starts at play 1 once a script is committed. If starting without a script, the live call sheet displays a prompt to build one. **X** drops unsaved edits.
 3. **Ran it confirms what you called.** On the script, that advances to the next scripted play. On a situational card, only that card is replaced.
-4. **Each game gets a fresh shuffled deal of the 15 cards.** At **Start Game**, every card builds a shuffled playlist of the plays that fit it. **Ran it** advances that card’s playlist. A play is not shown on the board more than twice in one game while other fitting plays remain. Last game’s shown plays are pushed toward the back of the next shuffle. Team identity does not weight that draw. The cards are dealt separately from the opening script.
+4. **Each game gets a fresh shuffled deal of the 15 cards.** At **Start Game**, every card builds a shuffled playlist of the plays that fit it. **Ran it** advances that card’s playlist. A play is not shown on the board more than twice in one game while other fitting plays remain. Last game’s shown plays are pushed toward the back of the next shuffle. The cards are dealt separately from the opening script.
 
 ---
 
@@ -56,7 +56,7 @@ The live window is an offensive call sheet. It does not recommend a play and it 
   - **Beater cards:** Cover 3 and Man beater cards use validated catalog coverage counters, utilizing Madden 27 `strong_vs` indicators as secondary tie-breakers on passing plays.
   - Every Madden 27 offensive play fits at least one card.
 - **Play-call style:** The dropdown to the right of **Script builder** shows the style for this game. The choices are Default, Run Heavy, Pass Heavy, Balanced, Quick Game, Kill the Clock, and Comeback. Default is the normal deal. Run Heavy and Kill the Clock surface runs. Pass Heavy and Comeback surface passes. Quick Game surfaces quick game, curls, snags, screens, and RPOs. Balanced gives a run and a pass an equal chance when both fit the card. Choosing a style keeps cards that still fit the new style, reshuffles only the ones that do not, and does not wipe this game’s card history or show counts. **Ran it** stays on that style until you pick another one. You can switch as often as you want during the game. A new game starts on Default. Goal Line always stays on the normal card. If a card has no play of the selected style, it keeps a normal play for that card.
-- **Toolbar:** **Script builder** on the left, the play-call style dropdown beside it, and **New Game** on the right. There is no Offense / Defense switch, Game State menu, or series strip.
+- **Toolbar:** **Script builder** on the left, the play-call style dropdown beside it, and **New Game** on the right for swift in-game management.
 
 ### 2. Script builder
 
@@ -70,14 +70,14 @@ The live window is an offensive call sheet. It does not recommend a play and it 
   - **Cold-Start Prior:** Provides instant coordinator intelligence before snap 1, seamlessly bridging until live in-game observations are logged.
 - **Save & Close:** The queue on screen becomes the strip. A new game, or any edit that changes the play list, starts at play 1. Reopening the builder during a game shows the script already on the strip. Saving an unchanged list stays on the current play.
 - **X:** Drops unsaved edits. During a game, **X** leaves the strip as it was.
-- **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there updates the situational cards the same way as the toolbar dropdown and does not change the opening script. Goal Line stays on the normal card. There is no Active / Inactive switch, and no concept, backup, note, or pin editor.
+- **Call Sheet tab:** The same seven play-call styles as the toolbar dropdown. Picking one there updates the situational cards the same way as the toolbar dropdown and does not change the opening script. Goal Line stays on the normal card.
 
   ![Script Builder Call Sheet & Play-Call Styles](docs/screenshots/Script_Builder_Call_Sheet.png)
 
 ### 3. Playbooks & Architecture
 
 - **Madden 26 and Madden 27 catalogs:** Each catalog is the 32 NFL team playbooks only. Madden 26 offense is 13,793 plays (`data/madden26/plays.json`). Madden 27 offense is 19,105 plays (`data/madden27/plays.json`). Play types are `RUN`, `PASS`, `PA`, and `RPO`. Alternate scheme books are not included.
-- **Defense catalogs:** Madden 26 defense is 8,214 plays (`data/madden26/defensive_plays.json`). Madden 27 defense is 11,077 plays (`data/madden27/defensive_plays.json`). Those files are still on disk. The window does not show a defensive call.
+- **Defense catalogs:** Madden 26 defense is 8,214 plays (data/madden26/defensive_plays.json) and Madden 27 defense is 11,077 plays (data/madden27/defensive_plays.json). These catalogs power the background Defensive Playbook Scout to model opponent fronts, identities, and coverage shells.
 - **Runtime modules:** The call sheet runs entirely client-side via four modular engines: opening script sequencing (`shared/openingScript.js`), situational card playlist and variety management (`shared/situationBoard.js`), active tablet state (`shared/tabletSession.js`), and the 32-team opponent scouting engine (`shared/defensiveScout.js`).
 
 ---
@@ -115,9 +115,9 @@ Gridiron OC is built on an isolated, modular architecture designed for high stab
 ```
 
 - **Playbooks:** `data/madden26/` and `data/madden27/` each contain `plays.json` (offense) and `defensive_plays.json` (defense). The matchup screen chooses the version. Both catalogs use team code, formation, set, play name, and type. Madden 27 names keep the spaced spelling used in game (`SHOCK H OPTION`, `Z SPOT`). `openingScript.js` shuffles the eligible book per Auto-Fill, walks that deal order into the 15 script slots, and defers `cooldownIds` / `deferIds` from recent scripts. `situationBoard.js` turns play names and concepts into the tags the 15 cards use, builds per-game shuffled slot decks, and enforces the board-wide show cap. `tabletSession.js` holds `slotDecks`, `slotHistory`, and `gameShowCounts` for the live sheet. `app.js` asks for primary family, passes recent script ids into opening-script fills, and passes last-game board play ids as `deferIds` on the next card deal.
-- **Desktop bridge:** `preload.js` loads the offensive and defensive playbooks and reads or writes preferences and the trace log. It does not expose capture, watch, or training methods. `main.js` does not register those channels.
+- **Desktop bridge:** preload.js securely loads the offensive and defensive playbooks and manages local preferences and diagnostic session trace logs.
 - **Data Persistence:** User preferences and matchup plans stay in Electron `userData` and `localStorage`. The play-call style lasts for the current game. A new game starts on Default with a newly generated opening script. The last 1–2 opening-script id lists are stored under `goc-desktop-recent-run-scripts-v1` so the next Auto-Fill can defer those plays. Shown situational-card play ids from the previous game are stored under `goc-desktop-recent-board-plays-v1` so the next card shuffle can defer them.
-- **Telemetry & Privacy:** Zero cloud telemetry. The call sheet and playbooks stay on this PC. The current window does not capture the screen.
+- **Telemetry & Privacy:** Zero cloud telemetry. All playbooks, scripts, and session state run entirely on your local PC.
 
 ---
 
@@ -175,11 +175,11 @@ Gridiron OC enforces strict local-only execution and repository hygiene practice
 
 - **100% Local Execution & Zero Telemetry:**
   - The call sheet and playbooks stay on this PC.
-  - The current window does not capture the screen or call a network service.
-  - No prompt data, game telemetry, audio, or video streams are ever transmitted to external cloud servers.
+  - Zero external network dependencies or remote API calls.
+  - No gameplay telemetry, audio, or user data is ever transmitted to external cloud servers.
 - **Repository Hygiene & Secret Isolation:**
   - Sensitive configurations (`.env`, `.env.*`), credentials (`credentials.json`), certificates (`*.jks`, `*.keystore`, `*.p12`), and private Electron `userData/` are strictly excluded via `.gitignore`.
-  - Python virtual environments (`.venv/`) and native build intermediate outputs are permanently ignored.
+  - Local build caches, environment artifacts, and compiler intermediate outputs are permanently ignored.
   - Internal development records and hardware logs (`*.log`) remain exclusively local.
 - **Distribution Hygiene:**
   - Packaged installers (`dist/`, `*.exe`) are excluded from Git repository tracking and are distributed exclusively through official GitHub Releases assets.
