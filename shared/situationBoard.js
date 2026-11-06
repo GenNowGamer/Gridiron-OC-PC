@@ -6,19 +6,19 @@
 
   var OC_SLOTS = [
     { id: "first_med", label: "1st & med", side: "oc", families: ["inside_zone", "split_zone", "duo_power", "quick_game", "boot", "dive", "iso", "wide_zone", "counter", "rpo", "screen", "read_option", "trap"] },
-    { id: "second_med", label: "2nd & med", side: "oc", families: ["inside_zone", "duo_power", "quick_game", "curl_flat", "counter", "smash", "snag_spot"] },
-    { id: "second_long", label: "2nd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "flood", "draw", "screen", "counter", "shot", "verticals"] },
-    { id: "third_med", label: "3rd & med", side: "oc", families: ["quick_game", "curl_flat", "snag_spot", "levels_dig", "smash"] },
-    { id: "third_long", label: "3rd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "snag_spot", "flood", "shot", "verticals", "screen", "man_beat"] },
-    { id: "fourth_short", label: "4th & short", side: "oc", families: ["duo_power", "inside_zone", "dive", "iso", "rpo", "quick_game"] },
-    { id: "backed_up", label: "Backed up", side: "oc", families: ["quick_game", "inside_zone", "duo_power", "dive"] },
-    { id: "red_zone", label: "Red zone", side: "oc", families: ["duo_power", "inside_zone", "smash", "snag_spot", "boot", "rpo", "redzone_pass", "quick_game", "shot", "verticals", "man_beat", "curl_flat"] },
-    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass", "quick_game"] },
-    { id: "blitz_beater", label: "Blitz beater", side: "oc", families: ["quick_game", "screen", "draw", "man_beat"] },
-    { id: "man_beater", label: "Man beater", side: "oc", families: ["man_beat", "screen", "snag_spot"] },
+    { id: "second_med", label: "2nd & med", side: "oc", families: ["inside_zone", "duo_power", "quick_game", "curl_flat", "counter", "smash", "snag_spot", "wide_zone", "split_zone", "read_option", "trap"] },
+    { id: "second_long", label: "2nd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "flood", "draw", "screen", "counter", "shot", "verticals", "wheel", "leak"] },
+    { id: "third_med", label: "3rd & med", side: "oc", families: ["quick_game", "curl_flat", "snag_spot", "levels_dig", "smash", "man_beat"] },
+    { id: "third_long", label: "3rd & long", side: "oc", families: ["quick_game", "levels_dig", "curl_flat", "snag_spot", "flood", "shot", "verticals", "screen", "man_beat", "wheel"] },
+    { id: "fourth_short", label: "4th & short", side: "oc", families: ["duo_power", "inside_zone", "dive", "iso", "rpo", "quick_game", "split_zone", "trap"] },
+    { id: "backed_up", label: "Backed up", side: "oc", families: ["quick_game", "inside_zone", "duo_power", "dive", "split_zone"] },
+    { id: "red_zone", label: "Red zone", side: "oc", families: ["duo_power", "inside_zone", "smash", "snag_spot", "boot", "rpo", "redzone_pass", "quick_game", "shot", "verticals", "man_beat", "curl_flat", "read_option", "jet", "wheel"] },
+    { id: "goal_line", label: "Goal line", side: "oc", families: ["duo_power", "dive", "iso", "inside_zone", "rpo", "redzone_pass", "quick_game", "split_zone"] },
+    { id: "blitz_beater", label: "Blitz beater", side: "oc", families: ["quick_game", "screen", "draw", "man_beat", "trap", "read_option", "leak"] },
+    { id: "man_beater", label: "Man beater", side: "oc", families: ["man_beat", "screen", "snag_spot", "wheel"] },
     { id: "cover3_beater", label: "Cover 3 beater", side: "oc", families: ["flood", "curl_flat", "quick_game", "snag_spot", "levels_dig", "boot"] },
-    { id: "shot", label: "Shot", side: "oc", families: ["shot", "verticals", "hail_mary"] },
-    { id: "quick_game", label: "Quick game", side: "oc", families: ["quick_game", "curl_flat", "snag_spot"] },
+    { id: "shot", label: "Shot", side: "oc", families: ["shot", "verticals", "hail_mary", "wheel"] },
+    { id: "quick_game", label: "Quick game", side: "oc", families: ["quick_game", "curl_flat", "snag_spot", "jet"] },
     { id: "play_action", label: "PA / motion", side: "oc", families: ["boot", "flood", "leak", "jet", "wheel"], types: ["PA"] },
   ];
 
@@ -463,13 +463,18 @@
 
   function deferIdsToBack(ids, deferIds) {
     if (!deferIds || !deferIds.length) return ids;
-    var defer = new Set(deferIds.filter(Boolean));
-    if (!defer.size) return ids;
+    var deferList = (Array.isArray(deferIds) ? deferIds : []).filter(Boolean);
+    if (!deferList.length) return ids;
+    var deferMap = new Map();
+    deferList.forEach(function (id, idx) { deferMap.set(id, idx); });
     var front = [];
     var back = [];
     ids.forEach(function (id) {
-      if (defer.has(id)) back.push(id);
+      if (deferMap.has(id)) back.push(id);
       else front.push(id);
+    });
+    back.sort(function (a, b) {
+      return (deferMap.get(a) || 0) - (deferMap.get(b) || 0);
     });
     return front.concat(back);
   }
