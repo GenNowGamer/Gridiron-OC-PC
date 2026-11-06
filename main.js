@@ -51,26 +51,6 @@ function writePreferencesFileSync(preferences) {
   return { path: preferencesPath() };
 }
 
-function allowMediaPermissionsForWindow(win) {
-  const permissionSession = win.webContents.session;
-  const mediaPermissions = new Set(["media", "microphone"]);
-
-  permissionSession.setPermissionCheckHandler((webContents, permission) => (
-    webContents?.id === win.webContents.id && mediaPermissions.has(permission)
-  ));
-
-  permissionSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    callback(webContents?.id === win.webContents.id && mediaPermissions.has(permission));
-  });
-
-  if (typeof permissionSession.setDevicePermissionHandler === "function") {
-    permissionSession.setDevicePermissionHandler((details) => (
-      details.deviceType === "audioCapture"
-      && details.webContents?.id === win.webContents.id
-    ));
-  }
-}
-
 function createWindow() {
   const win = new BrowserWindow({
     width: 1420,
@@ -90,7 +70,6 @@ function createWindow() {
     },
   });
 
-  allowMediaPermissionsForWindow(win);
   win.webContents.on("render-process-gone", async (_event, details) => {
     try {
       await ensureTraceDir();
