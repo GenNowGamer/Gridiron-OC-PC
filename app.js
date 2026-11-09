@@ -1071,22 +1071,36 @@ function removePlayFromScript(index) {
   renderScriptBuilder();
 }
 
-function moveScriptPlay(index, direction) {
-  const target = index + direction;
-  if (index < 0 || index >= state.customScriptPlays.length || target < 0 || target >= state.customScriptPlays.length) return;
-  const temp = state.customScriptPlays[index];
-  state.customScriptPlays[index] = state.customScriptPlays[target];
-  state.customScriptPlays[target] = temp;
+function reorderScriptPlay(fromIndex, toIndex) {
+  const count = state.customScriptPlays.length;
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    fromIndex >= count ||
+    toIndex < 0 ||
+    toIndex >= count
+  ) {
+    return;
+  }
   const locks = new Set(state.customScriptLockedIndexes || []);
-  const fromLocked = locks.has(index);
-  const toLocked = locks.has(target);
-  locks.delete(index);
-  locks.delete(target);
-  if (fromLocked) locks.add(target);
-  if (toLocked) locks.add(index);
-  state.customScriptLockedIndexes = [...locks].sort((a, b) => a - b);
+  const items = state.customScriptPlays.map((playId, idx) => ({
+    playId,
+    locked: locks.has(idx),
+  }));
+  const [moved] = items.splice(fromIndex, 1);
+  items.splice(toIndex, 0, moved);
+  state.customScriptPlays = items.map(item => item.playId);
+  state.customScriptLockedIndexes = items.reduce((acc, item, idx) => {
+    if (item.locked) acc.push(idx);
+    return acc;
+  }, []);
+  state.customScriptLoggedToHistory = false;
   persistActivePlan();
   renderScriptBuilder();
+}
+
+function moveScriptPlay(index, direction) {
+  reorderScriptPlay(index, index + direction);
 }
 
 function clearScript() {
@@ -1452,7 +1466,8 @@ function renderScriptBuilder() {
         const nextIndex = state.scriptBuilderPurpose === "new-game" ? 0 : (ensureTabletSession().scriptIndex || 0);
         const isCurrent = index === nextIndex;
         const locked = locks.has(index);
-        return '<div class="scriptQueueRow' + (isCurrent ? ' is-current' : '') + '">' +
+        return '<div class="scriptQueueRow' + (isCurrent ? ' is-current' : '') + '" draggable="true" data-index="' + index + '" title="Click and hold to drag play up or down">' +
+          '<span class="scriptDragHandle" aria-hidden="true">⋮⋮</span>' +
           '<span class="scriptQueueIndex">#' + (index + 1) + '</span>' +
           '<div class="scriptPlayRowLeft">' +
             '<span class="scriptPlayRowTitle">' + escapeHtml(name) + '</span>' +
@@ -1460,8 +1475,6 @@ function renderScriptBuilder() {
           '</div>' +
           '<div class="scriptQueueActions">' +
             '<button class="scriptIconBtn' + (locked ? ' is-locked' : '') + '" type="button" data-action="toggle-lock" data-index="' + index + '" title="Lock slot">' + (locked ? 'Locked' : 'Lock') + '</button>' +
-            '<button class="scriptIconBtn" type="button" data-action="move-up" data-index="' + index + '" ' + (index === 0 ? 'disabled' : '') + ' title="Move Up">▲</button>' +
-            '<button class="scriptIconBtn" type="button" data-action="move-down" data-index="' + index + '" ' + (index === count - 1 ? 'disabled' : '') + ' title="Move Down">▼</button>' +
             '<button class="scriptIconBtn delete" type="button" data-action="remove-play" data-index="' + index + '" title="Remove">✕</button>' +
           '</div>' +
         '</div>';
@@ -1845,6 +1858,124 @@ function bindEvents() {
     else if (action === "move-down") moveScriptPlay(index, 1);
     else if (action === "remove-play") removePlayFromScript(index);
     else if (action === "toggle-lock") toggleScriptSlotLock(index);
+  });
+
+  let draggedScriptIndex = null;
+  let dropTargetScriptIndex = null;
+  let scriptDragBlockedByButton = false;
+
+  function clearScriptDragClasses() {
+    if (!dom.scriptQueueList) return;
+    dom.scriptQueueList.querySelectorAll(".scriptQueueRow").forEach(row => {
+      row.classList.remove("is-dragging", "is-drop-above", "is-drop-below");
+    });
+  }
+
+  function findClosestScriptRow(clientY) {
+    if (!dom.scriptQueueList) return null;
+    const rows = [...dom.scriptQueueList.querySelectorAll(".scriptQueueRow")];
+    if (!rows.length) return null;
+    let closestRow = null;
+    let closestDist = Infinity;
+    rows.forEach(row => {
+      const rect = row.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const dist = Math.abs(clientY - center);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestRow = row;
+      }
+    });
+    return closestRow;
+  }
+
+  dom.scriptQueueList?.addEventListener("pointerdown", event => {
+    scriptDragBlockedByButton = Boolean(event.target.closest(".scriptIconBtn"));
+  });
+
+  dom.scriptQueueList?.addEventListener("dragstart", event => {
+    const row = event.target.closest(".scriptQueueRow");
+    if (!row || scriptDragBlockedByButton) {
+      event.preventDefault();
+      return;
+    }
+    const index = parseInt(row.getAttribute("data-index"), 10);
+    if (Number.isNaN(index)) {
+      event.preventDefault();
+      return;
+    }
+    draggedScriptIndex = index;
+    dropTargetScriptIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      try {
+        event.dataTransfer.setData("text/plain", String(index));
+      } catch (_e) {}
+    }
+    requestAnimationFrame(() => {
+      row.classList.add("is-dragging");
+    });
+  });
+
+  dom.scriptQueueList?.addEventListener("dragover", event => {
+    if (draggedScriptIndex === null) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+
+    const listRect = dom.scriptQueueList.getBoundingClientRect();
+    const edgeThreshold = 44;
+    if (event.clientY < listRect.top + edgeThreshold) {
+      const intensity = Math.max(0.3, (listRect.top + edgeThreshold - event.clientY) / edgeThreshold);
+      dom.scriptQueueList.scrollTop -= Math.ceil(8 * intensity);
+    } else if (event.clientY > listRect.bottom - edgeThreshold) {
+      const intensity = Math.max(0.3, (event.clientY - (listRect.bottom - edgeThreshold)) / edgeThreshold);
+      dom.scriptQueueList.scrollTop += Math.ceil(8 * intensity);
+    }
+
+    const targetRow = findClosestScriptRow(event.clientY);
+    dom.scriptQueueList.querySelectorAll(".scriptQueueRow").forEach(row => {
+      row.classList.remove("is-drop-above", "is-drop-below");
+    });
+    if (!targetRow) {
+      dropTargetScriptIndex = null;
+      return;
+    }
+    const targetIndex = parseInt(targetRow.getAttribute("data-index"), 10);
+    if (Number.isNaN(targetIndex) || targetIndex === draggedScriptIndex) {
+      dropTargetScriptIndex = draggedScriptIndex;
+      return;
+    }
+    dropTargetScriptIndex = targetIndex;
+    if (targetIndex < draggedScriptIndex) {
+      targetRow.classList.add("is-drop-above");
+    } else {
+      targetRow.classList.add("is-drop-below");
+    }
+  });
+
+  dom.scriptQueueList?.addEventListener("drop", event => {
+    if (draggedScriptIndex === null) return;
+    event.preventDefault();
+    const fromIndex = draggedScriptIndex;
+    let toIndex = dropTargetScriptIndex;
+    if (toIndex === null || Number.isNaN(toIndex)) {
+      const targetRow = findClosestScriptRow(event.clientY);
+      toIndex = targetRow ? parseInt(targetRow.getAttribute("data-index"), 10) : fromIndex;
+    }
+    draggedScriptIndex = null;
+    dropTargetScriptIndex = null;
+    scriptDragBlockedByButton = false;
+    clearScriptDragClasses();
+    if (!Number.isNaN(toIndex) && toIndex !== fromIndex) {
+      reorderScriptPlay(fromIndex, toIndex);
+    }
+  });
+
+  dom.scriptQueueList?.addEventListener("dragend", () => {
+    draggedScriptIndex = null;
+    dropTargetScriptIndex = null;
+    scriptDragBlockedByButton = false;
+    clearScriptDragClasses();
   });
   dom.gameplanTabScript?.addEventListener("click", () => setGameplanTab("script"));
   dom.gameplanTabSheet?.addEventListener("click", () => setGameplanTab("sheet"));
