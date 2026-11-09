@@ -1,13 +1,22 @@
-# Gridiron OC (PC)
+# Gridiron OC
 
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Electron-blue.svg)](#prerequisites)
-[![Version](https://img.shields.io/badge/Version-0.1.40-green.svg)](#testing--quality-verification)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Android%20Tablet%2010%22%2B-blue.svg)](#prerequisites)
+[![Version](https://img.shields.io/badge/Version-0.1.41-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
 
 **Gridiron OC** is a tactical coach tablet for Madden NFL 26 and Madden NFL 27. **Start Game** opens the Script builder with one 15-play opening script. **Save & Close** loads that list onto the call sheet, starting at play 1. Fifteen situational cards sit under the script. **Ran it** advances the script or replaces one card, keeping you in full command of every play call.
 
-Gridiron OC operates with 100% on-device local execution. All playbooks, opening scripts, and situational decks stay privately on your PC.
+Gridiron OC operates with 100% on-device local execution. All playbooks, opening scripts, and situational decks stay privately on your device.
+
+---
+
+### 📥 Downloads
+
+| Platform | Format | Description | Direct Download |
+| :--- | :--- | :--- | :--- |
+| **Windows PC** | Standalone Installer (`.exe`) | Windows 10 & 11 (64-bit) | [**Download for PC (.exe)**](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest/download/Gridiron.Play.Advisor.Setup.0.1.41.exe) |
+| **Android Tablet** | Android Package (`.apk`) | 10"+ Android Tablets (Landscape) | [**Download for Android Tablet (.apk)**](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest/download/Gridiron-OC-Tablet-0.1.41.apk) |
 
 ---
 
