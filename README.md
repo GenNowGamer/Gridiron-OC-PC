@@ -1,6 +1,6 @@
 # Gridiron OC
 
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Android%20Tablet%2010%22%2B-blue.svg)](#prerequisites)
+[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2B%20%7C%20Android%20Tablet%207%22%20%26%2010%22%2B-blue.svg)](#prerequisites)
 [![Version](https://img.shields.io/badge/Version-0.1.41-green.svg)](#testing--quality-verification)
 [![GitHub Latest Release Downloads](https://img.shields.io/github/downloads/GenNowGamer/Gridiron-OC-PC/latest/total?color=green&label=Latest%20Release%20Downloads)](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](#license--trademarks)
@@ -16,7 +16,7 @@ Gridiron OC operates with 100% on-device local execution. All playbooks, opening
 | Platform | Format | Description | Direct Download |
 | :--- | :--- | :--- | :--- |
 | **Windows PC** | Standalone Installer (`.exe`) | Windows 10 & 11 (64-bit) | [**Download for PC (.exe)**](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest/download/Gridiron.Play.Advisor.Setup.0.1.41.exe) |
-| **Android Tablet** | Android Package (`.apk`) | 10"+ Android Tablets (Landscape) | [**Download for Android Tablet (.apk)**](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest/download/Gridiron-OC-Tablet-0.1.41.apk) |
+| **Android Tablet** | Android Package (`.apk`) / App Bundle (`.aab`) | 7"–8" & 10"+ Android Tablets (Landscape) | [**Download for Android Tablet (.apk)**](https://github.com/GenNowGamer/Gridiron-OC-PC/releases/latest/download/Gridiron-OC-Tablet-0.1.41.apk) |
 
 ---
 
